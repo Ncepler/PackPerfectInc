@@ -1,7 +1,5 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "preview/dist",
-  "installCommand": "cd preview && npm install",
-  "framework": "vite",
-  "rootDirectory": "preview"
+  "framework": null
 }

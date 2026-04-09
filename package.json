@@ -1,0 +1,7 @@
+{
+  "name": "packperfect",
+  "scripts": {
+    "build": "cd preview && npm install && npm run build",
+    "dev": "cd preview && npm run dev"
+  }
+}
