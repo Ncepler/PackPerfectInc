@@ -4,8 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Structure
 
-- `code.jsx` — the entire application: a travel packing list generator called **PackPerfect**
-- `preview/` — Vite + React project that imports and renders `code.jsx` for local development
+- `preview/src/PackPerfect.jsx` — the entire application: a travel packing list generator called **PackPerfect**
+- `preview/` — Vite + React project; `src/App.jsx` imports and renders `PackPerfect`
+- `vercel.json` — tells Vercel to build from the `preview/` subdirectory
 - `preview/public/` — static assets served by Vite; **this is where images must live** (e.g. `img-warm.jpg`, `img-cold.jpg`, `img-norm.jpg`, `img-biz.jpg` for the Visual Aid tab). The root `public/` folder is not served.
 
 ## Running the dev server
