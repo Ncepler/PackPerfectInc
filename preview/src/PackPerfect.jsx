@@ -306,47 +306,84 @@ function getPackingTip(avgHigh, rainDays, snowDays) {
 
 // AI keyword knowledge base
 const AI_KB = [
-  { keys:['rain','wet','waterproof','drizzle','umbrella'], ans:`For rainy destinations, pack a compact packable rain jacket — much lighter than an umbrella. Waterproof shoes or a waterproofing spray for your regular ones also help. Stick to quick-dry fabrics and bring a few dry bags to protect electronics. A small travel umbrella is still handy for light drizzle.` },
-  { keys:['baggage fee','checked bag','avoid fee','save money','airline fee','overweight'], ans:`To avoid baggage fees: check your credit card — many travel cards include free checked bags. Pack in a personal item + carry-on instead of checking. Wear your heaviest shoes and jacket on the plane. Use soft-sided bags which squeeze into overhead bins easier. Airlines like Southwest still offer free checked bags, while Spirit and Frontier charge the most.` },
-  { keys:['tsa','liquid','3-1-1','security','airport','quart','3.4 oz'], ans:`TSA 3-1-1 rule: all liquids, gels, and aerosols must be 3.4 oz (100ml) or less, all fitting in ONE quart-sized clear zip-lock bag, with ONE bag per passenger. This includes shampoo, toothpaste, sunscreen, and hand sanitizer. Prescription medications are exempt. Pro tip: buy solid toiletries (shampoo bars, solid deodorant) to skip the liquid limit entirely.` },
-  { keys:['packing cube','cube','organizer','organize'], ans:`Packing cubes are absolutely worth it. They compress clothing to save 20–30% space, keep your bag organized, make unpacking at your hotel take under 2 minutes, and help separate clean from dirty clothes. Use one cube per category: shirts, bottoms, underwear and socks. Compression cubes are even better for bulky items like hoodies.` },
-  { keys:['beach','swimsuit','swim','tropical','sunscreen','sand'], ans:`Beach trip essentials: 2+ swimsuits (so one dries while you wear the other), SPF 50+ sunscreen (buy extra — you'll use more than you think), after-sun aloe vera, lightweight cover-up, flip flops, a mesh beach bag, and a waterproof phone pouch. Pack light on clothes — you'll be in a swimsuit most of the day.` },
-  { keys:['wrinkle','crease','fold','iron','steamer'], ans:`To minimize wrinkles: roll clothes instead of folding — especially t-shirts and casual wear. Pack dress shirts in dry-cleaning bags — they slide and don't crease. Hang wrinkled clothes in the bathroom while you shower — steam relaxes fabric. Bring a small travel steamer if wrinkles are a serious concern for business trips.` },
-  { keys:['carry on','carry-on','overhead bin','one bag','personal item'], ans:`One-bag carry-on strategy: use a 40L backpack or small roller (max ~22x14x9 inches for most US airlines). Pack 4-5 tops, 2-3 bottoms, 5-6 underwear and socks, one versatile shoe worn on the plane. Roll everything, use packing cubes to compress, wear your bulkiest outfit on travel day, and stick to solid toiletries. Most people overpack by 40% — lay everything out, then put half back.` },
-  { keys:['cold','winter','freeze','freezing','snow','ski','alpine'], ans:`Cold weather essentials: thermal base layers (top + bottom), a quality mid-layer fleece, a windproof and waterproof outer shell, insulated boots, wool socks (bring more than you think), gloves, a warm hat, and a neck gaiter. The layer system is key — base wicks moisture, mid insulates, outer blocks wind. Merino wool is excellent: warm, odor-resistant, and can be worn multiple days.` },
-  { keys:['business','suit','formal','professional','conference','meeting'], ans:`Business travel tips: pack suits in a garment bag or use the bundle wrap method. Bring a portable steamer. Stick to a neutral color palette so everything mixes and matches — one suit can work for multiple meetings with different shirt and tie combos. Always keep your laptop, chargers, and important documents in your carry-on. A carry-on with a dedicated laptop sleeve saves time at security.` },
-  { keys:['medication','medicine','prescription','pharmacy','pill','health'], ans:`Keep all prescriptions in original labeled containers. Carry medications in your carry-on — never check them. Bring more than you need (extra week supply) in case of travel delays. TSA allows prescription medications over 3.4 oz in liquid form — just declare them. For international travel, research what medications are restricted at your destination — some common drugs are controlled substances abroad.` },
-  { keys:['electronics','tech','gadget','charger','adapter','plug','international'], ans:`Electronics checklist: universal power adapter (essential internationally), phone charger, portable battery pack (10,000+ mAh), laptop and charger if needed, earbuds, e-reader. Keep all electronics and chargers in your carry-on — lithium batteries are prohibited in checked bags by most airlines. Check the voltage and plug type for your destination before you go.` },
-  { keys:['long trip','month','extended','weeks','long stay','laundry','washing'], ans:`For extended trips (10+ days), pack for about a week and plan to do laundry. Most hotels and Airbnbs have laundry facilities, and laundromats are everywhere globally. 7 shirts, 4-5 pants, and 7-8 underwear and socks is genuinely enough for a month — overpacking creates a heavier bag and more stress. You'll thank yourself later.` },
-  { keys:['light','minimal','minimalist','less','smaller bag','one bag'], ans:`Minimalist packing formula: 5 tops, 2-3 bottoms (versatile, mix-and-match), 5-6 underwear, 4-5 socks, 1 pair of all-purpose shoes worn on the plane, 1 light jacket, travel-size solid toiletries. The trick: choose a color palette (navy, white, grey) so every piece works together. You can hand-wash clothes every few days to extend your wardrobe significantly.` },
+  { keys:['rain','rainy','raining','wet','waterproof','drizzle','umbrella','monsoon','shower','precipitation'], ans:`For rainy destinations, pack a compact packable rain jacket — much lighter than an umbrella. Waterproof shoes or a waterproofing spray for your regular shoes also help. Stick to quick-dry fabrics and bring a few dry bags to protect electronics. A small travel umbrella is still handy for light drizzle in cities.` },
+  { keys:['baggage fee','checked bag','avoid fee','airline fee','overweight','luggage fee','bag fee','excess baggage','luggage cost','checked luggage'], ans:`To avoid baggage fees: check your credit card — many travel cards include free checked bags. Pack in a personal item + carry-on instead of checking. Wear your heaviest shoes and jacket on the plane. Use soft-sided bags which squeeze into overhead bins easier. Airlines like Southwest still offer free checked bags, while Spirit and Frontier charge the most.` },
+  { keys:['tsa','liquid','3-1-1','security','airport','quart','3.4 oz','100ml','gel','aerosol','x-ray','screening','security check'], ans:`TSA 3-1-1 rule: all liquids, gels, and aerosols must be 3.4 oz (100ml) or less, all fitting in ONE quart-sized clear zip-lock bag, with ONE bag per passenger. This includes shampoo, toothpaste, sunscreen, and hand sanitizer. Prescription medications are exempt. Pro tip: buy solid toiletries (shampoo bars, solid deodorant) to skip the liquid limit entirely.` },
+  { keys:['packing cube','cube','organizer','organize','compression','compression bag','rolling bag'], ans:`Packing cubes are absolutely worth it. They compress clothing to save 20–30% space, keep your bag organized, make unpacking at your hotel take under 2 minutes, and help separate clean from dirty clothes. Use one cube per category: shirts, bottoms, underwear and socks. Compression cubes are even better for bulky items like hoodies.` },
+  { keys:['beach','swimsuit','swim','tropical','sunscreen','sand','resort','snorkel','ocean','sea','pool'], ans:`Beach trip essentials: 2+ swimsuits (so one dries while you wear the other), SPF 50+ sunscreen (buy extra — you'll use more than you think), after-sun aloe vera, lightweight cover-up, flip flops, a mesh beach bag, and a waterproof phone pouch. Pack light on clothes — you'll be in a swimsuit most of the day.` },
+  { keys:['wrinkle','crease','fold','iron','steamer','press','creased','crumple'], ans:`To minimize wrinkles: roll clothes instead of folding — especially t-shirts and casual wear. Pack dress shirts in dry-cleaning bags — they slide and don't crease. Hang wrinkled clothes in the bathroom while you shower — steam relaxes fabric. Bring a small travel steamer if wrinkles are a serious concern for business trips.` },
+  { keys:['carry on','carry-on','overhead bin','one bag','personal item','cabin bag','hand luggage'], ans:`One-bag carry-on strategy: use a 40L backpack or small roller (max ~22x14x9 inches for most US airlines). Pack 4-5 tops, 2-3 bottoms, 5-6 underwear and socks, one versatile shoe worn on the plane. Roll everything, use packing cubes to compress, wear your bulkiest outfit on travel day, and stick to solid toiletries. Most people overpack by 40% — lay everything out, then put half back.` },
+  { keys:['cold','winter','freeze','freezing','snow','ski','alpine','snowboard','blizzard','icy','frost','arctic','glacier'], ans:`Cold weather essentials: thermal base layers (top + bottom), a quality mid-layer fleece, a windproof and waterproof outer shell, insulated boots, wool socks (bring more than you think), gloves, a warm hat, and a neck gaiter. The layer system is key — base wicks moisture, mid insulates, outer blocks wind. Merino wool is excellent: warm, odor-resistant, and can be worn multiple days.` },
+  { keys:['business','suit','formal','professional','conference','meeting','corporate','work trip','client','office'], ans:`Business travel tips: pack suits in a garment bag or use the bundle wrap method. Bring a portable steamer. Stick to a neutral color palette so everything mixes and matches — one suit can work for multiple meetings with different shirt and tie combos. Always keep your laptop, chargers, and important documents in your carry-on. A carry-on with a dedicated laptop sleeve saves time at security.` },
+  { keys:['medication','medicine','prescription','pharmacy','pill','health','drugs','tablet','inhaler','epipen'], ans:`Keep all prescriptions in original labeled containers. Carry medications in your carry-on — never check them. Bring more than you need (extra week supply) in case of travel delays. TSA allows prescription medications over 3.4 oz in liquid form — just declare them. For international travel, research what medications are restricted at your destination — some common drugs are controlled substances abroad.` },
+  { keys:['electronics','tech','gadget','charger','adapter','plug','voltage','outlet','power bank','laptop','tablet','device'], ans:`Electronics checklist: universal power adapter (essential internationally), phone charger, portable battery pack (10,000+ mAh), laptop and charger if needed, earbuds, e-reader. Keep all electronics and chargers in your carry-on — lithium batteries are prohibited in checked bags by most airlines. Check the voltage and plug type for your destination before you go.` },
+  { keys:['long trip','month','extended','weeks','long stay','laundry','washing','wash clothes','laundromat','hostel laundry'], ans:`For extended trips (10+ days), pack for about a week and plan to do laundry. Most hotels and Airbnbs have laundry facilities, and laundromats are everywhere globally. 7 shirts, 4-5 pants, and 7-8 underwear and socks is genuinely enough for a month — overpacking creates a heavier bag and more stress. You'll thank yourself later.` },
+  { keys:['light','minimal','minimalist','less','smaller bag','one bag','ultralight','pack less'], ans:`Minimalist packing formula: 5 tops, 2-3 bottoms (versatile, mix-and-match), 5-6 underwear, 4-5 socks, 1 pair of all-purpose shoes worn on the plane, 1 light jacket, travel-size solid toiletries. The trick: choose a color palette (navy, white, grey) so every piece works together. You can hand-wash clothes every few days to extend your wardrobe significantly.` },
+  { keys:['jet lag','jetlag','time zone','time difference','adjust','sleep schedule','tired after flying','fatigue','circadian'], ans:`Beat jet lag: adjust your sleep schedule 2–3 days before departure by shifting bedtime toward your destination's timezone. Stay hydrated on the plane, avoid alcohol, and get natural light as soon as you land. Apps like Timeshifter are excellent for long-haul trips. For eastward travel, melatonin helps your body shift earlier. Stay up until local bedtime on arrival day — it's tough but resets your clock fastest.` },
+  { keys:['passport','visa','entry','permit','id','identification','expire','renewal','tourist visa','immigration','border crossing'], ans:`Passport tips: ensure your passport is valid for at least 6 months beyond your return date — many countries require this. Apply for visas well in advance; processing times vary from 1 day to several weeks. Carry a photocopy of your passport stored separately from the original. Some destinations (like the EU for US citizens) allow stays up to 90 days visa-free. Check visa requirements at your destination's official immigration website.` },
+  { keys:['hotel','accommodation','airbnb','hostel','resort','stay','lodging','check in','check out','booking'], ans:`Smart accommodation packing: always check your hotel's amenities before packing — most hotels provide shampoo, conditioner, and hairdryers, saving you bag space. Pack a power strip or travel extension cord (single unit, no surge protector, for your room). A door stopper adds extra security in budget hotels. Bring a sleep mask and earplugs for unfamiliar environments. Keep your itinerary and confirmation numbers in your carry-on.` },
+  { keys:['camera','photo','photography','lens','gear','shoot','picture','dslr','mirrorless','gopro','drone','shoot'], ans:`Photography travel tips: bring extra memory cards and a backup battery — you can never have too many. A lightweight travel tripod or GorillaPod is worth the space. Lens wipes and a microfiber cloth keep gear clean. Protect your camera in a padded sleeve inside your bag. For checked luggage, put your camera in your carry-on — you don't want it in the hold. A peak design strap is excellent for comfort all day.` },
+  { keys:['money','cash','currency','atm','exchange','exchange rate','budget','cheap','afford','save money','cost','spending','wallet','foreign currency'], ans:`Money tips for travel: notify your bank before going abroad to avoid card freezes. Use ATMs at your destination for better exchange rates than airport currency booths. Keep some local cash for small vendors and taxis. A travel card like Wise or Charles Schwab refunds ATM fees and uses mid-market exchange rates. Keep emergency cash in a hidden location in your bag separate from your wallet.` },
+  { keys:['insurance','travel insurance','cancel','trip protection','medical abroad','coverage','claim','emergency','evacuation'], ans:`Travel insurance is worth it for any trip over $1,000 or international travel. Look for plans covering trip cancellation, medical emergencies, and evacuation. Medical evacuation alone can cost $50,000+ without insurance. Compare plans on InsureMyTrip.com. Credit cards like Chase Sapphire often include decent trip protection — check your card benefits before buying a separate policy.` },
+  { keys:['kids','children','baby','toddler','stroller','family','child','infant','with kids','traveling with kids'], ans:`Packing with kids: bring double what you think you need for babies and toddlers — spills happen constantly. Snacks, a tablet loaded with offline content, and noise-cancelling headphones are lifesavers on long flights. Pack a change of clothes in your carry-on for both kids and yourself. Collapsible strollers are worth the investment. Check your airline's policy on car seats — many allow them as a free checked item.` },
+  { keys:['solo','alone','by myself','one person','traveling alone','solo travel','single traveler'], ans:`Solo travel tips: always share your itinerary with someone back home. Use a money belt or hidden pouch for passport and emergency cash. Book accommodations with good reviews for solo travelers — hostels have excellent common areas for meeting people. Stay in central locations to minimize late-night travel. Trust your instincts and don't be afraid to change plans. Solo travel is incredibly rewarding — you move at your own pace.` },
+  { keys:['cruise','ship','sailing','sea','ocean cruise','cruise ship','port','port day'], ans:`Cruise packing tips: formal nights are real — check your cruise line's dress code. Magnetic hooks are genius for cruise cabin walls. Pack motion sickness patches or Sea-Bands just in case. Leave room in your bag for port-day purchases. Bring a reusable water bottle for port excursions. A small backpack for shore days is essential. Don't pack more than you can comfortably carry off the ship on port days.` },
+  { keys:['hike','hiking','trail','trek','backpack','outdoors','camping','wilderness','national park','nature'], ans:`Hiking and outdoor packing: layer up — conditions change fast in the mountains. The ten essentials: navigation (map + compass), sun protection, insulation, illumination (headlamp), first aid, fire starter, repair tools, nutrition, hydration, and emergency shelter. Merino wool socks prevent blisters. Break in boots before the trip. Trekking poles save your knees on downhills. A lightweight emergency bivy weighs almost nothing and could save your life.` },
+  { keys:['food','allergy','diet','vegan','vegetarian','gluten','halal','kosher','dietary','restriction','nut allergy'], ans:`Traveling with dietary restrictions: research your destination's food culture in advance — some places have very limited vegan or gluten-free options. Carry allergy cards translated into the local language (TripLingo app helps). Pack backup snacks like protein bars, nuts, or jerky. Apps like HappyCow find vegan restaurants worldwide. Inform airlines of dietary needs at least 24 hours before departure for special meals.` },
+  { keys:['lost luggage','missing bag','delayed luggage','airline lost','baggage claim','missing suitcase'], ans:`If luggage is lost: report it immediately at the airline's baggage claim counter before leaving the airport — don't wait. Get a reference number and keep it. Airlines are required to compensate for delayed bags; keep receipts for essential purchases. Take photos of your bag and its contents before travel. Pack essentials (medication, valuables, one change of clothes) in your carry-on so a lost bag isn't a crisis. Most "lost" bags are just delayed and arrive within 48 hours.` },
+  { keys:['roll','rolling method','rolling clothes','bundle','fold vs roll'], ans:`Roll your clothes — it genuinely works. Rolling t-shirts, jeans, and casual wear saves 20-30% more space than folding and reduces wrinkles. For dress shirts and structured garments, use the bundle wrap method or dry-cleaning bags. Socks go inside shoes. Underwear fills gaps. Heavy items at the bottom (near wheels), lightest on top. Pack in reverse order of when you'll need things — first things out on top.` },
+  { keys:['shoes','footwear','boots','sneakers','heels','sandals','how many shoes'], ans:`Shoe packing rule: maximum 3 pairs and wear the bulkiest on the plane. One pair for walking (comfortable sneakers or walking shoes), one for nights out or smarter occasions, and flip flops or sandals if going somewhere warm. Shoes take up disproportionate space — choose versatile pairs that work for multiple occasions. Stuff socks inside shoes to maintain shape and save space.` },
+  { keys:['what to wear on plane','flight outfit','what to wear flying','airplane outfit','comfortable flight'], ans:`Best flight outfit: comfort is king. Wear layers — planes get cold. Compression socks reduce swelling on long flights. Slip-on shoes save time at security. A scarf doubles as a blanket. Avoid tight waistbands — cabin pressure causes bloating. Wear your heaviest/bulkiest items to reduce bag weight. Bring a clean outfit in your carry-on to change into — arriving fresh makes a huge difference.` },
 ]
 
 function getAIResponse(msg, context) {
   const q = msg.toLowerCase()
+
+  // Try full phrase matching first
   for (const entry of AI_KB) {
     if (entry.keys.some(k => q.includes(k))) return entry.ans
   }
-  if (q.includes('what should i pack') || q.includes('what to pack')) {
-    const dest = context.destination || 'your destination'
-    const t = context.tripType || 'leisure'
-    return `For a ${t.toLowerCase()} trip to ${dest}, your generated list covers the essentials. Key priorities: right clothing for the climate, comfortable walking shoes, all documents in your carry-on, and a portable charger. Anything specific you'd like advice on?`
+
+  // Try word-level fuzzy matching — split query into words and score each entry
+  const words = q.split(/\s+/).filter(w => w.length > 3)
+  let bestEntry = null, bestScore = 0
+  for (const entry of AI_KB) {
+    const score = words.reduce((s, w) => s + entry.keys.filter(k => k.includes(w) || w.includes(k)).length, 0)
+    if (score > bestScore) { bestScore = score; bestEntry = entry }
   }
-  if (q.includes('how many') || q.includes('how much')) {
+  if (bestScore >= 1 && bestEntry) return bestEntry.ans
+
+  if (q.includes('what should i pack') || q.includes('what to pack') || q.includes('packing list')) {
+    const dest = context.destination || 'your destination'
+    const tt = context.tripType || 'leisure'
+    return `For a ${tt.toLowerCase()} trip to ${dest}, your generated list covers the essentials. Key priorities: right clothing for the climate, comfortable walking shoes, all documents in your carry-on, and a portable charger. Anything specific you'd like advice on?`
+  }
+  if (q.includes('how many') || q.includes('how much') || q.includes('quantity') || q.includes('how long')) {
     return `Rule of thumb: pack for 7 days max and plan to do laundry if going longer. One outfit per day up to 5-6 days, then you're overpacking. For underwear and socks, pack one extra beyond what you need. Two pairs of shoes maximum — wear the heavier pair on the plane.`
   }
-  if (q.includes('hello') || q.includes('hi') || q.includes('hey')) {
-    return `Hey! I'm your packing assistant. Ask me about TSA rules, how to avoid baggage fees, what to pack for a specific climate, laundry tips for long trips, or anything else travel-related.`
+  if (q.includes('hello') || q.includes('hi') || q.includes('hey') || q.includes('help') || q.includes('start')) {
+    return `Hey! I'm your packing assistant. Ask me about TSA rules, avoiding baggage fees, cold weather packing, jet lag, travel insurance, photography gear, solo travel, traveling with kids, food restrictions — or anything else travel-related.`
   }
-  return `Great question! Try asking about something specific like TSA liquid rules, avoiding baggage fees, packing for cold weather, business travel tips, or how to minimize your bag for a long trip.`
+  if (q.includes('thank') || q.includes('thanks') || q.includes('great') || q.includes('awesome')) {
+    return `Happy to help! If you think of anything else — TSA rules, what to wear on the plane, how to beat jet lag — just ask.`
+  }
+
+  // Catch-all: suggest relevant topics based on partial context
+  const dest = context.destination
+  const tt = context.tripType
+  if (dest || tt) {
+    return `I'm not sure about that specific question, but for your ${tt ? tt.toLowerCase() + ' trip' : 'trip'}${dest ? ' to ' + dest : ''} — I can help with packing lists, TSA rules, baggage fees, weather gear, laundry tips, travel insurance, jet lag, or what to wear on the plane. What would be most useful?`
+  }
+  return `I can help with: TSA liquid rules, avoiding baggage fees, cold or hot weather packing, carry-on strategy, business travel, long trips and laundry, jet lag, travel insurance, kids, solo travel, and more. What do you want to know?`
 }
 
 const climateLabels = {
-  tropical:'Tropical 🌴', cold:'Cold ❄️', warm:'Warm & Mediterranean 🌞',
-  desert:'Arid / Desert 🏜', temperate:'Temperate 🌤',
+  tropical:'Tropical', cold:'Cold',
+  warm:'Warm & Mediterranean', desert:'Arid / Desert', temperate:'Temperate',
 }
 
 export default function PackPerfect() {
-  const [dark, setDark] = useState(true)
+  const [dark, setDark] = useState(false)
   const TABS = ['Packing List','Visual Aid','AI Assistant','Settings']
   const [activeTab, setActiveTab] = useState('Packing List')
   const [destInput, setDestInput] = useState('')
@@ -369,6 +406,7 @@ export default function PackPerfect() {
   const [chatMessages, setChatMessages] = useState([{ role:'assistant', content:"Hey! I'm your packing assistant. Ask me about TSA rules, baggage fees, packing for cold weather, long trips, and more." }])
   const [chatInput, setChatInput] = useState('')
   const [chatTyping, setChatTyping] = useState(false)
+  const [profile, setProfile] = useState({ name:'', homeCity:'', travelStyle:'Average', frequentFlyer:'Sometimes' })
   const chatEndRef = useRef(null)
   const destRef = useRef(null)
 
@@ -376,6 +414,7 @@ export default function PackPerfect() {
     try {
       const l = localStorage.getItem('pp_lists'); if (l) setSavedLists(JSON.parse(l))
       const d = localStorage.getItem('pp_dark'); if (d !== null) setDark(d === '1')
+      const p = localStorage.getItem('pp_profile'); if (p) setProfile(JSON.parse(p))
     } catch(e) {}
   }, [])
 
@@ -387,6 +426,7 @@ export default function PackPerfect() {
   }, [])
 
   const toggleDark = () => { const v = !dark; setDark(v); try{ localStorage.setItem('pp_dark', v ? '1' : '0') }catch(e){} }
+  const saveProfile = (updates) => { const u = { ...profile, ...updates }; setProfile(u); try{ localStorage.setItem('pp_profile', JSON.stringify(u)) }catch(e){} }
 
   const handleDestInput = (v) => {
     setDestInput(v)
@@ -552,10 +592,33 @@ export default function PackPerfect() {
     input[type=date]::-webkit-calendar-picker-indicator { filter:${dark?'invert(0.4)':'invert(0.6)'} }
     input[type=checkbox] { accent-color:#2563eb }
     .dest-sug:hover { background:${dark?'#0d1e35':'#eef2f8'} !important }
-    .item-row:hover { background:${dark?'#0a1523':'#f8fafb'} !important }
-    .tab-btn:hover { color:${t.text} !important }
+    .item-row { transition:background 120ms ease; }
+    .item-row:hover { background:${dark?'#0a1523':'#f0f4fa'} !important }
+    .tab-btn { transition:color 150ms ease, background 150ms ease, transform 150ms ease !important }
+    .tab-btn:hover { color:${t.text} !important; transform:translateY(-1px) }
+    .tab-btn:active { transform:translateY(0) scale(0.97) }
+    .btn-primary { transition:transform 150ms ease, box-shadow 150ms ease, filter 150ms ease !important }
+    .btn-primary:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(37,99,235,0.32); filter:brightness(1.08) }
+    .btn-primary:active { transform:translateY(0) scale(0.97); filter:brightness(0.96) }
+    .btn-pill { transition:transform 120ms ease, background 120ms ease, box-shadow 120ms ease !important }
+    .btn-pill:hover { transform:scale(1.05); box-shadow:0 2px 8px rgba(0,0,0,0.1) }
+    .btn-pill:active { transform:scale(0.96) }
+    .btn-ghost { transition:transform 150ms ease, background 150ms ease !important }
+    .btn-ghost:hover { transform:translateY(-1px); background:${dark?'rgba(37,99,235,0.12)':'rgba(37,99,235,0.08)'} !important }
+    .btn-ghost:active { transform:scale(0.97) }
+    .btn-toggle { transition:background 200ms ease !important }
     .cursor-blink::after { content:'▋'; animation:blink 0.7s infinite; margin-left:1px }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+    @media (prefers-reduced-motion:reduce) { *, *::before, *::after { transition-duration:0.01ms !important; animation-duration:0.01ms !important } }
+    @media (max-width:640px) {
+      .pp-header { flex-wrap:wrap; height:auto !important; padding:10px 14px !important; gap:6px; }
+      .pp-tabs { width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; padding-bottom:2px; justify-content:flex-start !important; }
+      .pp-tabs::-webkit-scrollbar { display:none; }
+      .pp-main { padding:14px 12px !important; }
+      .pp-grid-2 { grid-template-columns:1fr !important; }
+      .pp-tips-grid { grid-template-columns:1fr !important; }
+      .pp-chat-messages { min-height:260px !important; max-height:320px !important; }
+    }
   `
 
   return (
@@ -563,25 +626,26 @@ export default function PackPerfect() {
       <style>{CSS}</style>
 
       {/* HEADER */}
-      <div style={{ background:t.headerBg, borderBottom:`1px solid ${t.border}`, padding:'0 24px', display:'flex', alignItems:'center', justifyContent:'space-between', height:'56px', position:'sticky', top:0, zIndex:50 }}>
-        <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
+      <div className="pp-header" style={{ background:t.headerBg, borderBottom:`1px solid ${t.border}`, padding:'0 24px', display:'flex', alignItems:'center', justifyContent:'space-between', height:'56px', position:'sticky', top:0, zIndex:50 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:'10px', flexShrink:0 }}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={t.accent} strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.26 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.17 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.09a16 16 0 0 0 6 6l.46-.46a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16z"/></svg>
           <span style={{ fontSize:'16px', fontWeight:'600', color:t.text }}>PackPerfect</span>
           {destination && listGenerated && <span style={{ fontSize:'12px', color:t.textMuted, background:t.accentDim, padding:'2px 10px', borderRadius:'999px' }}>{destination}</span>}
         </div>
-        <div style={{ display:'flex', gap:'4px' }}>
+        <div className="pp-tabs" style={{ display:'flex', gap:'4px' }}>
           {TABS.map(tab => (
             <button key={tab} className="tab-btn" onClick={() => setActiveTab(tab)} style={{
               padding:'6px 13px', border:'none', borderRadius:'6px', cursor:'pointer', fontSize:'13px', fontFamily:"'Sora',sans-serif",
               background: activeTab === tab ? t.accentDim : 'transparent',
               color: activeTab === tab ? t.accent : t.textMuted,
               fontWeight: activeTab === tab ? '500' : '400',
+              whiteSpace:'nowrap',
             }}>{tab}</button>
           ))}
         </div>
       </div>
 
-      <div style={{ maxWidth:'860px', margin:'0 auto', padding:'24px 20px' }}>
+      <div className="pp-main" style={{ maxWidth:'860px', margin:'0 auto', padding:'24px 20px' }}>
 
         {/* ── PACKING LIST ── */}
         {activeTab === 'Packing List' && (
@@ -613,7 +677,7 @@ export default function PackPerfect() {
                 )}
 
                 {/* Dates */}
-                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
+                <div className="pp-grid-2" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
                   <div><label style={labelStyle}>Start Date</label><input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} style={inputStyle} /></div>
                   <div><label style={labelStyle}>End Date</label><input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} style={inputStyle} /></div>
                 </div>
@@ -630,7 +694,7 @@ export default function PackPerfect() {
                   <label style={labelStyle}>Trip Type</label>
                   <div style={{ display:'flex', gap:'7px', flexWrap:'wrap' }}>
                     {availableTripTypes.map(ty => (
-                      <button key={ty} onClick={() => setTripType(ty)} style={{
+                      <button key={ty} className="btn-pill" onClick={() => setTripType(ty)} style={{
                         ...t.pill(tripType === ty), borderRadius:'999px', padding:'5px 14px',
                         fontSize:'13px', fontWeight:'500', cursor:'pointer', fontFamily:"'Sora',sans-serif",
                       }}>{ty}</button>
@@ -644,8 +708,8 @@ export default function PackPerfect() {
                   </div>
                 )}
 
-                <button onClick={handleGenerate} style={{ ...btnPrimary, marginTop:'4px' }}>
-                  {listGenerated ? '🔄 Regenerate List' : '✨ Generate Packing List'}
+                <button className="btn-primary" onClick={handleGenerate} style={{ ...btnPrimary, marginTop:'4px' }}>
+                  {listGenerated ? 'Regenerate List' : 'Generate Packing List'}
                 </button>
               </div>
             </div>
@@ -656,7 +720,7 @@ export default function PackPerfect() {
                 {laundryNote && (
                   <div style={{ ...card, borderColor:'#f59e0b', background: dark ? 'rgba(245,158,11,0.08)' : 'rgba(245,158,11,0.06)', padding:'14px 18px' }}>
                     <p style={{ fontSize:'13px', color:'#f59e0b', fontWeight:'500' }}>
-                      🧺 Long trip detected — list capped at ~1 week of clothing. Plan on using a washing machine or laundromat. Hotels and Airbnbs almost always have laundry, and it beats hauling a month of clothes.
+                      Long trip detected — list capped at ~1 week of clothing. Plan on using a washing machine or laundromat. Hotels and Airbnbs almost always have laundry, and it beats hauling a month of clothes.
                     </p>
                   </div>
                 )}
@@ -729,7 +793,7 @@ export default function PackPerfect() {
                 {/* Weight tracker — main bag only vs 50lb limit */}
                 <div style={card}>
                   <div style={{ fontSize:'13px', fontWeight:'600', color:t.text, marginBottom:'14px' }}>Weight Tracker</div>
-                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px', marginBottom:'12px' }}>
+                  <div className="pp-grid-2" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px', marginBottom:'12px' }}>
                     {[{ label:'Main Suitcase', val:mainWeight, limit:true }, { label:'Carry-On', val:carryWeight, limit:false }].map(b => (
                       <div key={b.label} style={{ background:t.inputBg, borderRadius:'8px', padding:'12px', textAlign:'center', border:`1px solid ${b.limit && b.val > weightLimit ? '#dc2626' : t.border}` }}>
                         <div style={{ fontSize:'22px', fontWeight:'600', color: b.limit && b.val > weightLimit ? '#dc2626' : t.accent, fontFamily:"'JetBrains Mono',monospace" }}>{b.val.toFixed(1)}</div>
@@ -739,7 +803,7 @@ export default function PackPerfect() {
                   </div>
                   {mainOverLimit && (
                     <div style={{ fontSize:'12px', color:'#dc2626', padding:'8px 12px', background:'rgba(220,38,38,0.08)', borderRadius:'7px', marginBottom:'10px' }}>
-                      ⚠️ Main suitcase over 50 lbs — most airlines will charge overweight fees. Move some items to carry-on or leave them behind.
+                      Main suitcase over 50 lbs — most airlines will charge overweight fees. Move some items to carry-on or leave them behind.
                     </div>
                   )}
                   <div style={{ background:t.inputBg, borderRadius:'999px', height:'6px', overflow:'hidden' }}>
@@ -783,11 +847,11 @@ export default function PackPerfect() {
                   <div style={{ display:'flex', gap:'8px' }}>
                     <input value={customItem} onChange={e => setCustomItem(e.target.value)} placeholder="Item name..."
                       onKeyDown={e => e.key === 'Enter' && addCustomItem()} style={{ ...inputStyle, flex:1 }} />
-                    <button onClick={addCustomItem} style={{ ...btnPrimary, width:'auto', padding:'10px 18px' }}>Add</button>
+                    <button className="btn-primary" onClick={addCustomItem} style={{ ...btnPrimary, width:'auto', padding:'10px 18px' }}>Add</button>
                   </div>
                 </div>
 
-                <button onClick={saveList} style={btnPrimary}>💾 Save List</button>
+                <button className="btn-primary" onClick={saveList} style={btnPrimary}>Save List</button>
               </div>
             )}
           </div>
@@ -810,7 +874,7 @@ export default function PackPerfect() {
             </div>
             <div style={card}>
               <div style={{ fontSize:'11px', fontWeight:'600', color:t.textMuted, textTransform:'uppercase', letterSpacing:'0.09em', marginBottom:'14px' }}>Expert Packing Tips</div>
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'9px' }}>
+              <div className="pp-tips-grid" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'9px' }}>
                 {[
                   ['Rolling Method','Roll clothes instead of folding — saves up to 30% more space'],
                   ['Heaviest at Bottom','Pack heavy items near the wheels for better balance'],
@@ -846,7 +910,7 @@ export default function PackPerfect() {
                 </button>
               ))}
             </div>
-            <div style={{ padding:'16px', minHeight:'340px', maxHeight:'420px', overflowY:'auto', display:'flex', flexDirection:'column', gap:'10px' }}>
+            <div className="pp-chat-messages" style={{ padding:'16px', minHeight:'340px', maxHeight:'420px', overflowY:'auto', display:'flex', flexDirection:'column', gap:'10px' }}>
               {chatMessages.map((msg, i) => {
                 const isLast = i === chatMessages.length - 1
                 const isTypingMsg = chatTyping && isLast && msg.role === 'assistant'
@@ -871,7 +935,7 @@ export default function PackPerfect() {
               <input value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && sendChat()}
                 placeholder="Ask anything about packing..." disabled={chatTyping}
                 style={{ flex:1, padding:'10px 16px', background:t.inputBg, border:`1px solid ${t.border}`, borderRadius:'999px', fontSize:'14px', color:t.text, outline:'none', opacity: chatTyping ? 0.6 : 1 }} />
-              <button onClick={() => sendChat()} disabled={chatTyping} style={{ ...btnPrimary, width:'auto', padding:'10px 22px', borderRadius:'999px', opacity: chatTyping ? 0.6 : 1 }}>Send</button>
+              <button className="btn-primary" onClick={() => sendChat()} disabled={chatTyping} style={{ ...btnPrimary, width:'auto', padding:'10px 22px', borderRadius:'999px', opacity: chatTyping ? 0.6 : 1 }}>Send</button>
             </div>
           </div>
         )}
@@ -879,6 +943,42 @@ export default function PackPerfect() {
         {/* ── SETTINGS ── */}
         {activeTab === 'Settings' && (
           <div>
+            {/* Profile */}
+            <div style={card}>
+              <div style={{ fontSize:'11px', fontWeight:'600', color:t.textMuted, textTransform:'uppercase', letterSpacing:'0.09em', marginBottom:'18px' }}>Your Profile</div>
+              <div style={{ display:'grid', gap:'14px' }}>
+                <div>
+                  <label style={labelStyle}>Your Name</label>
+                  <input value={profile.name} onChange={e => saveProfile({ name: e.target.value })} placeholder="Enter your name..." style={inputStyle} />
+                </div>
+                <div>
+                  <label style={labelStyle}>Home City</label>
+                  <input value={profile.homeCity} onChange={e => saveProfile({ homeCity: e.target.value })} placeholder="Where do you usually travel from?" style={inputStyle} />
+                </div>
+                <div>
+                  <label style={labelStyle}>Packing Style</label>
+                  <div style={{ display:'flex', gap:'7px', flexWrap:'wrap' }}>
+                    {['Light Packer','Average','Heavy Packer'].map(s => (
+                      <button key={s} className="btn-pill" onClick={() => saveProfile({ travelStyle: s })} style={{ ...t.pill(profile.travelStyle === s), borderRadius:'999px', padding:'5px 14px', fontSize:'13px', fontWeight:'500', cursor:'pointer', fontFamily:"'Sora',sans-serif" }}>{s}</button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label style={labelStyle}>Frequent Flyer?</label>
+                  <div style={{ display:'flex', gap:'7px', flexWrap:'wrap' }}>
+                    {['Yes','Sometimes','No'].map(s => (
+                      <button key={s} className="btn-pill" onClick={() => saveProfile({ frequentFlyer: s })} style={{ ...t.pill(profile.frequentFlyer === s), borderRadius:'999px', padding:'5px 14px', fontSize:'13px', fontWeight:'500', cursor:'pointer', fontFamily:"'Sora',sans-serif" }}>{s}</button>
+                    ))}
+                  </div>
+                </div>
+                {profile.name && (
+                  <div style={{ padding:'10px 14px', background:t.accentDim, border:`1px solid ${t.borderStrong}`, borderRadius:'8px', fontSize:'13px', color:t.accent }}>
+                    Welcome, {profile.name}! Your preferences are saved automatically.
+                  </div>
+                )}
+              </div>
+            </div>
+
             <div style={card}>
               <div style={{ fontSize:'11px', fontWeight:'600', color:t.textMuted, textTransform:'uppercase', letterSpacing:'0.09em', marginBottom:'18px' }}>Appearance</div>
               <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
@@ -886,7 +986,7 @@ export default function PackPerfect() {
                   <div style={{ fontSize:'14px', fontWeight:'500', color:t.text }}>Dark Mode</div>
                   <div style={{ fontSize:'12px', color:t.textMuted, marginTop:'2px' }}>Toggle light / dark theme</div>
                 </div>
-                <button onClick={toggleDark} style={{ width:'48px', height:'26px', borderRadius:'999px', border:'none', cursor:'pointer', background: dark ? t.accent : t.border, position:'relative', transition:'background 0.2s' }}>
+                <button className="btn-toggle" onClick={toggleDark} style={{ width:'48px', height:'26px', borderRadius:'999px', border:'none', cursor:'pointer', background: dark ? t.accent : t.border, position:'relative' }}>
                   <div style={{ width:'20px', height:'20px', borderRadius:'50%', background:'white', position:'absolute', top:'3px', left: dark ? '25px' : '3px', transition:'left 0.2s' }} />
                 </button>
               </div>
@@ -906,7 +1006,7 @@ export default function PackPerfect() {
                       <div style={{ fontSize:'14px', fontWeight:'500', color:t.text }}>{list.destination}</div>
                       <div style={{ fontSize:'12px', color:t.textMuted, marginTop:'1px' }}>{list.tripType} · {list.date}</div>
                     </div>
-                    <button onClick={() => { setItems(list.items); setDestination(list.destination); setDestInput(list.destination); setTripType(list.tripType); setListGenerated(true); setActiveTab('Packing List') }}
+                    <button className="btn-ghost" onClick={() => { setItems(list.items); setDestination(list.destination); setDestInput(list.destination); setTripType(list.tripType); setListGenerated(true); setActiveTab('Packing List') }}
                       style={{ background:'transparent', color:t.accent, border:`1px solid ${t.borderStrong}`, borderRadius:'8px', padding:'6px 14px', fontSize:'12px', cursor:'pointer' }}>
                       Load
                     </button>
