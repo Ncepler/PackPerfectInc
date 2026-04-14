@@ -454,6 +454,7 @@ export default function PackPerfect() {
   const premiumLegRefs = useRef([])
   const [selectedDayIdx, setSelectedDayIdx] = useState(null)
   const [premiumSelectedDay, setPremiumSelectedDay] = useState(null) // { legIdx, dayIdx }
+  const [showFullscreenAd, setShowFullscreenAd] = useState(false)
 
   useEffect(() => {
     try {
@@ -691,6 +692,7 @@ export default function PackPerfect() {
     setItems(result.items)
     setLaundryNote(result.laundryNote)
     setListGenerated(true)
+    setShowFullscreenAd(true)
     fetchWeather(dest, startDate, endDate)
   }
 
@@ -799,6 +801,17 @@ export default function PackPerfect() {
   return (
     <div style={{ fontFamily:"'Sora',sans-serif", minHeight:'100vh', background:t.bg, color:t.text }}>
       <style>{CSS}</style>
+
+      {/* FULLSCREEN AD */}
+      {showFullscreenAd && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.7)', zIndex:999, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}>
+          <div style={{ position:'relative', background: dark ? '#0d1625' : '#ffffff', border:`2px solid ${t.border}`, borderRadius:'16px', width:'100%', maxWidth:'560px', aspectRatio:'16/9', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'10px' }}>
+            <button onClick={() => setShowFullscreenAd(false)} style={{ position:'absolute', top:'12px', right:'12px', background: dark ? '#1a2d4a' : '#e5e7eb', border:'none', borderRadius:'50%', width:'32px', height:'32px', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'16px', color:t.text, lineHeight:1 }}>✕</button>
+            <div style={{ fontSize:'11px', fontWeight:'700', color:t.textDim, textTransform:'uppercase', letterSpacing:'0.15em' }}>Advertisement</div>
+            <div style={{ fontSize:'36px', fontWeight:'700', color:t.textMuted }}>Ad</div>
+          </div>
+        </div>
+      )}
 
       {/* PREMIUM PASSWORD MODAL */}
       {showPremiumModal && (
@@ -1489,6 +1502,16 @@ export default function PackPerfect() {
           </div>
         )}
       </div>
+
+      {/* BANNER AD — hidden on Premium tab */}
+      {activeTab !== 'Premium' && (
+        <div style={{ borderTop:`1px solid ${t.border}`, padding:'12px 20px', display:'flex', alignItems:'center', justifyContent:'center' }}>
+          <div style={{ width:'100%', maxWidth:'860px', height:'72px', background: dark ? '#0a1523' : '#f0f3f8', border:`1px dashed ${t.border}`, borderRadius:'8px', display:'flex', alignItems:'center', justifyContent:'center', gap:'10px' }}>
+            <span style={{ fontSize:'10px', fontWeight:'700', color:t.textDim, textTransform:'uppercase', letterSpacing:'0.15em' }}>Advertisement</span>
+            <span style={{ fontSize:'20px', fontWeight:'700', color:t.textDim }}>Ad</span>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
