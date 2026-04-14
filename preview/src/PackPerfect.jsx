@@ -382,10 +382,33 @@ const climateLabels = {
   warm:'Warm & Mediterranean', desert:'Arid / Desert', temperate:'Temperate',
 }
 
+function mergePremiumItems(allItemSets) {
+  const merged = {}
+  for (const itemsObj of allItemSets) {
+    for (const [cat, catItems] of Object.entries(itemsObj)) {
+      if (!merged[cat]) merged[cat] = []
+      for (const item of catItems) {
+        const existing = merged[cat].find(i => i.name === item.name)
+        if (existing) {
+          existing.qty = Math.max(existing.qty, item.qty)
+        } else {
+          merged[cat].push({ ...item })
+        }
+      }
+    }
+  }
+  return merged
+}
+
 export default function PackPerfect() {
   const [dark, setDark] = useState(false)
-  const TABS = ['Packing List','Visual Aid','AI Assistant','Settings']
+  const TABS = ['Packing List','Visual Aid','AI Assistant','Settings','Premium']
   const [activeTab, setActiveTab] = useState('Packing List')
+
+  const handleTabClick = (tab) => {
+    if (tab === 'Premium' && !premiumUnlocked) { setShowPremiumModal(true); return }
+    setActiveTab(tab)
+  }
   const [destInput, setDestInput] = useState('')
   const [destination, setDestination] = useState('')
   const [climate, setClimate] = useState('temperate')
@@ -409,6 +432,26 @@ export default function PackPerfect() {
   const [profile, setProfile] = useState({ name:'', homeCity:'', travelStyle:'Average', frequentFlyer:'Sometimes' })
   const chatEndRef = useRef(null)
   const destRef = useRef(null)
+
+  // Premium state
+  const [premiumUnlocked, setPremiumUnlocked] = useState(false)
+  const [showPremiumModal, setShowPremiumModal] = useState(false)
+  const [premiumPasswordInput, setPremiumPasswordInput] = useState('')
+  const [premiumPasswordError, setPremiumPasswordError] = useState(false)
+  const [numLocations, setNumLocations] = useState(2)
+  const [premiumLegs, setPremiumLegs] = useState(
+    Array.from({length:5}, () => ({ destInput:'', destination:'', climate:'temperate', startDate:'', endDate:'', suggestions:[], showSug:false }))
+  )
+  const [premiumTripType, setPremiumTripType] = useState('Leisure')
+  const [premiumGenerated, setPremiumGenerated] = useState(false)
+  const [premiumItems, setPremiumItems] = useState({})
+  const [premiumLaundryNote, setPremiumLaundryNote] = useState(false)
+  const [premiumWeathers, setPremiumWeathers] = useState([])
+  const [premiumWeatherLoading, setPremiumWeatherLoading] = useState(false)
+  const [premiumWeatherErrors, setPremiumWeatherErrors] = useState([])
+  const [premiumVisImage, setPremiumVisImage] = useState(IMG_NORM)
+  const [premiumCustomItem, setPremiumCustomItem] = useState('')
+  const premiumLegRefs = useRef([])
 
   useEffect(() => {
     try {
@@ -505,6 +548,94 @@ export default function PackPerfect() {
       setWeatherError(`Weather unavailable: ${e.message}`)
     }
     setWeatherLoading(false)
+  }
+
+  // Premium helpers
+  const handlePremiumUnlock = () => {
+    if (premiumPasswordInput === 'Incubator') {
+      setPremiumUnlocked(true); setShowPremiumModal(false); setPremiumPasswordInput(''); setPremiumPasswordError(false); setActiveTab('Premium')
+    } else {
+      setPremiumPasswordError(true)
+    }
+  }
+
+  const updatePremiumLeg = (idx, updates) => {
+    setPremiumLegs(prev => prev.map((leg, i) => i === idx ? { ...leg, ...updates } : leg))
+  }
+
+  const handlePremiumDestInput = (idx, v) => {
+    const m = v.length >= 2 ? DESTINATIONS.filter(d => d.toLowerCase().includes(v.toLowerCase())).slice(0, 8) : []
+    updatePremiumLeg(idx, { destInput: v, suggestions: m, showSug: m.length > 0 })
+  }
+
+  const selectPremiumDest = (idx, d) => {
+    const c = classifyClimate(d)
+    updatePremiumLeg(idx, { destInput: d, destination: d, climate: c, showSug: false })
+  }
+
+  const getLegDays = (leg) => {
+    if (!leg.startDate || !leg.endDate) return 3
+    return Math.max(1, Math.ceil((new Date(leg.endDate) - new Date(leg.startDate)) / 86400000))
+  }
+
+  const fetchPremiumWeather = async (legs) => {
+    setPremiumWeatherLoading(true); setPremiumWeathers([]); setPremiumWeatherErrors([])
+    const results = [], errors = []
+    for (const leg of legs) {
+      if (!leg.destination) { results.push(null); errors.push(''); continue }
+      try {
+        const city = leg.destination.split(',')[0].trim()
+        const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`)
+        const geoData = await geoRes.json()
+        if (!geoData.results?.length) { results.push(null); errors.push(`Couldn't find: ${leg.destination}`); continue }
+        const { latitude, longitude, name, country } = geoData.results[0]
+        const today = new Date(); const todayStr = today.toISOString().split('T')[0]
+        let startD = leg.startDate || todayStr
+        let endD = leg.endDate
+        if (!endD) { const t2 = new Date(today); t2.setDate(t2.getDate() + 6); endD = t2.toISOString().split('T')[0] }
+        const maxDate = new Date(today); maxDate.setDate(today.getDate() + 15); const maxDateStr = maxDate.toISOString().split('T')[0]
+        if (startD < todayStr) startD = todayStr
+        if (endD > maxDateStr) endD = maxDateStr
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max&temperature_unit=fahrenheit&timezone=auto&start_date=${startD}&end_date=${endD}`
+        const wRes = await fetch(url); const wd = await wRes.json()
+        if (!wd.daily?.time?.length) { results.push(null); errors.push('No forecast available.'); continue }
+        results.push({ city: name, country, ...wd }); errors.push('')
+      } catch(e) { results.push(null); errors.push(`Weather unavailable: ${e.message}`) }
+    }
+    setPremiumWeathers(results); setPremiumWeatherErrors(errors); setPremiumWeatherLoading(false)
+    return results
+  }
+
+  const handlePremiumGenerate = async () => {
+    const legs = premiumLegs.slice(0, numLocations)
+    if (!legs.some(l => l.destination || l.destInput)) return
+    const resolvedLegs = legs.map(l => ({ ...l, destination: l.destination || l.destInput, climate: l.destination ? l.climate : classifyClimate(l.destInput) }))
+    const allItemSets = resolvedLegs.map(leg => generateList(premiumTripType, getLegDays(leg), leg.climate))
+    const merged = mergePremiumItems(allItemSets.map(r => r.items))
+    const totalDays = resolvedLegs.reduce((s, leg) => s + getLegDays(leg), 0)
+    setPremiumItems(merged); setPremiumLaundryNote(totalDays > 10); setPremiumGenerated(true)
+    const weatherResults = await fetchPremiumWeather(resolvedLegs)
+    const validWeathers = weatherResults.filter(Boolean)
+    if (validWeathers.length > 0) {
+      const allTemps = validWeathers.flatMap(w => w.daily.temperature_2m_max || [])
+      const overallAvg = allTemps.length > 0 ? allTemps.reduce((a,b) => a+b, 0) / allTemps.length : null
+      if (overallAvg !== null) {
+        if (premiumTripType === 'Business') setPremiumVisImage(IMG_BIZ)
+        else if (overallAvg >= 72) setPremiumVisImage(IMG_WARM)
+        else if (overallAvg < 50) setPremiumVisImage(IMG_COLD)
+        else setPremiumVisImage(IMG_NORM)
+      } else setPremiumVisImage(getVisualImage(resolvedLegs[0].climate, premiumTripType))
+    } else {
+      setPremiumVisImage(getVisualImage(resolvedLegs[0]?.climate || 'temperate', premiumTripType))
+    }
+  }
+
+  const togglePremiumPacked = (cat, idx) => setPremiumItems(p => { const u={...p}; u[cat]=[...u[cat]]; u[cat][idx]={...u[cat][idx], packed:!u[cat][idx].packed}; return u })
+  const togglePremiumBag = (cat, idx) => setPremiumItems(p => { const u={...p}; u[cat]=[...u[cat]]; u[cat][idx]={...u[cat][idx], bag:u[cat][idx].bag==='main'?'carry':'main'}; return u })
+  const addPremiumCustomItem = () => {
+    if (!premiumCustomItem.trim()) return
+    setPremiumItems(p => ({ ...p, Clothing: [...(p.Clothing||[]), { name:premiumCustomItem, qty:1, weight:0.5, packed:false, bag:'main' }] }))
+    setPremiumCustomItem('')
   }
 
   const handleGenerate = async () => {
@@ -625,6 +756,38 @@ export default function PackPerfect() {
     <div style={{ fontFamily:"'Sora',sans-serif", minHeight:'100vh', background:t.bg, color:t.text }}>
       <style>{CSS}</style>
 
+      {/* PREMIUM PASSWORD MODAL */}
+      {showPremiumModal && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.65)', zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}
+          onClick={e => { if (e.target === e.currentTarget) { setShowPremiumModal(false); setPremiumPasswordInput(''); setPremiumPasswordError(false) } }}>
+          <div style={{ background:t.surface, border:`1px solid ${t.border}`, borderRadius:'18px', padding:'36px 32px', maxWidth:'380px', width:'100%', textAlign:'center' }}>
+            <div style={{ fontSize:'32px', marginBottom:'10px' }}>✦</div>
+            <h2 style={{ fontSize:'20px', fontWeight:'600', color:t.text, marginBottom:'6px' }}>Premium Access</h2>
+            <p style={{ fontSize:'13px', color:t.textMuted, marginBottom:'26px', lineHeight:'1.6' }}>Enter the access code to unlock multi-location packing with live weather per destination</p>
+            <input
+              type="password"
+              value={premiumPasswordInput}
+              onChange={e => { setPremiumPasswordInput(e.target.value); setPremiumPasswordError(false) }}
+              onKeyDown={e => e.key === 'Enter' && handlePremiumUnlock()}
+              placeholder="Access code..."
+              autoFocus
+              style={{ ...inputStyle, marginBottom:'10px', textAlign:'center', letterSpacing:'0.2em', fontSize:'16px' }}
+            />
+            {premiumPasswordError && (
+              <p style={{ fontSize:'12px', color:'#dc2626', marginBottom:'10px' }}>Incorrect access code. Try again.</p>
+            )}
+            <button className="btn-primary" onClick={handlePremiumUnlock}
+              style={{ ...btnPrimary, background:'linear-gradient(135deg, #ca8a04, #d97706)', marginBottom:'10px' }}>
+              Unlock Premium
+            </button>
+            <button onClick={() => { setShowPremiumModal(false); setPremiumPasswordInput(''); setPremiumPasswordError(false) }}
+              style={{ background:'transparent', border:'none', color:t.textMuted, fontSize:'13px', cursor:'pointer', width:'100%', padding:'6px' }}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* HEADER */}
       <div className="pp-header" style={{ background:t.headerBg, borderBottom:`1px solid ${t.border}`, padding:'0 24px', display:'flex', alignItems:'center', justifyContent:'space-between', height:'56px', position:'sticky', top:0, zIndex:50 }}>
         <div style={{ display:'flex', alignItems:'center', gap:'10px', flexShrink:0 }}>
@@ -633,15 +796,23 @@ export default function PackPerfect() {
           {destination && listGenerated && <span style={{ fontSize:'12px', color:t.textMuted, background:t.accentDim, padding:'2px 10px', borderRadius:'999px' }}>{destination}</span>}
         </div>
         <div className="pp-tabs" style={{ display:'flex', gap:'4px' }}>
-          {TABS.map(tab => (
-            <button key={tab} className="tab-btn" onClick={() => setActiveTab(tab)} style={{
-              padding:'6px 13px', border:'none', borderRadius:'6px', cursor:'pointer', fontSize:'13px', fontFamily:"'Sora',sans-serif",
-              background: activeTab === tab ? t.accentDim : 'transparent',
-              color: activeTab === tab ? t.accent : t.textMuted,
-              fontWeight: activeTab === tab ? '500' : '400',
-              whiteSpace:'nowrap',
-            }}>{tab}</button>
-          ))}
+          {TABS.map(tab => {
+            const isPremium = tab === 'Premium'
+            const isActive = activeTab === tab
+            return (
+              <button key={tab} className="tab-btn" onClick={() => handleTabClick(tab)} style={{
+                padding:'6px 13px',
+                border: isPremium ? `1px solid ${isActive ? '#ca8a04' : 'rgba(202,138,4,0.35)'}` : 'none',
+                borderRadius:'6px', cursor:'pointer', fontSize:'13px', fontFamily:"'Sora',sans-serif",
+                background: isActive ? (isPremium ? 'rgba(202,138,4,0.12)' : t.accentDim) : 'transparent',
+                color: isPremium ? (isActive ? '#ca8a04' : 'rgba(202,138,4,0.75)') : (isActive ? t.accent : t.textMuted),
+                fontWeight: isActive ? '500' : '400',
+                whiteSpace:'nowrap',
+              }}>
+                {isPremium ? (premiumUnlocked ? '✦ Premium' : '🔒 Premium') : tab}
+              </button>
+            )
+          })}
         </div>
       </div>
 
@@ -937,6 +1108,255 @@ export default function PackPerfect() {
                 style={{ flex:1, padding:'10px 16px', background:t.inputBg, border:`1px solid ${t.border}`, borderRadius:'999px', fontSize:'14px', color:t.text, outline:'none', opacity: chatTyping ? 0.6 : 1 }} />
               <button className="btn-primary" onClick={() => sendChat()} disabled={chatTyping} style={{ ...btnPrimary, width:'auto', padding:'10px 22px', borderRadius:'999px', opacity: chatTyping ? 0.6 : 1 }}>Send</button>
             </div>
+          </div>
+        )}
+
+        {/* ── PREMIUM ── */}
+        {activeTab === 'Premium' && (
+          <div>
+            {/* Header banner */}
+            <div style={{ ...card, background: dark ? 'rgba(202,138,4,0.08)' : 'rgba(254,243,199,0.6)', borderColor:'rgba(202,138,4,0.35)', marginBottom:'16px' }}>
+              <div style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'4px' }}>
+                <span style={{ fontSize:'22px' }}>✦</span>
+                <h2 style={{ fontSize:'18px', fontWeight:'600', color:'#ca8a04' }}>Premium — Multi-Location Planner</h2>
+              </div>
+              <p style={{ fontSize:'13px', color:t.textMuted, lineHeight:'1.6' }}>
+                Plan a trip across multiple destinations. Specify your dates at each location and we'll fetch live weather for every leg and build a combined smart packing list.
+              </p>
+            </div>
+
+            {/* Setup form */}
+            <div style={card}>
+              {/* Number of locations */}
+              <div style={{ marginBottom:'20px' }}>
+                <label style={labelStyle}>Number of Locations</label>
+                <div style={{ display:'flex', gap:'7px' }}>
+                  {[2,3,4,5].map(n => (
+                    <button key={n} className="btn-pill" onClick={() => setNumLocations(n)} style={{
+                      ...t.pill(numLocations === n), borderRadius:'999px', padding:'5px 18px',
+                      fontSize:'14px', fontWeight:'500', cursor:'pointer', fontFamily:"'Sora',sans-serif",
+                    }}>{n}</button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Location cards */}
+              {Array.from({length: numLocations}, (_, idx) => {
+                const leg = premiumLegs[idx]
+                return (
+                  <div key={idx} style={{ border:`1px solid ${t.border}`, borderRadius:'10px', padding:'16px', marginBottom:'12px', background:t.inputBg }}>
+                    <div style={{ fontSize:'12px', fontWeight:'600', color:'#ca8a04', marginBottom:'12px', textTransform:'uppercase', letterSpacing:'0.08em' }}>
+                      Location {idx + 1}
+                    </div>
+                    <div style={{ position:'relative', marginBottom:'12px' }} ref={el => premiumLegRefs.current[idx] = el}>
+                      <label style={labelStyle}>Destination</label>
+                      <input
+                        value={leg.destInput}
+                        onChange={e => handlePremiumDestInput(idx, e.target.value)}
+                        onFocus={() => leg.destInput.length >= 2 && updatePremiumLeg(idx, { showSug: true })}
+                        placeholder="Search city or country..."
+                        style={inputStyle}
+                      />
+                      {leg.showSug && leg.suggestions.length > 0 && (
+                        <div style={{ position:'absolute', top:'calc(100% + 4px)', left:0, right:0, background:t.surface, border:`1px solid ${t.borderStrong}`, borderRadius:'8px', zIndex:200, overflow:'hidden' }}>
+                          {leg.suggestions.map(s => (
+                            <div key={s} className="dest-sug" onClick={() => selectPremiumDest(idx, s)}
+                              style={{ padding:'9px 13px', cursor:'pointer', fontSize:'14px', color:t.text, borderBottom:`1px solid ${t.border}` }}>{s}</div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    {leg.destination && (
+                      <div style={{ padding:'6px 10px', background:'rgba(202,138,4,0.08)', border:'1px solid rgba(202,138,4,0.25)', borderRadius:'6px', fontSize:'12px', color:'#ca8a04', marginBottom:'10px' }}>
+                        {climateLabels[leg.climate]} climate detected
+                      </div>
+                    )}
+                    <div className="pp-grid-2" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px' }}>
+                      <div>
+                        <label style={labelStyle}>Arrival Date</label>
+                        <input type="date" value={leg.startDate} onChange={e => updatePremiumLeg(idx, { startDate: e.target.value })} style={inputStyle} />
+                      </div>
+                      <div>
+                        <label style={labelStyle}>Departure Date</label>
+                        <input type="date" value={leg.endDate} onChange={e => updatePremiumLeg(idx, { endDate: e.target.value })} style={inputStyle} />
+                      </div>
+                    </div>
+                    {leg.startDate && leg.endDate && (
+                      <div style={{ fontSize:'12px', color:t.textMuted, marginTop:'8px' }}>
+                        {getLegDays(leg)} day{getLegDays(leg) !== 1 ? 's' : ''} in {leg.destination || 'this location'}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+
+              {/* Trip type */}
+              <div style={{ marginBottom:'18px' }}>
+                <label style={labelStyle}>Trip Type</label>
+                <div style={{ display:'flex', gap:'7px', flexWrap:'wrap' }}>
+                  {['Leisure','Beach','Adventure','Business','Family','Backpacking'].map(ty => (
+                    <button key={ty} className="btn-pill" onClick={() => setPremiumTripType(ty)} style={{
+                      ...t.pill(premiumTripType === ty), borderRadius:'999px', padding:'5px 14px',
+                      fontSize:'13px', fontWeight:'500', cursor:'pointer', fontFamily:"'Sora',sans-serif",
+                    }}>{ty}</button>
+                  ))}
+                </div>
+              </div>
+
+              <button className="btn-primary" onClick={handlePremiumGenerate}
+                style={{ ...btnPrimary, background:'linear-gradient(135deg, #ca8a04, #d97706)' }}>
+                {premiumGenerated ? 'Regenerate Multi-Location List' : 'Generate Multi-Location Packing List'}
+              </button>
+            </div>
+
+            {/* Results */}
+            {premiumGenerated && (
+              <div>
+                {premiumLaundryNote && (
+                  <div style={{ ...card, borderColor:'#f59e0b', background: dark ? 'rgba(245,158,11,0.08)' : 'rgba(245,158,11,0.06)', padding:'14px 18px' }}>
+                    <p style={{ fontSize:'13px', color:'#f59e0b', fontWeight:'500' }}>
+                      Long multi-leg trip — clothing capped at ~1 week per leg. Plan on laundry at some stops.
+                    </p>
+                  </div>
+                )}
+
+                {/* Visual image */}
+                <div style={{ ...card, marginBottom:'12px' }}>
+                  <div style={{ fontSize:'11px', fontWeight:'600', color:'#ca8a04', textTransform:'uppercase', letterSpacing:'0.09em', marginBottom:'10px' }}>
+                    Visual Aid — based on average temperatures across all destinations
+                  </div>
+                  <img src={premiumVisImage} alt="Packing visual" style={{ width:'100%', borderRadius:'10px', display:'block' }} />
+                </div>
+
+                {/* Weather per leg */}
+                {premiumWeatherLoading && (
+                  <div style={{ ...card, textAlign:'center', color:t.textMuted, fontSize:'13px', padding:'16px' }}>
+                    Fetching forecasts for all locations...
+                  </div>
+                )}
+                {!premiumWeatherLoading && premiumWeathers.map((w, idx) => {
+                  const leg = premiumLegs[idx]
+                  if (!leg?.destination) return null
+                  const err = premiumWeatherErrors[idx]
+                  if (err && !w) return (
+                    <div key={idx} style={{ ...card, borderColor:'#dc2626' }}>
+                      <p style={{ fontSize:'13px', color:'#dc2626' }}>Location {idx+1} — {err}</p>
+                    </div>
+                  )
+                  if (!w) return null
+                  const temps = w.daily.temperature_2m_max || []
+                  const codes = w.daily.weather_code || []
+                  const rains = w.daily.precipitation_probability_max || []
+                  const avgHigh = Math.round(temps.reduce((a,b) => a+b, 0) / temps.length)
+                  const rainDays = codes.filter(c => [51,53,55,61,63,65,66,67,80,81,82].includes(c)).length
+                  const snowDays = codes.filter(c => [71,73,75,77,85,86].includes(c)).length
+                  const tip = getPackingTip(avgHigh, rainDays, snowDays)
+                  return (
+                    <div key={idx} style={{ ...card, borderColor: dark ? 'rgba(202,138,4,0.35)' : 'rgba(202,138,4,0.25)' }}>
+                      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'10px' }}>
+                        <div>
+                          <div style={{ fontSize:'13px', fontWeight:'600', color:'#ca8a04', marginBottom:'2px' }}>Location {idx+1}</div>
+                          <div style={{ fontSize:'15px', fontWeight:'600', color:t.text }}>{w.city}, {w.country}</div>
+                          <div style={{ fontSize:'12px', color:t.textMuted, marginTop:'2px' }}>
+                            {leg.startDate && leg.endDate ? `${leg.startDate} → ${leg.endDate}` : '7-day forecast'}
+                          </div>
+                        </div>
+                        <span style={{ fontSize:'12px', color:'#ca8a04', background:'rgba(202,138,4,0.1)', padding:'3px 10px', borderRadius:'6px', border:'1px solid rgba(202,138,4,0.3)', flexShrink:0 }}>Live</span>
+                      </div>
+                      <div style={{ padding:'9px 12px', background:'rgba(202,138,4,0.08)', borderRadius:'8px', fontSize:'13px', marginBottom:'12px' }}>
+                        <span style={{ color:'#ca8a04', fontWeight:'500' }}>Avg high ~{avgHigh}°F</span>
+                        {rainDays > 0 && <span style={{ color:t.textMuted }}> · {rainDays} rainy day{rainDays>1?'s':''}</span>}
+                        {snowDays > 0 && <span style={{ color:t.textMuted }}> · {snowDays} snowy day{snowDays>1?'s':''}</span>}
+                        <span style={{ color:t.textMuted }}> — {tip}</span>
+                      </div>
+                      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(86px, 1fr))', gap:'8px' }}>
+                        {w.daily.time.map((date, i) => {
+                          const wc = getWeatherCode(codes[i]); const icon = wc.split(' ')[0]; const label = wc.split(' ').slice(1).join(' ')
+                          const isToday = date === new Date().toISOString().split('T')[0]
+                          const high = Math.round(temps[i]); const low = Math.round(w.daily.temperature_2m_min[i]); const rain = rains[i]
+                          return (
+                            <div key={i} style={{ background: isToday ? 'rgba(202,138,4,0.1)' : t.inputBg, border:`1px solid ${isToday ? '#ca8a04' : t.border}`, borderRadius:'10px', padding:'11px 7px', textAlign:'center' }}>
+                              <div style={{ fontSize:'10px', color:t.textMuted, marginBottom:'6px', fontWeight:'500' }}>
+                                {new Date(date+'T12:00:00').toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' })}
+                              </div>
+                              <div style={{ fontSize:'20px', marginBottom:'6px' }}>{icon}</div>
+                              <div style={{ fontSize:'15px', fontWeight:'600', color:t.text, fontFamily:"'JetBrains Mono',monospace" }}>{high}°F</div>
+                              <div style={{ fontSize:'11px', color:t.textMuted, fontFamily:"'JetBrains Mono',monospace", marginTop:'1px' }}>{low}°F</div>
+                              <div style={{ fontSize:'10px', color:'#ca8a04', marginTop:'4px', fontWeight:'500' }}>{label}</div>
+                              <div style={{ fontSize:'10px', color:t.textDim, marginTop:'2px' }}>{rain}% rain</div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )
+                })}
+
+                {/* Weight tracker */}
+                {(() => {
+                  const pAllItems = Object.values(premiumItems).flat()
+                  const pMain = pAllItems.filter(i => i.bag === 'main'); const pCarry = pAllItems.filter(i => i.bag === 'carry')
+                  const pMainW = pMain.reduce((s,i) => s + i.weight*i.qty, 0); const pCarryW = pCarry.reduce((s,i) => s + i.weight*i.qty, 0)
+                  const pPacked = pAllItems.filter(i => i.packed).length; const pOver = pMainW > 50
+                  return (
+                    <div style={card}>
+                      <div style={{ fontSize:'13px', fontWeight:'600', color:t.text, marginBottom:'14px' }}>Weight Tracker</div>
+                      <div className="pp-grid-2" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px', marginBottom:'12px' }}>
+                        {[{ label:'Main Suitcase', val:pMainW, limit:true }, { label:'Carry-On', val:pCarryW, limit:false }].map(b => (
+                          <div key={b.label} style={{ background:t.inputBg, borderRadius:'8px', padding:'12px', textAlign:'center', border:`1px solid ${b.limit && b.val > 50 ? '#dc2626' : t.border}` }}>
+                            <div style={{ fontSize:'22px', fontWeight:'600', color: b.limit && b.val > 50 ? '#dc2626' : '#ca8a04', fontFamily:"'JetBrains Mono',monospace" }}>{b.val.toFixed(1)}</div>
+                            <div style={{ fontSize:'11px', color:t.textMuted, marginTop:'2px' }}>{b.label} lbs{b.limit ? ' / 50 max' : ''}</div>
+                          </div>
+                        ))}
+                      </div>
+                      {pOver && <div style={{ fontSize:'12px', color:'#dc2626', padding:'8px 12px', background:'rgba(220,38,38,0.08)', borderRadius:'7px', marginBottom:'10px' }}>Main suitcase over 50 lbs — move some items to carry-on.</div>}
+                      <div style={{ background:t.inputBg, borderRadius:'999px', height:'6px', overflow:'hidden' }}>
+                        <div style={{ background: pOver ? '#dc2626' : '#ca8a04', height:'100%', width:`${Math.min((pMainW/50)*100,100).toFixed(1)}%`, borderRadius:'999px', transition:'width 0.4s' }} />
+                      </div>
+                      <div style={{ display:'flex', justifyContent:'space-between', marginTop:'7px', fontSize:'12px', color:t.textMuted }}>
+                        <span>{pPacked}/{pAllItems.length} packed</span>
+                        <span style={{ fontFamily:"'JetBrains Mono',monospace", color: pOver ? '#dc2626' : t.textMuted }}>Main: {pMainW.toFixed(1)} / 50 lbs</span>
+                      </div>
+                    </div>
+                  )
+                })()}
+
+                {/* Combined packing list */}
+                {Object.entries(premiumItems).map(([cat, catItems]) => catItems.length === 0 ? null : (
+                  <div key={cat} style={card}>
+                    <div style={{ fontSize:'11px', fontWeight:'600', color:'#ca8a04', textTransform:'uppercase', letterSpacing:'0.09em', marginBottom:'12px' }}>
+                      {cat} <span style={{ color:t.textDim }}>({catItems.length})</span>
+                    </div>
+                    {catItems.map((item, i) => (
+                      <div key={i} className="item-row" style={{ display:'flex', alignItems:'center', gap:'10px', padding:'8px 6px', borderRadius:'6px', borderBottom: i < catItems.length-1 ? `1px solid ${t.border}` : 'none' }}>
+                        <input type="checkbox" checked={item.packed} onChange={() => togglePremiumPacked(cat, i)} style={{ width:'15px', height:'15px', flexShrink:0, cursor:'pointer' }} />
+                        <span style={{ flex:1, fontSize:'14px', color: item.packed ? t.textDim : t.text, textDecoration: item.packed ? 'line-through' : 'none' }}>
+                          {item.name} <span style={{ color:t.textDim, fontSize:'12px', fontFamily:"'JetBrains Mono',monospace" }}>×{item.qty}</span>
+                        </span>
+                        <span style={{ fontSize:'11px', color:t.textDim, fontFamily:"'JetBrains Mono',monospace" }}>{item.weight} lb</span>
+                        <button onClick={() => togglePremiumBag(cat, i)} style={{
+                          fontSize:'11px', background:'rgba(202,138,4,0.1)', color:'#ca8a04', border:'1px solid rgba(202,138,4,0.3)',
+                          padding:'2px 10px', borderRadius:'999px', cursor:'pointer', fontWeight:'500', whiteSpace:'nowrap',
+                        }}>
+                          {item.bag === 'carry' ? 'Carry-On' : 'Main'}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+
+                {/* Add custom item */}
+                <div style={card}>
+                  <div style={{ fontSize:'11px', fontWeight:'600', color:'#ca8a04', textTransform:'uppercase', letterSpacing:'0.09em', marginBottom:'12px' }}>Add Item</div>
+                  <div style={{ display:'flex', gap:'8px' }}>
+                    <input value={premiumCustomItem} onChange={e => setPremiumCustomItem(e.target.value)} placeholder="Item name..."
+                      onKeyDown={e => e.key === 'Enter' && addPremiumCustomItem()} style={{ ...inputStyle, flex:1 }} />
+                    <button className="btn-primary" onClick={addPremiumCustomItem}
+                      style={{ ...btnPrimary, width:'auto', padding:'10px 18px', background:'#ca8a04' }}>Add</button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
