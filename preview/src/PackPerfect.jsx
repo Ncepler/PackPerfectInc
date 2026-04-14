@@ -452,6 +452,8 @@ export default function PackPerfect() {
   const [premiumVisImage, setPremiumVisImage] = useState(IMG_NORM)
   const [premiumCustomItem, setPremiumCustomItem] = useState('')
   const premiumLegRefs = useRef([])
+  const [selectedDayIdx, setSelectedDayIdx] = useState(null)
+  const [premiumSelectedDay, setPremiumSelectedDay] = useState(null) // { legIdx, dayIdx }
 
   useEffect(() => {
     try {
@@ -539,10 +541,11 @@ export default function PackPerfect() {
       if (startD < todayStr) startD = todayStr
       if (endD > maxDateStr) endD = maxDateStr
 
-      const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max&temperature_unit=fahrenheit&timezone=auto&start_date=${startD}&end_date=${endD}`
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max&hourly=temperature_2m,weather_code,precipitation_probability,wind_speed_10m&temperature_unit=fahrenheit&timezone=auto&start_date=${startD}&end_date=${endD}`
       const wRes = await fetch(url)
       const wd = await wRes.json()
       if (!wd.daily?.time?.length) { setWeatherError('No forecast available for these dates.'); setWeatherLoading(false); return }
+      setSelectedDayIdx(null)
       setWeather({ city: name, country, ...wd })
     } catch(e) {
       setWeatherError(`Weather unavailable: ${e.message}`)
@@ -578,6 +581,47 @@ export default function PackPerfect() {
     return Math.max(1, Math.ceil((new Date(leg.endDate) - new Date(leg.startDate)) / 86400000))
   }
 
+  const renderHourlyPanel = (weatherData, dayIdx, accentColor) => {
+    if (!weatherData?.hourly?.time?.length) return null
+    const baseIdx = dayIdx * 24
+    const hours = [0, 3, 6, 9, 12, 15, 18, 21].map(h => {
+      const i = baseIdx + h
+      const timeStr = weatherData.hourly.time[i] || ''
+      const hourNum = parseInt(timeStr.split('T')[1]?.split(':')[0] ?? '0')
+      const label = hourNum === 0 ? '12am' : hourNum < 12 ? `${hourNum}am` : hourNum === 12 ? '12pm' : `${hourNum - 12}pm`
+      const wc = getWeatherCode(weatherData.hourly.weather_code?.[i] ?? 0)
+      return {
+        label,
+        icon: wc.split(' ')[0],
+        condition: wc.split(' ').slice(1).join(' '),
+        temp: Math.round(weatherData.hourly.temperature_2m?.[i] ?? 0),
+        precip: weatherData.hourly.precipitation_probability?.[i] ?? 0,
+        wind: Math.round(weatherData.hourly.wind_speed_10m?.[i] ?? 0),
+      }
+    })
+    const dayLabel = weatherData.daily.time[dayIdx]
+      ? new Date(weatherData.daily.time[dayIdx] + 'T12:00:00').toLocaleDateString('en-US', { weekday:'long', month:'short', day:'numeric' })
+      : ''
+    return (
+      <div style={{ marginTop:'10px', padding:'14px', background:t.inputBg, borderRadius:'10px', border:`1px solid ${t.border}` }}>
+        <div style={{ fontSize:'11px', fontWeight:'600', color:accentColor, textTransform:'uppercase', letterSpacing:'0.09em', marginBottom:'10px' }}>
+          Hourly — {dayLabel}
+        </div>
+        <div style={{ display:'flex', gap:'7px', overflowX:'auto', paddingBottom:'4px' }}>
+          {hours.map((h, i) => (
+            <div key={i} style={{ flexShrink:0, textAlign:'center', background:t.surface, border:`1px solid ${t.border}`, borderRadius:'8px', padding:'10px 8px', minWidth:'62px' }}>
+              <div style={{ fontSize:'11px', color:t.textMuted, fontWeight:'500', marginBottom:'5px' }}>{h.label}</div>
+              <div style={{ fontSize:'18px', marginBottom:'4px' }}>{h.icon}</div>
+              <div style={{ fontSize:'14px', fontWeight:'600', color:t.text, fontFamily:"'JetBrains Mono',monospace" }}>{h.temp}°F</div>
+              <div style={{ fontSize:'10px', color:accentColor, marginTop:'4px' }}>{h.precip}% 💧</div>
+              <div style={{ fontSize:'10px', color:t.textMuted, marginTop:'2px' }}>{h.wind} mph</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
   const fetchPremiumWeather = async (legs) => {
     setPremiumWeatherLoading(true); setPremiumWeathers([]); setPremiumWeatherErrors([])
     const results = [], errors = []
@@ -596,7 +640,7 @@ export default function PackPerfect() {
         const maxDate = new Date(today); maxDate.setDate(today.getDate() + 15); const maxDateStr = maxDate.toISOString().split('T')[0]
         if (startD < todayStr) startD = todayStr
         if (endD > maxDateStr) endD = maxDateStr
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max&temperature_unit=fahrenheit&timezone=auto&start_date=${startD}&end_date=${endD}`
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max&hourly=temperature_2m,weather_code,precipitation_probability,wind_speed_10m&temperature_unit=fahrenheit&timezone=auto&start_date=${startD}&end_date=${endD}`
         const wRes = await fetch(url); const wd = await wRes.json()
         if (!wd.daily?.time?.length) { results.push(null); errors.push('No forecast available.'); continue }
         results.push({ city: name, country, ...wd }); errors.push('')
@@ -934,17 +978,20 @@ export default function PackPerfect() {
                         <span style={{ color:t.textMuted }}> — {tip}</span>
                       </div>
                       {/* Day cards */}
+                      <div style={{ fontSize:'11px', color:t.textDim, marginBottom:'8px' }}>Tap a day for hourly breakdown</div>
                       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(86px, 1fr))', gap:'8px' }}>
                         {weather.daily.time.map((date, i) => {
                           const wc = getWeatherCode(codes[i])
                           const icon = wc.split(' ')[0]
                           const label = wc.split(' ').slice(1).join(' ')
                           const isToday = date === new Date().toISOString().split('T')[0]
+                          const isSelected = selectedDayIdx === i
                           const high = Math.round(temps[i])
                           const low = Math.round(weather.daily.temperature_2m_min[i])
                           const rain = rains[i]
                           return (
-                            <div key={i} style={{ background: isToday ? t.accentDim : t.inputBg, border:`1px solid ${isToday ? t.accent : t.border}`, borderRadius:'10px', padding:'11px 7px', textAlign:'center' }}>
+                            <div key={i} onClick={() => setSelectedDayIdx(prev => prev === i ? null : i)}
+                              style={{ background: isSelected ? t.accentDim : isToday ? t.accentDim : t.inputBg, border:`1px solid ${isSelected ? t.accent : isToday ? t.accent : t.border}`, borderRadius:'10px', padding:'11px 7px', textAlign:'center', cursor:'pointer', outline: isSelected ? `2px solid ${t.accent}` : 'none', outlineOffset:'2px' }}>
                               <div style={{ fontSize:'10px', color:t.textMuted, marginBottom:'6px', fontWeight:'500' }}>
                                 {new Date(date+'T12:00:00').toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' })}
                               </div>
@@ -957,6 +1004,7 @@ export default function PackPerfect() {
                           )
                         })}
                       </div>
+                      {selectedDayIdx !== null && renderHourlyPanel(weather, selectedDayIdx, t.accent)}
                     </div>
                   )
                 })()}
@@ -1269,13 +1317,16 @@ export default function PackPerfect() {
                         {snowDays > 0 && <span style={{ color:t.textMuted }}> · {snowDays} snowy day{snowDays>1?'s':''}</span>}
                         <span style={{ color:t.textMuted }}> — {tip}</span>
                       </div>
+                      <div style={{ fontSize:'11px', color:t.textDim, marginBottom:'8px' }}>Tap a day for hourly breakdown</div>
                       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(86px, 1fr))', gap:'8px' }}>
                         {w.daily.time.map((date, i) => {
                           const wc = getWeatherCode(codes[i]); const icon = wc.split(' ')[0]; const label = wc.split(' ').slice(1).join(' ')
                           const isToday = date === new Date().toISOString().split('T')[0]
+                          const isSelected = premiumSelectedDay?.legIdx === idx && premiumSelectedDay?.dayIdx === i
                           const high = Math.round(temps[i]); const low = Math.round(w.daily.temperature_2m_min[i]); const rain = rains[i]
                           return (
-                            <div key={i} style={{ background: isToday ? 'rgba(202,138,4,0.1)' : t.inputBg, border:`1px solid ${isToday ? '#ca8a04' : t.border}`, borderRadius:'10px', padding:'11px 7px', textAlign:'center' }}>
+                            <div key={i} onClick={() => setPremiumSelectedDay(prev => prev?.legIdx === idx && prev?.dayIdx === i ? null : { legIdx: idx, dayIdx: i })}
+                              style={{ background: isSelected ? 'rgba(202,138,4,0.15)' : isToday ? 'rgba(202,138,4,0.1)' : t.inputBg, border:`1px solid ${isSelected ? '#ca8a04' : isToday ? '#ca8a04' : t.border}`, borderRadius:'10px', padding:'11px 7px', textAlign:'center', cursor:'pointer', outline: isSelected ? '2px solid #ca8a04' : 'none', outlineOffset:'2px' }}>
                               <div style={{ fontSize:'10px', color:t.textMuted, marginBottom:'6px', fontWeight:'500' }}>
                                 {new Date(date+'T12:00:00').toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' })}
                               </div>
@@ -1288,6 +1339,7 @@ export default function PackPerfect() {
                           )
                         })}
                       </div>
+                      {premiumSelectedDay?.legIdx === idx && premiumSelectedDay?.dayIdx !== undefined && renderHourlyPanel(w, premiumSelectedDay.dayIdx, '#ca8a04')}
                     </div>
                   )
                 })}
