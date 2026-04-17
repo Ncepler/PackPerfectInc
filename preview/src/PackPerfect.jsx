@@ -632,7 +632,7 @@ function mergePremiumItems(allItemSets) {
 
 export default function PackPerfect() {
   const [dark, setDark] = useState(false)
-  const TABS = ['Packing List','Visual Aid','AI Assistant','Settings','Premium']
+  const TABS = ['Packing List','Visual Aid','AI Assistant','Settings','About','Premium']
   const [activeTab, setActiveTab] = useState('Packing List')
 
   const handleTabClick = (tab) => {
@@ -1855,6 +1855,60 @@ export default function PackPerfect() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {activeTab === 'About' && (
+          <div>
+            <div style={{ ...card, padding: 0, overflow: 'hidden' }}>
+              <img src="/img-team.jpg" alt="PackPerfect team" style={{ width: '100%', maxHeight: '280px', objectFit: 'cover', display: 'block' }} />
+            </div>
+            <div style={card}>
+              <div style={{ fontSize: '22px', fontWeight: '700', color: t.text, marginBottom: '10px' }}>About Us – PackPerfect</div>
+              <p style={{ fontSize: '14px', color: t.textMuted, lineHeight: '1.7', marginBottom: '16px' }}>
+                At PackPerfect, we believe packing shouldn't be stressful—it should be simple, efficient, and even a little satisfying.
+              </p>
+              <p style={{ fontSize: '14px', color: t.textMuted, lineHeight: '1.7', marginBottom: '20px' }}>
+                PackPerfect was created to solve a problem almost every traveler faces: overpacking, underpacking, and the frustration of not knowing how to fit everything into your bag. Instead of generic lists, we offer step-by-step visual guidance that shows you exactly how to pack smarter.
+              </p>
+              <div style={{ fontSize: '13px', fontWeight: '600', color: t.text, marginBottom: '12px' }}>Our app helps you:</div>
+              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {['Maximize space in your suitcase', 'Stay organized with easy-to-follow visuals', 'Pack efficiently for any trip'].map(item => (
+                  <li key={item} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', color: t.textMuted }}>
+                    <span style={{ width: '20px', height: '20px', borderRadius: '50%', background: t.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    </span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <p style={{ fontSize: '14px', color: t.textMuted, lineHeight: '1.7', marginBottom: '28px' }}>
+                Whether you're heading on a weekend getaway or a long vacation, PackPerfect takes the guesswork out of packing—so you can focus on enjoying your trip.
+              </p>
+              <div style={{ borderTop: `1px solid ${t.border}`, paddingTop: '24px' }}>
+                <div style={{ fontSize: '17px', fontWeight: '700', color: t.text, marginBottom: '10px' }}>Our Team</div>
+                <p style={{ fontSize: '14px', color: t.textMuted, lineHeight: '1.7', marginBottom: '18px' }}>
+                  PackPerfect is built by a team of students in INCubator at Roslyn High School. By combining creativity and cooperation we made our app to solve the issue of packing.
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {[
+                    { name: 'Hannah Friedmann', role: 'CEO', desc: 'Vision, product strategy, and leadership' },
+                    { name: 'Noah Cepler', role: 'CFO', desc: 'Financial planning and business strategy' },
+                    { name: 'Alana Borkon', role: 'COO', desc: 'Operations and team management' },
+                    { name: 'Ben Zarkin', role: 'CMO', desc: 'Marketing, branding, and user growth' },
+                    { name: 'Jude Rock', role: 'CTO', desc: 'App development and technology' },
+                  ].map(({ name, role, desc }) => (
+                    <div key={name} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                      <span style={{ minWidth: '44px', fontSize: '11px', fontWeight: '700', color: t.accent, background: dark ? 'rgba(99,102,241,0.15)' : 'rgba(99,102,241,0.1)', borderRadius: '6px', padding: '3px 6px', textAlign: 'center', marginTop: '1px' }}>{role}</span>
+                      <div>
+                        <div style={{ fontSize: '14px', fontWeight: '600', color: t.text }}>{name}</div>
+                        <div style={{ fontSize: '13px', color: t.textMuted }}>{desc}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>
