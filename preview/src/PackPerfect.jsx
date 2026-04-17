@@ -208,12 +208,16 @@ function smartQty(base, cap) {
 function generateList(tripType, days, climate) {
   const needsLaundryNote = days > 10
 
-  // Sensible caps per category
-  const shirtCap = 7, pantCap = 4, undyCap = 8, sockCap = 8
+  // Scale to ~7-day laundry cycle: 1.2x days-until-laundry, rounded
+  const cycleLen = Math.min(days, 7)
+  const socks  = Math.round(cycleLen * 1.2)
+  const undies = Math.round(cycleLen * 1.2)
 
+  const shirtCap = 7, pantCap = 4
   const shirts = smartQty(Math.min(days + 1, 12), shirtCap)
-  const undies = smartQty(Math.min(days + 1, 12), undyCap)
-  const socks  = smartQty(Math.min(days + 1, 12), sockCap)
+
+  // Swimsuits scale with trip length: 2 for <1wk, +1 per additional week, max 5
+  const swimsuits = Math.min(2 + Math.floor(days / 7), 5)
 
   const clothing = []
   const footwear = []
@@ -268,13 +272,13 @@ function generateList(tripType, days, climate) {
     documents.push({ name:'Business Cards', qty:1, weight:0.1, packed:false, bag:'carry' })
   } else if (tripType === 'Beach') {
     clothing.push(
-      { name:'Swimsuit', qty:2, weight:0.3, packed:false, bag:'main' },
+      { name:'Swimsuit', qty:swimsuits, weight:0.3, packed:false, bag:'main' },
       { name:'Shorts', qty:Math.min(days, 5), weight:0.4, packed:false, bag:'main' },
       { name:'T-Shirts', qty:shirts, weight:0.5, packed:false, bag:'main' },
       { name:'Cover-Up', qty:1, weight:0.3, packed:false, bag:'main' },
       { name:'Light Dress / Linen Shirt', qty:2, weight:0.3, packed:false, bag:'main' },
       { name:'Underwear', qty:undies, weight:0.2, packed:false, bag:'main' },
-      { name:'Socks', qty:Math.ceil(socks / 2), weight:0.2, packed:false, bag:'main' },
+      { name:'Socks', qty:Math.max(2, Math.round(cycleLen * 0.5)), weight:0.2, packed:false, bag:'main' },
     )
     footwear.push(
       { name:'Sandals', qty:1, weight:1.0, packed:false, bag:'main' },
@@ -354,9 +358,8 @@ function generateList(tripType, days, climate) {
   if (climate === 'tropical') {
     if (!toiletries.find(i => i.name.includes('Sunscreen')))
       toiletries.push({ name:'Sunscreen SPF 50', qty:2, weight:0.5, packed:false, bag:'main' })
-    health.push({ name:'Malaria Prevention', qty:1, weight:0.1, packed:false, bag:'carry' })
     if (!clothing.find(i => i.name === 'Swimsuit'))
-      clothing.push({ name:'Swimsuit', qty:1, weight:0.3, packed:false, bag:'main' })
+      clothing.push({ name:'Swimsuit', qty:swimsuits, weight:0.3, packed:false, bag:'main' })
   } else if (climate === 'cold') {
     clothing.push(
       { name:'Heavy Winter Coat', qty:1, weight:3.5, packed:false, bag:'main' },
