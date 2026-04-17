@@ -1896,7 +1896,7 @@ export default function PackPerfect() {
                     { name: 'Noah Cepler', role: 'CFO', desc: 'Financial planning and business strategy' },
                     { name: 'Alana Borkon', role: 'COO', desc: 'Operations and team management' },
                     { name: 'Ben Zarkin', role: 'CMO', desc: 'Marketing, branding, and user growth' },
-                    { name: 'Jude Rock', role: 'CTO', desc: 'App development and technology' },
+                    { name: 'Jude Rock', role: 'JDR', desc: 'Jude Rock' },
                   ].map(({ name, role, desc }) => (
                     <div key={name} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
                       <span style={{ minWidth: '44px', fontSize: '11px', fontWeight: '700', color: t.accent, background: dark ? 'rgba(99,102,241,0.15)' : 'rgba(99,102,241,0.1)', borderRadius: '6px', padding: '3px 6px', textAlign: 'center', marginTop: '1px' }}>{role}</span>
