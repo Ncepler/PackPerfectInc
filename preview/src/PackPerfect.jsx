@@ -161,6 +161,119 @@ const DESTINATIONS = [
   'Caracas, Venezuela','Asuncion, Paraguay',
 ]
 
+const SUITCASES = [
+  // Away
+  { id:'away-co',       brand:'Away',               name:'The Carry-On',                    size:'carry-on', dimensions:'21.7" × 13.7" × 9"',   liters:39,  weightLbs:7.8  },
+  { id:'away-bco',      brand:'Away',               name:'The Bigger Carry-On',             size:'carry-on', dimensions:'22.7" × 14.7" × 9.6"', liters:47,  weightLbs:8.4  },
+  { id:'away-ci',       brand:'Away',               name:'The Check-In (Medium)',            size:'medium',   dimensions:'24.5" × 15.6" × 10.6"',liters:58,  weightLbs:9.1  },
+  { id:'away-med',      brand:'Away',               name:'The Medium',                      size:'medium',   dimensions:'26.2" × 17.8" × 11"',  liters:69,  weightLbs:9.7  },
+  { id:'away-lg',       brand:'Away',               name:'The Large',                       size:'large',    dimensions:'29.2" × 20.5" × 12.5"',liters:92,  weightLbs:10.5 },
+  { id:'away-cop',      brand:'Away',               name:'The Carry-On with Pocket',        size:'carry-on', dimensions:'21.7" × 13.7" × 9"',   liters:39,  weightLbs:8.6  },
+  { id:'away-lgflex',   brand:'Away',               name:'The Large Flex',                  size:'large',    dimensions:'30.0" × 20.5" × 13.0"',liters:105, weightLbs:11.2 },
+  { id:'away-kids',     brand:'Away',               name:'The Kids Carry-On',               size:'carry-on', dimensions:'18.7" × 12.7" × 8"',   liters:28,  weightLbs:5.4  },
+  // Samsonite
+  { id:'sam-omni20',    brand:'Samsonite',          name:'Omni PC Hardside 20"',            size:'carry-on', dimensions:'20" × 14.5" × 9.5"',   liters:35,  weightLbs:7.5  },
+  { id:'sam-omni24',    brand:'Samsonite',          name:'Omni PC Hardside 24"',            size:'medium',   dimensions:'24" × 17.5" × 11.5"',  liters:70,  weightLbs:9.0  },
+  { id:'sam-omni28',    brand:'Samsonite',          name:'Omni PC Hardside 28"',            size:'large',    dimensions:'28" × 19.5" × 13"',    liters:100, weightLbs:10.5 },
+  { id:'sam-win20',     brand:'Samsonite',          name:'Winfield 2 Hardside 20"',         size:'carry-on', dimensions:'20" × 14" × 9"',        liters:38,  weightLbs:7.7  },
+  { id:'sam-win24',     brand:'Samsonite',          name:'Winfield 2 Hardside 24"',         size:'medium',   dimensions:'24" × 17" × 11"',       liters:62,  weightLbs:8.8  },
+  { id:'sam-win28',     brand:'Samsonite',          name:'Winfield 2 Hardside 28"',         size:'large',    dimensions:'28" × 19" × 12.5"',    liters:90,  weightLbs:10.2 },
+  { id:'sam-free21',    brand:'Samsonite',          name:'Freeform Hardside 21"',           size:'carry-on', dimensions:'21.5" × 15.5" × 9.5"', liters:42,  weightLbs:7.9  },
+  { id:'sam-free25',    brand:'Samsonite',          name:'Freeform Hardside 25"',           size:'medium',   dimensions:'25" × 17.5" × 11"',    liters:78,  weightLbs:9.5  },
+  { id:'sam-free28',    brand:'Samsonite',          name:'Freeform Hardside 28"',           size:'large',    dimensions:'28" × 19.5" × 12.5"',  liters:98,  weightLbs:10.8 },
+  { id:'sam-sol22',     brand:'Samsonite',          name:'Solyte DLX Softside 22"',         size:'carry-on', dimensions:'22" × 14" × 9"',        liters:44,  weightLbs:8.2  },
+  // Tumi
+  { id:'tumi-a3co',     brand:'Tumi',               name:'Alpha 3 Intl Carry-On',           size:'carry-on', dimensions:'22" × 14" × 9"',        liters:38,  weightLbs:9.0  },
+  { id:'tumi-a3med',    brand:'Tumi',               name:'Alpha 3 Medium Trip',             size:'medium',   dimensions:'26" × 18" × 11"',       liters:67,  weightLbs:10.5 },
+  { id:'tumi-a3lg',     brand:'Tumi',               name:'Alpha 3 Extended Trip',           size:'large',    dimensions:'30" × 21" × 12"',       liters:100, weightLbs:12.8 },
+  { id:'tumi-19co',     brand:'Tumi',               name:'19 Degree Aluminum Carry-On',     size:'carry-on', dimensions:'21.5" × 15" × 8"',     liters:26,  weightLbs:12.1 },
+  { id:'tumi-19med',    brand:'Tumi',               name:'19 Degree Aluminum Medium',       size:'medium',   dimensions:'25.5" × 17" × 11"',    liters:55,  weightLbs:14.3 },
+  { id:'tumi-19lg',     brand:'Tumi',               name:'19 Degree Aluminum Large',        size:'large',    dimensions:'29" × 20" × 12"',       liters:81,  weightLbs:16.5 },
+  { id:'tumi-v4co',     brand:'Tumi',               name:'V4 International Carry-On',       size:'carry-on', dimensions:'22" × 14" × 9"',        liters:36,  weightLbs:8.2  },
+  { id:'tumi-v4lg',     brand:'Tumi',               name:'V4 Large Trip Expandable',        size:'large',    dimensions:'30" × 20.5" × 12"',    liters:80,  weightLbs:11.8 },
+  // Rimowa
+  { id:'rim-esscab',    brand:'Rimowa',             name:'Essential Cabin',                 size:'carry-on', dimensions:'21.7" × 15.8" × 9.1"', liters:36,  weightLbs:6.6  },
+  { id:'rim-esschm',    brand:'Rimowa',             name:'Essential Check-In M',            size:'medium',   dimensions:'25.6" × 17.8" × 10.6"',liters:68,  weightLbs:8.8  },
+  { id:'rim-esschl',    brand:'Rimowa',             name:'Essential Check-In L',            size:'large',    dimensions:'29.3" × 19.7" × 12"',  liters:87,  weightLbs:10.6 },
+  { id:'rim-origcab',   brand:'Rimowa',             name:'Original Cabin',                  size:'carry-on', dimensions:'21.7" × 15.8" × 9.1"', liters:36,  weightLbs:8.4  },
+  { id:'rim-origm',     brand:'Rimowa',             name:'Original Check-In M',             size:'medium',   dimensions:'25.6" × 17.8" × 10.6"',liters:68,  weightLbs:11.0 },
+  { id:'rim-origl',     brand:'Rimowa',             name:'Original Check-In L',             size:'large',    dimensions:'29.3" × 19.7" × 12"',  liters:87,  weightLbs:12.8 },
+  { id:'rim-classcab',  brand:'Rimowa',             name:'Classic Cabin',                   size:'carry-on', dimensions:'21.7" × 15.8" × 9.1"', liters:33,  weightLbs:9.3  },
+  { id:'rim-essplusco', brand:'Rimowa',             name:'Essential Plus Cabin',            size:'carry-on', dimensions:'21.7" × 15.8" × 9.1"', liters:38,  weightLbs:7.9  },
+  // Briggs & Riley
+  { id:'br-baseco',     brand:'Briggs & Riley',     name:'Baseline Carry-On',               size:'carry-on', dimensions:'22" × 14" × 9"',        liters:39,  weightLbs:7.9  },
+  { id:'br-basemed',    brand:'Briggs & Riley',     name:'Baseline Medium Expandable',      size:'medium',   dimensions:'25" × 17.5" × 11"',    liters:66,  weightLbs:9.8  },
+  { id:'br-baselg',     brand:'Briggs & Riley',     name:'Baseline Large Expandable',       size:'large',    dimensions:'29" × 20" × 13"',       liters:93,  weightLbs:11.5 },
+  { id:'br-usco',       brand:'Briggs & Riley',     name:'U.S. Carry-On Expandable',        size:'carry-on', dimensions:'22" × 14" × 9"',        liters:43,  weightLbs:8.4  },
+  { id:'br-torq',       brand:'Briggs & Riley',     name:'Torq Hardside Carry-On',          size:'carry-on', dimensions:'21.5" × 15" × 9"',     liters:34,  weightLbs:8.6  },
+  { id:'br-symmed',     brand:'Briggs & Riley',     name:'Sympatico Medium Expandable',     size:'medium',   dimensions:'25" × 18" × 11.5"',    liters:72,  weightLbs:9.2  },
+  // Travelpro
+  { id:'tp-plat22',     brand:'Travelpro',          name:'Platinum Elite Carry-On 22"',     size:'carry-on', dimensions:'22" × 14" × 9"',        liters:43,  weightLbs:8.0  },
+  { id:'tp-platci',     brand:'Travelpro',          name:'Platinum Elite Large Check-In',   size:'large',    dimensions:'29" × 20" × 13"',       liters:100, weightLbs:11.3 },
+  { id:'tp-max5co',     brand:'Travelpro',          name:'Maxlite 5 Carry-On 22"',          size:'carry-on', dimensions:'22" × 14" × 9"',        liters:39,  weightLbs:5.9  },
+  { id:'tp-max5med',    brand:'Travelpro',          name:'Maxlite 5 Medium 25"',            size:'medium',   dimensions:'25" × 17" × 11"',       liters:66,  weightLbs:7.1  },
+  { id:'tp-max5lg',     brand:'Travelpro',          name:'Maxlite 5 Large 29"',             size:'large',    dimensions:'29" × 20" × 13"',       liters:94,  weightLbs:8.6  },
+  { id:'tp-crew5co',    brand:'Travelpro',          name:'Crew Classic Carry-On 22"',       size:'carry-on', dimensions:'22" × 14" × 9"',        liters:41,  weightLbs:7.4  },
+  { id:'tp-walk6',      brand:'Travelpro',          name:'Walkabout 6 Carry-On',            size:'carry-on', dimensions:'21.5" × 14" × 9"',     liters:36,  weightLbs:5.7  },
+  { id:'tp-crewess',    brand:'Travelpro',          name:'Crew Essential Carry-On',         size:'carry-on', dimensions:'22" × 14.5" × 9"',     liters:45,  weightLbs:7.5  },
+  // Delsey
+  { id:'del-chat20',    brand:'Delsey',             name:'Chatelet Hard+ Carry-On 20"',     size:'carry-on', dimensions:'20" × 14" × 9"',        liters:38,  weightLbs:8.5  },
+  { id:'del-chat25',    brand:'Delsey',             name:'Chatelet Hard+ Medium 25"',       size:'medium',   dimensions:'25" × 17.5" × 11"',    liters:79,  weightLbs:10.3 },
+  { id:'del-chat28',    brand:'Delsey',             name:'Chatelet Hard+ Large 28"',        size:'large',    dimensions:'28" × 19.5" × 12.5"',  liters:99,  weightLbs:12.0 },
+  { id:'del-hel21',     brand:'Delsey',             name:'Helium Aero 21"',                 size:'carry-on', dimensions:'21.5" × 14" × 9"',     liters:35,  weightLbs:6.6  },
+  { id:'del-hel25',     brand:'Delsey',             name:'Helium Aero 25"',                 size:'medium',   dimensions:'25" × 17" × 10.5"',    liters:72,  weightLbs:8.1  },
+  { id:'del-hel29',     brand:'Delsey',             name:'Helium Aero 29"',                 size:'large',    dimensions:'29" × 19.5" × 12.5"',  liters:107, weightLbs:9.7  },
+  { id:'del-tur21',     brand:'Delsey',             name:'Turenne Carry-On 21"',            size:'carry-on', dimensions:'21" × 14.5" × 8.5"',   liters:36,  weightLbs:9.4  },
+  // American Tourister
+  { id:'at-moon21',     brand:'American Tourister', name:'Moonlight Carry-On 21"',          size:'carry-on', dimensions:'21" × 14.5" × 9.5"',   liters:33,  weightLbs:6.8  },
+  { id:'at-moon24',     brand:'American Tourister', name:'Moonlight 24"',                   size:'medium',   dimensions:'24" × 17" × 11.5"',    liters:65,  weightLbs:8.4  },
+  { id:'at-moon28',     brand:'American Tourister', name:'Moonlight 28"',                   size:'large',    dimensions:'28" × 19.5" × 13"',    liters:91,  weightLbs:9.9  },
+  { id:'at-str21',      brand:'American Tourister', name:'Stratum Hardside 21"',            size:'carry-on', dimensions:'21" × 15" × 9"',        liters:36,  weightLbs:7.1  },
+  { id:'at-str25',      brand:'American Tourister', name:'Stratum Hardside 25"',            size:'medium',   dimensions:'25" × 17.5" × 11"',    liters:68,  weightLbs:8.9  },
+  { id:'at-str29',      brand:'American Tourister', name:'Stratum Hardside 29"',            size:'large',    dimensions:'29" × 20" × 13.5"',    liters:95,  weightLbs:10.4 },
+  { id:'at-tri21',      brand:'American Tourister', name:'Triumph DX Carry-On 21"',         size:'carry-on', dimensions:'21" × 14" × 9"',        liters:38,  weightLbs:7.4  },
+  // Victorinox
+  { id:'vic-spec21',    brand:'Victorinox',         name:'Spectra 3.0 Carry-On 21"',        size:'carry-on', dimensions:'21.5" × 15" × 9"',     liters:36,  weightLbs:8.0  },
+  { id:'vic-spec25',    brand:'Victorinox',         name:'Spectra 3.0 Medium 25"',          size:'medium',   dimensions:'25" × 17.5" × 11"',    liters:67,  weightLbs:9.5  },
+  { id:'vic-spec29',    brand:'Victorinox',         name:'Spectra 3.0 Large 29"',           size:'large',    dimensions:'29" × 19.5" × 12.5"',  liters:93,  weightLbs:10.8 },
+  { id:'vic-conn21',    brand:'Victorinox',         name:'Connex Carry-On 21"',             size:'carry-on', dimensions:'21" × 14.5" × 9"',     liters:39,  weightLbs:7.6  },
+  { id:'vic-conn29',    brand:'Victorinox',         name:'Connex Large 29"',                size:'large',    dimensions:'29" × 20" × 13"',       liters:75,  weightLbs:10.2 },
+  // Bric's
+  { id:'brics-lifeco',  brand:"Bric's",             name:'Life Carry-On 21"',               size:'carry-on', dimensions:'21" × 15" × 9"',        liters:35,  weightLbs:7.2  },
+  { id:'brics-lifemed', brand:"Bric's",             name:'Life Medium 27"',                 size:'medium',   dimensions:'27" × 17" × 11"',       liters:65,  weightLbs:9.0  },
+  { id:'brics-ulco',    brand:"Bric's",             name:'Ulisse Carry-On 21"',             size:'carry-on', dimensions:'21" × 15" × 9.5"',     liters:40,  weightLbs:7.8  },
+  { id:'brics-ulmed',   brand:"Bric's",             name:'Ulisse Medium 27"',               size:'medium',   dimensions:'27" × 18" × 12"',       liters:78,  weightLbs:10.2 },
+  // Ricardo Beverly Hills
+  { id:'ric-cab21',     brand:'Ricardo',            name:'Cabrillo 2.0 Carry-On 21"',      size:'carry-on', dimensions:'21" × 14" × 9"',        liters:38,  weightLbs:6.5  },
+  { id:'ric-cab25',     brand:'Ricardo',            name:'Cabrillo 2.0 Medium 25"',        size:'medium',   dimensions:'25" × 17" × 11"',       liters:67,  weightLbs:8.2  },
+  { id:'ric-sea21',     brand:'Ricardo',            name:'Sea Cliff 21"',                   size:'carry-on', dimensions:'21" × 14.5" × 9"',     liters:36,  weightLbs:6.8  },
+  { id:'ric-sea25',     brand:'Ricardo',            name:'Sea Cliff 25"',                   size:'medium',   dimensions:'25" × 17" × 11"',       liters:64,  weightLbs:8.0  },
+  // Hartmann
+  { id:'hart-vig22',    brand:'Hartmann',           name:'Vigor 22" Carry-On',              size:'carry-on', dimensions:'22" × 14.5" × 9"',     liters:40,  weightLbs:8.4  },
+  { id:'hart-vig26',    brand:'Hartmann',           name:'Vigor 26" Medium',                size:'medium',   dimensions:'26" × 18" × 11.5"',    liters:75,  weightLbs:10.1 },
+  { id:'hart-inn22',    brand:'Hartmann',           name:'Innovaire 22" Carry-On',          size:'carry-on', dimensions:'22" × 14" × 9"',        liters:38,  weightLbs:8.0  },
+  { id:'hart-inn27',    brand:'Hartmann',           name:'Innovaire 27" Medium',            size:'medium',   dimensions:'27" × 18" × 11"',       liters:68,  weightLbs:9.8  },
+  // Eagle Creek
+  { id:'ec-migco',      brand:'Eagle Creek',        name:'Migrate Carry-On 22"',            size:'carry-on', dimensions:'22" × 14" × 9"',        liters:36,  weightLbs:6.4  },
+  { id:'ec-mig26',      brand:'Eagle Creek',        name:'Migrate 26" Medium',              size:'medium',   dimensions:'26" × 17.5" × 11"',    liters:68,  weightLbs:8.0  },
+  { id:'ec-mig29',      brand:'Eagle Creek',        name:'Migrate 29" Large',               size:'large',    dimensions:'29" × 20" × 13"',       liters:96,  weightLbs:9.4  },
+  // Osprey
+  { id:'osp-oz22',      brand:'Osprey',             name:'Ozone 22" Carry-On',              size:'carry-on', dimensions:'22" × 14" × 9"',        liters:38,  weightLbs:7.6  },
+  { id:'osp-oz26',      brand:'Osprey',             name:'Ozone 26" Medium',                size:'medium',   dimensions:'26" × 17.5" × 11"',    liters:65,  weightLbs:9.1  },
+  { id:'osp-transp',    brand:'Osprey',             name:'Transporter Carry-On',            size:'carry-on', dimensions:'21.5" × 14" × 9"',     liters:36,  weightLbs:7.0  },
+  // CalPak
+  { id:'cal-ambco',     brand:'CalPak',             name:'Ambeur Carry-On 20"',             size:'carry-on', dimensions:'20" × 13.5" × 9"',     liters:35,  weightLbs:6.2  },
+  { id:'cal-amblg',     brand:'CalPak',             name:'Ambeur Large 28"',                size:'large',    dimensions:'28" × 19.5" × 13"',    liters:80,  weightLbs:9.3  },
+  { id:'cal-hue',       brand:'CalPak',             name:'Hue Carry-On 20"',                size:'carry-on', dimensions:'20" × 14" × 9"',        liters:38,  weightLbs:6.8  },
+  { id:'cal-huemed',    brand:'CalPak',             name:'Hue Medium 24"',                  size:'medium',   dimensions:'24" × 17" × 11"',       liters:62,  weightLbs:8.1  },
+  // Kenneth Cole Reaction
+  { id:'kc-otw20',      brand:'Kenneth Cole',       name:'Out of This World 20"',           size:'carry-on', dimensions:'20" × 14" × 9"',        liters:35,  weightLbs:7.0  },
+  { id:'kc-otw24',      brand:'Kenneth Cole',       name:'Out of This World 24"',           size:'medium',   dimensions:'24" × 17" × 11"',       liters:65,  weightLbs:8.8  },
+  { id:'kc-otw28',      brand:'Kenneth Cole',       name:'Out of This World 28"',           size:'large',    dimensions:'28" × 19.5" × 13"',    liters:90,  weightLbs:10.2 },
+]
+
+const SUITCASE_BRANDS = [...new Set(SUITCASES.map(s => s.brand))]
+
 function classifyClimate(dest) {
   const d = dest.toLowerCase()
   if (/miami|bali|bangkok|phuket|cancun|maldives|hawaii|honolulu|koh samui|singapore|jamaica|barbados|bahamas|fiji|tahiti|bora bora|seychelles|mauritius|zanzibar|punta cana|tulum|playa|key west|da nang|hoi an|goa|cartagena|cairns|darwin|gold coast|panama|costa rica|cebu|colombo|rio|sao paulo|rio de janeiro|guatemala|antigua|lake atitlan|tikal|belize|roatan|manuel antonio|galapagos|mombasa|accra|lagos|dakar|florianopolis|salvador|fortaleza|okinawa|langkawi|lombok|boracay|palawan|luang prabang|vientiane|mandalay|krabi|koh|maui|lahaina|hilo|kauai|nadi|vanuatu|port vila|papeete|reunion|ho chi minh|hanoi|ha long|phnom penh|yangon/.test(d)) return 'tropical'
@@ -205,15 +318,18 @@ function smartQty(base, cap) {
   return cap  // will add laundry note
 }
 
-function generateList(tripType, days, climate) {
+function generateList(tripType, days, climate, liters = 69) {
   const needsLaundryNote = days > 10
+
+  // Capacity factor: carry-on squeezes items, large bag allows more
+  const capFactor = liters < 45 ? 0.7 : liters > 80 ? 1.2 : 1.0
 
   // Scale to ~7-day laundry cycle: 1.2x days-until-laundry, rounded
   const cycleLen = Math.min(days, 7)
-  const socks  = Math.round(cycleLen * 1.2)
-  const undies = Math.round(cycleLen * 1.2)
+  const socks  = Math.max(1, Math.round(cycleLen * 1.2 * capFactor))
+  const undies = Math.max(1, Math.round(cycleLen * 1.2 * capFactor))
 
-  const shirtCap = 7, pantCap = 4
+  const shirtCap = Math.max(3, Math.round(7 * capFactor)), pantCap = Math.max(2, Math.round(4 * capFactor))
   const shirts = smartQty(Math.min(days + 1, 12), shirtCap)
 
   // Swimsuits scale with trip length: 2 for <1wk, +1 per additional week, max 5
@@ -534,7 +650,9 @@ export default function PackPerfect() {
   const [listGenerated, setListGenerated] = useState(false)
   const [items, setItems] = useState({})
   const [laundryNote, setLaundryNote] = useState(false)
-  const [weightLimit] = useState(50) // main bag only
+  const [weightLimit] = useState(50)
+  const [selectedSuitcase, setSelectedSuitcase] = useState(null)
+  const [suitcaseBrandFilter, setSuitcaseBrandFilter] = useState('')
   const [customItem, setCustomItem] = useState('')
   const [weather, setWeather] = useState(null)
   const [weatherLoading, setWeatherLoading] = useState(false)
@@ -578,6 +696,7 @@ export default function PackPerfect() {
       const l = localStorage.getItem('pp_lists'); if (l) setSavedLists(JSON.parse(l))
       const d = localStorage.getItem('pp_dark'); if (d !== null) setDark(d === '1')
       const p = localStorage.getItem('pp_profile'); if (p) setProfile(JSON.parse(p))
+      const sc = localStorage.getItem('pp_suitcase'); if (sc) { const found = SUITCASES.find(s => s.id === sc); if (found) setSelectedSuitcase(found) }
     } catch(e) {}
   }, [])
 
@@ -772,7 +891,7 @@ export default function PackPerfect() {
     const legs = premiumLegs.slice(0, numLocations)
     if (!legs.some(l => l.destination || l.destInput)) return
     const resolvedLegs = legs.map(l => ({ ...l, destination: l.destination || l.destInput, climate: l.destination ? l.climate : classifyClimate(l.destInput) }))
-    const allItemSets = resolvedLegs.map(leg => generateList(premiumTripType, getLegDays(leg), leg.climate))
+    const allItemSets = resolvedLegs.map(leg => generateList(premiumTripType, getLegDays(leg), leg.climate, selectedSuitcase?.liters ?? 69))
     const merged = mergePremiumItems(allItemSets.map(r => r.items))
     const totalDays = resolvedLegs.reduce((s, leg) => s + getLegDays(leg), 0)
     setPremiumItems(merged); setPremiumLaundryNote(totalDays > 10); setPremiumGenerated(true)
@@ -805,7 +924,7 @@ export default function PackPerfect() {
     if (!dest) return
     setDestination(dest)
     const c = classifyClimate(dest); setClimate(c)
-    const result = generateList(tripType, getDays(), c)
+    const result = generateList(tripType, getDays(), c, selectedSuitcase?.liters ?? 69)
     setItems(result.items)
     setLaundryNote(result.laundryNote)
     setListGenerated(false)
@@ -1628,6 +1747,74 @@ export default function PackPerfect() {
                 {profile.name && (
                   <div style={{ padding:'10px 14px', background:t.accentDim, border:`1px solid ${t.borderStrong}`, borderRadius:'8px', fontSize:'13px', color:t.accent }}>
                     Welcome, {profile.name}! Your preferences are saved automatically.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Suitcase Selector */}
+            <div style={card}>
+              <div style={{ fontSize:'11px', fontWeight:'600', color:t.textMuted, textTransform:'uppercase', letterSpacing:'0.09em', marginBottom:'18px' }}>My Suitcase</div>
+              <div style={{ display:'grid', gap:'12px' }}>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px' }}>
+                  <div>
+                    <label style={labelStyle}>Brand</label>
+                    <select value={suitcaseBrandFilter} onChange={e => setSuitcaseBrandFilter(e.target.value)}
+                      style={{ ...inputStyle, cursor:'pointer' }}>
+                      <option value=''>All Brands</option>
+                      {SUITCASE_BRANDS.map(b => <option key={b} value={b}>{b}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Model</label>
+                    <select value={selectedSuitcase?.id ?? ''} onChange={e => {
+                      const found = SUITCASES.find(s => s.id === e.target.value) || null
+                      setSelectedSuitcase(found)
+                      try { localStorage.setItem('pp_suitcase', found ? found.id : '') } catch(_) {}
+                    }} style={{ ...inputStyle, cursor:'pointer' }}>
+                      <option value=''>Select a suitcase...</option>
+                      {SUITCASES.filter(s => !suitcaseBrandFilter || s.brand === suitcaseBrandFilter).map(s => (
+                        <option key={s.id} value={s.id}>{s.brand} — {s.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {selectedSuitcase && (() => {
+                  const sc = selectedSuitcase
+                  const sizeColor = sc.size === 'carry-on' ? '#3b82f6' : sc.size === 'large' ? '#8b5cf6' : t.accent
+                  const sizeLabel = sc.size === 'carry-on' ? 'Carry-On' : sc.size === 'medium' ? 'Checked Medium' : 'Checked Large'
+                  const capEffect = sc.liters < 45 ? 'Carry-on mode: clothing quantities reduced to fit' : sc.liters > 80 ? 'Large bag: extra room allows more clothing' : 'Standard capacity: no adjustments'
+                  return (
+                    <div style={{ background:t.cardAlt ?? t.surface, border:`1px solid ${t.borderStrong}`, borderRadius:'10px', padding:'14px', display:'grid', gap:'10px' }}>
+                      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                        <div style={{ fontSize:'14px', fontWeight:'600', color:t.text }}>{sc.brand} {sc.name}</div>
+                        <span style={{ background:sizeColor, color:'#fff', fontSize:'11px', fontWeight:'600', padding:'3px 9px', borderRadius:'999px', letterSpacing:'0.04em' }}>{sizeLabel}</span>
+                      </div>
+                      <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:'8px', textAlign:'center' }}>
+                        {[['Dimensions', sc.dimensions], ['Capacity', `${sc.liters} L`], ['Bag Weight', `${sc.weightLbs} lbs`]].map(([label, val]) => (
+                          <div key={label} style={{ background:t.surface, border:`1px solid ${t.border}`, borderRadius:'8px', padding:'8px 4px' }}>
+                            <div style={{ fontSize:'10px', color:t.textMuted, textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:'3px' }}>{label}</div>
+                            <div style={{ fontSize:'13px', fontWeight:'600', color:t.text }}>{val}</div>
+                          </div>
+                        ))}
+                      </div>
+                      <div style={{ display:'flex', gap:'6px', alignItems:'center' }}>
+                        <div style={{ fontSize:'11px', color: sc.liters < 45 ? '#3b82f6' : sc.liters > 80 ? '#8b5cf6' : t.accent }}>
+                          {sc.liters < 45 ? '✈️' : sc.liters > 80 ? '🧳' : '🗃️'} {capEffect}
+                        </div>
+                      </div>
+                      <button className="btn-ghost" onClick={() => { setSelectedSuitcase(null); try { localStorage.removeItem('pp_suitcase') } catch(_) {} }}
+                        style={{ background:'transparent', border:`1px solid ${t.border}`, borderRadius:'7px', padding:'5px 12px', fontSize:'12px', color:t.textMuted, cursor:'pointer', alignSelf:'start', width:'fit-content' }}>
+                        Clear Selection
+                      </button>
+                    </div>
+                  )
+                })()}
+
+                {!selectedSuitcase && (
+                  <div style={{ fontSize:'12px', color:t.textMuted, padding:'4px 0' }}>
+                    Select your suitcase to tailor packing quantities to your bag's capacity.
                   </div>
                 )}
               </div>
