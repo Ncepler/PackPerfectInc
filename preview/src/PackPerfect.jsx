@@ -429,6 +429,9 @@ export default function PackPerfect() {
   const [chatMessages, setChatMessages] = useState([{ role:'assistant', content:"Hey! I'm your packing assistant. Ask me about TSA rules, baggage fees, packing for cold weather, long trips, and more." }])
   const [chatInput, setChatInput] = useState('')
   const [chatTyping, setChatTyping] = useState(false)
+  const [chatLoading, setChatLoading] = useState(false)
+  const [listLoading, setListLoading] = useState(false)
+  const [visualAidReady, setVisualAidReady] = useState(false)
   const [profile, setProfile] = useState({ name:'', homeCity:'', travelStyle:'Average', frequentFlyer:'Sometimes' })
   const chatEndRef = useRef(null)
   const destRef = useRef(null)
@@ -691,9 +694,19 @@ export default function PackPerfect() {
     const result = generateList(tripType, getDays(), c)
     setItems(result.items)
     setLaundryNote(result.laundryNote)
-    setListGenerated(true)
+    setListGenerated(false)
+    setListLoading(true)
+    setVisualAidReady(false)
     setShowFullscreenAd(true)
     fetchWeather(dest, startDate, endDate)
+    const loadDelay = 1200 + Math.random() * 800
+    setTimeout(() => {
+      setListLoading(false)
+      setListGenerated(true)
+    }, loadDelay)
+    setTimeout(() => {
+      setVisualAidReady(true)
+    }, 6000)
   }
 
   // Typing effect for AI
@@ -724,13 +737,16 @@ export default function PackPerfect() {
 
   const sendChat = (preset) => {
     const text = preset || chatInput
-    if (!text?.trim() || chatTyping) return
+    if (!text?.trim() || chatTyping || chatLoading) return
     setChatInput('')
     setChatMessages(prev => [...prev, { role:'user', content: text }])
+    setChatLoading(true)
+    const thinkDelay = 1000 + Math.random() * 1000
     setTimeout(() => {
+      setChatLoading(false)
       const resp = getAIResponse(text, { destination, tripType })
       typeMessage(resp)
-    }, 300)
+    }, thinkDelay)
   }
 
   // Theme
@@ -786,6 +802,14 @@ export default function PackPerfect() {
     .btn-toggle { transition:background 200ms ease !important }
     .cursor-blink::after { content:'▋'; animation:blink 0.7s infinite; margin-left:1px }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+    @keyframes spin { to { transform:rotate(360deg) } }
+    @keyframes pulse-dot { 0%,80%,100%{transform:scale(0.6);opacity:0.4} 40%{transform:scale(1);opacity:1} }
+    @keyframes vis-shimmer { 0%{background-position:200% center} 100%{background-position:-200% center} }
+    .spinner { display:inline-block; width:18px; height:18px; border:2.5px solid rgba(37,99,235,0.18); border-top-color:#2563eb; border-radius:50%; animation:spin 0.7s linear infinite; }
+    .dot-pulse span { display:inline-block; width:7px; height:7px; border-radius:50%; background:#2563eb; margin:0 2px; }
+    .dot-pulse span:nth-child(1){animation:pulse-dot 1.2s ease-in-out 0s infinite}
+    .dot-pulse span:nth-child(2){animation:pulse-dot 1.2s ease-in-out 0.2s infinite}
+    .dot-pulse span:nth-child(3){animation:pulse-dot 1.2s ease-in-out 0.4s infinite}
     @media (prefers-reduced-motion:reduce) { *, *::before, *::after { transition-duration:0.01ms !important; animation-duration:0.01ms !important } }
     @media (max-width:640px) {
       .pp-header { flex-wrap:wrap; height:auto !important; padding:10px 14px !important; gap:6px; }
@@ -936,11 +960,23 @@ export default function PackPerfect() {
                   </div>
                 )}
 
-                <button className="btn-primary" onClick={handleGenerate} style={{ ...btnPrimary, marginTop:'4px' }}>
-                  {listGenerated ? 'Regenerate List' : 'Generate Packing List'}
+                <button className="btn-primary" onClick={handleGenerate} disabled={listLoading} style={{ ...btnPrimary, marginTop:'4px', opacity: listLoading ? 0.7 : 1 }}>
+                  {listLoading ? 'Generating...' : listGenerated ? 'Regenerate List' : 'Generate Packing List'}
                 </button>
               </div>
             </div>
+
+            {listLoading && (
+              <div style={{ ...card, textAlign:'center', padding:'36px 20px' }}>
+                <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:'14px', marginBottom:'14px' }}>
+                  <div className="spinner" />
+                  <div className="dot-pulse"><span /><span /><span /></div>
+                  <div className="spinner" />
+                </div>
+                <div style={{ fontSize:'14px', color:t.textMuted, fontWeight:'500' }}>Building your packing list…</div>
+                <div style={{ fontSize:'12px', color:t.textDim, marginTop:'5px' }}>Optimizing items for your destination and trip type</div>
+              </div>
+            )}
 
             {listGenerated && (
               <div>
@@ -1101,8 +1137,20 @@ export default function PackPerfect() {
                    climate === 'cold' ? 'Cold weather trip' : 'Standard leisure trip'}
                 </strong>
               </p>
-              {!listGenerated && <p style={{ fontSize:'12px', color:t.textDim, marginBottom:'14px' }}>Generate a list first to see the right image for your trip type.</p>}
-              <img src={visImage} alt="Packing visual guide" style={{ width:'100%', borderRadius:'12px', display:'block', marginTop:'12px' }} />
+              {!listGenerated && !listLoading && <p style={{ fontSize:'12px', color:t.textDim, marginBottom:'14px' }}>Generate a list first to see the right image for your trip type.</p>}
+              {(listLoading || (listGenerated && !visualAidReady)) ? (
+                <div style={{ width:'100%', borderRadius:'12px', marginTop:'12px', background: dark ? '#0d1625' : '#eef2f8', border:`1px solid ${t.border}`, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'16px', padding:'48px 20px' }}>
+                  <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:'12px' }}>
+                    <div className="spinner" style={{ width:'22px', height:'22px', borderWidth:'3px' }} />
+                    <div className="dot-pulse"><span /><span /><span /></div>
+                    <div className="spinner" style={{ width:'22px', height:'22px', borderWidth:'3px' }} />
+                  </div>
+                  <div style={{ fontSize:'14px', fontWeight:'500', color:t.textMuted }}>Your visual aid is being generated…</div>
+                  <div style={{ fontSize:'12px', color:t.textDim }}>Rendering the perfect scene for your trip</div>
+                </div>
+              ) : (
+                <img src={visImage} alt="Packing visual guide" style={{ width:'100%', borderRadius:'12px', display:'block', marginTop:'12px' }} />
+              )}
             </div>
             <div style={card}>
               <div style={{ fontSize:'11px', fontWeight:'600', color:t.textMuted, textTransform:'uppercase', letterSpacing:'0.09em', marginBottom:'14px' }}>Expert Packing Tips</div>
@@ -1136,8 +1184,8 @@ export default function PackPerfect() {
             </div>
             <div style={{ padding:'12px 16px', borderBottom:`1px solid ${t.border}`, display:'flex', gap:'7px', flexWrap:'wrap' }}>
               {['Packing for rain?','Avoid baggage fees?','TSA liquid rules?','Long trip laundry?','Packing cubes worth it?'].map(q => (
-                <button key={q} onClick={() => sendChat(q)} disabled={chatTyping}
-                  style={{ background:t.accentDim, border:`1px solid ${t.border}`, borderRadius:'999px', padding:'5px 13px', fontSize:'12px', cursor: chatTyping ? 'default' : 'pointer', color:t.accent, opacity: chatTyping ? 0.5 : 1 }}>
+                <button key={q} onClick={() => sendChat(q)} disabled={chatTyping || chatLoading}
+                  style={{ background:t.accentDim, border:`1px solid ${t.border}`, borderRadius:'999px', padding:'5px 13px', fontSize:'12px', cursor: (chatTyping || chatLoading) ? 'default' : 'pointer', color:t.accent, opacity: (chatTyping || chatLoading) ? 0.5 : 1 }}>
                   {q}
                 </button>
               ))}
@@ -1161,13 +1209,20 @@ export default function PackPerfect() {
                   </div>
                 )
               })}
+              {chatLoading && (
+                <div style={{ display:'flex', justifyContent:'flex-start' }}>
+                  <div style={{ padding:'12px 18px', borderRadius:'12px 12px 12px 3px', background:t.inputBg, border:`1px solid ${t.border}`, display:'flex', alignItems:'center', gap:'6px' }}>
+                    <div className="dot-pulse"><span /><span /><span /></div>
+                  </div>
+                </div>
+              )}
               <div ref={chatEndRef} />
             </div>
             <div style={{ padding:'14px 16px', borderTop:`1px solid ${t.border}`, display:'flex', gap:'8px' }}>
               <input value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && sendChat()}
-                placeholder="Ask anything about packing..." disabled={chatTyping}
-                style={{ flex:1, padding:'10px 16px', background:t.inputBg, border:`1px solid ${t.border}`, borderRadius:'999px', fontSize:'14px', color:t.text, outline:'none', opacity: chatTyping ? 0.6 : 1 }} />
-              <button className="btn-primary" onClick={() => sendChat()} disabled={chatTyping} style={{ ...btnPrimary, width:'auto', padding:'10px 22px', borderRadius:'999px', opacity: chatTyping ? 0.6 : 1 }}>Send</button>
+                placeholder="Ask anything about packing..." disabled={chatTyping || chatLoading}
+                style={{ flex:1, padding:'10px 16px', background:t.inputBg, border:`1px solid ${t.border}`, borderRadius:'999px', fontSize:'14px', color:t.text, outline:'none', opacity: (chatTyping || chatLoading) ? 0.6 : 1 }} />
+              <button className="btn-primary" onClick={() => sendChat()} disabled={chatTyping || chatLoading} style={{ ...btnPrimary, width:'auto', padding:'10px 22px', borderRadius:'999px', opacity: (chatTyping || chatLoading) ? 0.6 : 1 }}>Send</button>
             </div>
           </div>
         )}
