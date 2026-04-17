@@ -1861,7 +1861,7 @@ export default function PackPerfect() {
         {activeTab === 'About' && (
           <div>
             <div style={{ ...card, padding: 0, overflow: 'hidden' }}>
-              <img src="/img-team.jpg" alt="PackPerfect team" style={{ width: '100%', maxHeight: '280px', objectFit: 'cover', display: 'block' }} />
+              <img src="/img-team.jpg" alt="PackPerfect team" style={{ width: '100%', height: 'auto', display: 'block' }} />
             </div>
             <div style={card}>
               <div style={{ fontSize: '22px', fontWeight: '700', color: t.text, marginBottom: '10px' }}>About Us – PackPerfect</div>
