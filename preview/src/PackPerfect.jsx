@@ -2322,9 +2322,6 @@ export default function PackPerfect() {
                       <div style={{ fontSize: '12px', fontWeight: '600', color: t.text, whiteSpace: 'nowrap' }}>Jude Rock</div>
                     </div>
                   </div>
-                  <div style={{ position: 'absolute', bottom: '0', width: '100%', textAlign: 'center', fontSize: '11px', color: t.textMuted, fontStyle: 'italic' }}>
-                    Still working out the org chart
-                  </div>
                 </div>
               </div>
             </div>
