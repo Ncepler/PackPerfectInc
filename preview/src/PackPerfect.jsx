@@ -1292,7 +1292,12 @@ export default function PackPerfect() {
                   <div><label style={labelStyle}>End Date</label><input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} style={inputStyle} /></div>
                 </div>
 
-                {startDate && endDate && (
+                {startDate && endDate && new Date(endDate) < new Date(startDate) && (
+                  <div style={{ fontSize:'13px', color:'#dc2626', padding:'7px 12px', background: dark ? 'rgba(220,38,38,0.08)' : 'rgba(220,38,38,0.06)', borderRadius:'7px', border:'1px solid rgba(220,38,38,0.3)', display:'flex', alignItems:'center', gap:'7px' }}>
+                    <span>⚠️</span> Invalid dates — end date is before start date
+                  </div>
+                )}
+                {startDate && endDate && new Date(endDate) >= new Date(startDate) && (
                   <div style={{ fontSize:'13px', color:t.textMuted, padding:'7px 12px', background:t.inputBg, borderRadius:'7px', border:`1px solid ${t.border}` }}>
                     {getDays()} day{getDays() !== 1 ? 's' : ''} — {tripType} trip{destination ? ` to ${destination.split(',')[0]}` : ''}
                     {getDays() > 10 && <span style={{ color:t.accent }}> · Extended trip — laundry recommended</span>}
@@ -1318,7 +1323,7 @@ export default function PackPerfect() {
                   </div>
                 )}
 
-                <button className="btn-primary" onClick={handleGenerate} disabled={listLoading} style={{ ...btnPrimary, marginTop:'4px', opacity: listLoading ? 0.7 : 1 }}>
+                <button className="btn-primary" onClick={handleGenerate} disabled={listLoading || (startDate && endDate && new Date(endDate) < new Date(startDate))} style={{ ...btnPrimary, marginTop:'4px', opacity: (listLoading || (startDate && endDate && new Date(endDate) < new Date(startDate))) ? 0.5 : 1, cursor: (startDate && endDate && new Date(endDate) < new Date(startDate)) ? 'not-allowed' : 'pointer' }}>
                   {listLoading ? 'Generating...' : listGenerated ? 'Regenerate List' : 'Generate Packing List'}
                 </button>
               </div>
