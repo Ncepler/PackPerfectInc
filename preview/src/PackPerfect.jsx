@@ -1248,8 +1248,8 @@ export default function PackPerfect() {
       <div className="pp-header" style={{ background:t.headerBg, borderBottom:`1px solid ${t.border}`, padding:'0 24px', display:'flex', alignItems:'center', justifyContent:'space-between', height:'56px', position:'sticky', top:0, zIndex:50 }}>
         <div style={{ display:'flex', alignItems:'center', gap:'10px', flexShrink:0, cursor:'pointer' }}
           onClick={() => { setActiveTab('Packing List'); setListGenerated(false); setListLoading(false); window.scrollTo({top:0,behavior:'smooth'}) }}>
-          <img src="/logo.png" alt="PackPerfect logo" style={{ width:'28px', height:'28px', objectFit:'contain' }} />
-          <span style={{ fontSize:'16px', fontWeight:'600', color:t.text }}>PackPerfect</span>
+          <img src="/logo.png" alt="PackPerfect logo" style={{ width:'42px', height:'42px', objectFit:'contain' }} />
+          <span style={{ fontSize:'16px', fontWeight:'600', color:t.accent }}>PackPerfect</span>
           {destination && listGenerated && <span style={{ fontSize:'12px', color:t.textMuted, background:t.accentDim, padding:'2px 10px', borderRadius:'999px' }}>{destination}</span>}
         </div>
         <div className="pp-tabs" style={{ display:'flex', gap:'4px' }}>
