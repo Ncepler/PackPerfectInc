@@ -388,7 +388,7 @@ function generateList(tripType, days, climate, liters = 69) {
     documents.push({ name:'Business Cards', qty:1, weight:0.1, packed:false, bag:'carry' })
   } else if (tripType === 'Beach') {
     clothing.push(
-      { name:'Swimsuit', qty:swimsuits, weight:0.3, packed:false, bag:'main' },
+      { name:'Swimsuit', qty:cycleLen, weight:0.3, packed:false, bag:'main' },
       { name:'Shorts', qty:Math.min(days, 5), weight:0.4, packed:false, bag:'main' },
       { name:'T-Shirts', qty:shirts, weight:0.5, packed:false, bag:'main' },
       { name:'Cover-Up', qty:1, weight:0.3, packed:false, bag:'main' },
@@ -475,7 +475,7 @@ function generateList(tripType, days, climate, liters = 69) {
     if (!toiletries.find(i => i.name.includes('Sunscreen')))
       toiletries.push({ name:'Sunscreen SPF 50', qty:2, weight:0.5, packed:false, bag:'main' })
     if (!clothing.find(i => i.name === 'Swimsuit'))
-      clothing.push({ name:'Swimsuit', qty:swimsuits, weight:0.3, packed:false, bag:'main' })
+      clothing.push({ name:'Swimsuit', qty:Math.max(swimsuits, Math.min(days, 5)), weight:0.3, packed:false, bag:'main' })
   } else if (climate === 'cold') {
     clothing.push(
       { name:'Heavy Winter Coat', qty:1, weight:3.5, packed:false, bag:'main' },
@@ -690,6 +690,7 @@ export default function PackPerfect() {
   const [selectedDayIdx, setSelectedDayIdx] = useState(null)
   const [premiumSelectedDay, setPremiumSelectedDay] = useState(null) // { legIdx, dayIdx }
   const [showFullscreenAd, setShowFullscreenAd] = useState(false)
+  const listTimerRef = useRef(null)
   const [heroVisible, setHeroVisible] = useState(false)
   const [statCounts, setStatCounts] = useState({ trips: 0, destinations: 0, items: 0, time: 0 })
   const heroRef = useRef(null)
@@ -718,8 +719,8 @@ export default function PackPerfect() {
   useEffect(() => {
     if (!heroVisible) return
     const targets = { trips: 84200, destinations: 200, items: 47, time: 8 }
-    const duration = 1800
-    const steps = 60
+    const duration = 3400
+    const steps = 90
     const interval = duration / steps
     let step = 0
     const t = setInterval(() => {
@@ -962,11 +963,6 @@ export default function PackPerfect() {
     setVisualAidReady(false)
     setShowFullscreenAd(true)
     fetchWeather(dest, startDate, endDate)
-    const loadDelay = 1200 + Math.random() * 800
-    setTimeout(() => {
-      setListLoading(false)
-      setListGenerated(true)
-    }, loadDelay)
     setTimeout(() => {
       setVisualAidReady(true)
     }, 6000)
@@ -1068,21 +1064,35 @@ export default function PackPerfect() {
     @keyframes spin { to { transform:rotate(360deg) } }
     @keyframes pulse-dot { 0%,80%,100%{transform:scale(0.6);opacity:0.4} 40%{transform:scale(1);opacity:1} }
     @keyframes vis-shimmer { 0%{background-position:200% center} 100%{background-position:-200% center} }
-    @keyframes fadeUp { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
     @keyframes fadeIn { from{opacity:0} to{opacity:1} }
     @keyframes gradientShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
-    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
-    .hero-fade { animation:fadeUp 0.6s cubic-bezier(0.22,1,0.36,1) both }
-    .hero-fade-1 { animation:fadeUp 0.6s 0.05s cubic-bezier(0.22,1,0.36,1) both }
-    .hero-fade-2 { animation:fadeUp 0.6s 0.15s cubic-bezier(0.22,1,0.36,1) both }
-    .hero-fade-3 { animation:fadeUp 0.6s 0.25s cubic-bezier(0.22,1,0.36,1) both }
-    .hero-fade-4 { animation:fadeUp 0.6s 0.35s cubic-bezier(0.22,1,0.36,1) both }
-    .hero-fade-5 { animation:fadeUp 0.6s 0.45s cubic-bezier(0.22,1,0.36,1) both }
-    .stat-card { transition:transform 200ms ease, box-shadow 200ms ease !important }
-    .stat-card:hover { transform:translateY(-4px) !important; box-shadow:0 12px 32px rgba(37,99,235,0.15) !important }
-    .hero-icon { animation:float 3s ease-in-out infinite }
-    .hero-icon-2 { animation:float 3s 0.8s ease-in-out infinite }
-    .hero-icon-3 { animation:float 3s 1.6s ease-in-out infinite }
+    @keyframes float { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-8px) rotate(2deg)} }
+    @keyframes floatOrb { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(12px,-16px) scale(1.05)} 66%{transform:translate(-8px,8px) scale(0.97)} }
+    @keyframes floatOrb2 { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(-14px,10px) scale(0.95)} 66%{transform:translate(10px,-12px) scale(1.04)} }
+    @keyframes statPop { 0%{opacity:0;transform:translateY(18px) scale(0.92)} 70%{transform:translateY(-3px) scale(1.03)} 100%{opacity:1;transform:translateY(0) scale(1)} }
+    @keyframes pillSlide { from{opacity:0;transform:translateX(-10px)} to{opacity:1;transform:translateX(0)} }
+    @keyframes badgePulse { 0%,100%{box-shadow:0 0 0 0 rgba(37,99,235,0.35)} 50%{box-shadow:0 0 0 6px rgba(37,99,235,0)} }
+    .hero-fade-1 { animation:fadeUp 0.7s 0.05s cubic-bezier(0.22,1,0.36,1) both }
+    .hero-fade-2 { animation:fadeUp 0.7s 0.18s cubic-bezier(0.22,1,0.36,1) both }
+    .hero-fade-3 { animation:fadeUp 0.7s 0.30s cubic-bezier(0.22,1,0.36,1) both }
+    .hero-fade-4 { animation:fadeUp 0.7s 0.42s cubic-bezier(0.22,1,0.36,1) both }
+    .hero-fade-5 { animation:fadeUp 0.7s 0.54s cubic-bezier(0.22,1,0.36,1) both }
+    .stat-card-0 { animation:statPop 0.55s 0.32s cubic-bezier(0.22,1,0.36,1) both }
+    .stat-card-1 { animation:statPop 0.55s 0.42s cubic-bezier(0.22,1,0.36,1) both }
+    .stat-card-2 { animation:statPop 0.55s 0.52s cubic-bezier(0.22,1,0.36,1) both }
+    .stat-card-3 { animation:statPop 0.55s 0.62s cubic-bezier(0.22,1,0.36,1) both }
+    .stat-card { transition:transform 220ms cubic-bezier(0.22,1,0.36,1), box-shadow 220ms ease !important }
+    .stat-card:hover { transform:translateY(-6px) scale(1.03) !important; box-shadow:0 16px 40px rgba(37,99,235,0.18) !important }
+    .hero-badge { animation:badgePulse 2.4s ease-in-out infinite }
+    .hero-dot { animation:float 2s ease-in-out infinite }
+    .hero-pill-0 { animation:pillSlide 0.5s 0.44s both }
+    .hero-pill-1 { animation:pillSlide 0.5s 0.52s both }
+    .hero-pill-2 { animation:pillSlide 0.5s 0.60s both }
+    .hero-pill-3 { animation:pillSlide 0.5s 0.68s both }
+    .hero-pill-4 { animation:pillSlide 0.5s 0.76s both }
+    .hero-orb-1 { animation:floatOrb 7s ease-in-out infinite }
+    .hero-orb-2 { animation:floatOrb2 9s ease-in-out infinite }
     .spinner { display:inline-block; width:18px; height:18px; border:2.5px solid rgba(37,99,235,0.18); border-top-color:#2563eb; border-radius:50%; animation:spin 0.7s linear infinite; }
     .dot-pulse span { display:inline-block; width:7px; height:7px; border-radius:50%; background:#2563eb; margin:0 2px; }
     .dot-pulse span:nth-child(1){animation:pulse-dot 1.2s ease-in-out 0s infinite}
@@ -1109,7 +1119,7 @@ export default function PackPerfect() {
       {showFullscreenAd && (
         <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.7)', zIndex:999, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}>
           <div style={{ position:'relative', background: dark ? '#0d1625' : '#ffffff', border:`2px solid ${t.border}`, borderRadius:'16px', width:'100%', maxWidth:'560px', aspectRatio:'16/9', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'10px' }}>
-            <button onClick={() => setShowFullscreenAd(false)} style={{ position:'absolute', top:'12px', right:'12px', background: dark ? '#1a2d4a' : '#e5e7eb', border:'none', borderRadius:'50%', width:'32px', height:'32px', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'16px', color:t.text, lineHeight:1 }}>✕</button>
+            <button onClick={() => { setShowFullscreenAd(false); if (listTimerRef.current) clearTimeout(listTimerRef.current); listTimerRef.current = setTimeout(() => { setListLoading(false); setListGenerated(true) }, 3000) }} style={{ position:'absolute', top:'12px', right:'12px', background: dark ? '#1a2d4a' : '#e5e7eb', border:'none', borderRadius:'50%', width:'32px', height:'32px', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'16px', color:t.text, lineHeight:1 }}>✕</button>
             <div style={{ fontSize:'11px', fontWeight:'700', color:t.textDim, textTransform:'uppercase', letterSpacing:'0.15em' }}>Advertisement</div>
             <div style={{ fontSize:'36px', fontWeight:'700', color:t.textMuted }}>Ad</div>
           </div>
@@ -1186,59 +1196,65 @@ export default function PackPerfect() {
             {!listGenerated && !listLoading && heroVisible && (
               <div ref={heroRef} style={{ marginBottom:'28px' }}>
 
-                {/* Main headline */}
-                <div className="hero-fade-1" style={{ textAlign:'center', padding:'40px 16px 28px' }}>
-                  <div style={{ display:'inline-flex', alignItems:'center', gap:'8px', background:t.accentDim, border:`1px solid ${dark ? 'rgba(37,99,235,0.25)' : 'rgba(37,99,235,0.18)'}`, borderRadius:'999px', padding:'5px 16px', marginBottom:'20px' }}>
-                    <span style={{ width:'7px', height:'7px', borderRadius:'50%', background:'#2563eb', display:'inline-block', animation:'float 2s ease-in-out infinite' }} />
-                    <span style={{ fontSize:'12px', fontWeight:'600', color:t.accent, letterSpacing:'0.06em', textTransform:'uppercase' }}>Smart Packing, Every Trip</span>
+                {/* Main headline + floating orbs */}
+                <div className="hero-fade-1" style={{ textAlign:'center', padding:'44px 16px 30px', position:'relative', overflow:'hidden' }}>
+                  {/* Background orbs */}
+                  <div className="hero-orb-1" style={{ position:'absolute', top:'-20px', left:'8%', width:'180px', height:'180px', borderRadius:'50%', background: dark ? 'radial-gradient(circle, rgba(37,99,235,0.12) 0%, transparent 70%)' : 'radial-gradient(circle, rgba(37,99,235,0.09) 0%, transparent 70%)', pointerEvents:'none' }} />
+                  <div className="hero-orb-2" style={{ position:'absolute', bottom:'-30px', right:'6%', width:'220px', height:'220px', borderRadius:'50%', background: dark ? 'radial-gradient(circle, rgba(124,58,237,0.10) 0%, transparent 70%)' : 'radial-gradient(circle, rgba(124,58,237,0.07) 0%, transparent 70%)', pointerEvents:'none' }} />
+
+                  <div className="hero-badge" style={{ display:'inline-flex', alignItems:'center', gap:'8px', background:t.accentDim, border:`1px solid ${dark ? 'rgba(37,99,235,0.3)' : 'rgba(37,99,235,0.2)'}`, borderRadius:'999px', padding:'5px 18px', marginBottom:'22px' }}>
+                    <span className="hero-dot" style={{ width:'7px', height:'7px', borderRadius:'50%', background:'#2563eb', display:'inline-block' }} />
+                    <span style={{ fontSize:'12px', fontWeight:'600', color:t.accent, letterSpacing:'0.07em', textTransform:'uppercase' }}>Smart Packing, Every Trip</span>
                   </div>
-                  <h1 style={{ fontSize:'clamp(26px, 5vw, 42px)', fontWeight:'600', color:t.text, lineHeight:'1.18', letterSpacing:'-0.02em', marginBottom:'14px' }}>
+
+                  <h1 style={{ fontSize:'clamp(26px, 5.5vw, 44px)', fontWeight:'600', color:t.text, lineHeight:'1.15', letterSpacing:'-0.025em', marginBottom:'16px' }}>
                     Never forget what matters.<br />
-                    <span style={{ background:'linear-gradient(135deg, #2563eb 0%, #7c3aed 60%, #2563eb 100%)', backgroundSize:'200% auto', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text', animation:'gradientShift 4s ease infinite' }}>Pack smarter, travel better.</span>
+                    <span style={{ background:'linear-gradient(135deg, #2563eb 0%, #7c3aed 55%, #2563eb 100%)', backgroundSize:'200% auto', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text', animation:'gradientShift 3.5s ease infinite' }}>Pack smarter, travel better.</span>
                   </h1>
-                  <p className="hero-fade-2" style={{ fontSize:'15px', color:t.textMuted, maxWidth:'480px', margin:'0 auto', lineHeight:'1.65' }}>
+                  <p className="hero-fade-2" style={{ fontSize:'15px', color:t.textMuted, maxWidth:'500px', margin:'0 auto', lineHeight:'1.7' }}>
                     PackPerfect builds personalized packing lists based on your destination, trip type, and real-time weather — so you land prepared, not overpacked.
                   </p>
                 </div>
 
                 {/* Stats row */}
-                <div className="hero-fade-3 hero-stats" style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:'10px', marginBottom:'24px' }}>
+                <div className="hero-stats" style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:'10px', marginBottom:'24px' }}>
                   {[
-                    { value: statCounts.trips.toLocaleString(), suffix: '+', label: 'Trips Packed', icon: '✈️', color: '#2563eb' },
-                    { value: statCounts.destinations, suffix: '+', label: 'Destinations', icon: '🌍', color: '#7c3aed' },
-                    { value: statCounts.items, suffix: ' avg', label: 'Items per List', icon: '🎒', color: '#0891b2' },
-                    { value: statCounts.time, suffix: 'x', label: 'Faster to Pack', icon: '⚡', color: '#059669' },
+                    { value: statCounts.trips.toLocaleString(), suffix: '+', label: 'Trips Packed', icon: '✈️', color: '#2563eb', cls: 'stat-card-0' },
+                    { value: statCounts.destinations, suffix: '+', label: 'Destinations', icon: '🌍', color: '#7c3aed', cls: 'stat-card-1' },
+                    { value: statCounts.items, suffix: ' avg', label: 'Items per List', icon: '🎒', color: '#0891b2', cls: 'stat-card-2' },
+                    { value: statCounts.time, suffix: 'x', label: 'Faster to Pack', icon: '⚡', color: '#059669', cls: 'stat-card-3' },
                   ].map(stat => (
-                    <div key={stat.label} className="stat-card" style={{ background:t.surface, border:`1px solid ${t.border}`, borderRadius:'12px', padding:'16px 12px', textAlign:'center', cursor:'default' }}>
-                      <div style={{ fontSize:'22px', marginBottom:'6px' }}>{stat.icon}</div>
-                      <div style={{ fontSize:'clamp(18px, 3vw, 26px)', fontWeight:'600', color:stat.color, letterSpacing:'-0.02em', lineHeight:1 }}>
+                    <div key={stat.label} className={`stat-card ${stat.cls}`} style={{ background:t.surface, border:`1px solid ${t.border}`, borderRadius:'14px', padding:'18px 12px', textAlign:'center', cursor:'default', position:'relative', overflow:'hidden' }}>
+                      <div style={{ position:'absolute', inset:0, background:`radial-gradient(circle at 50% 0%, ${stat.color}0d 0%, transparent 65%)`, pointerEvents:'none' }} />
+                      <div style={{ fontSize:'24px', marginBottom:'8px' }}>{stat.icon}</div>
+                      <div style={{ fontSize:'clamp(20px, 3vw, 28px)', fontWeight:'700', color:stat.color, letterSpacing:'-0.03em', lineHeight:1, fontVariantNumeric:'tabular-nums' }}>
                         {stat.value}{stat.suffix}
                       </div>
-                      <div style={{ fontSize:'11px', color:t.textMuted, marginTop:'4px', fontWeight:'500' }}>{stat.label}</div>
+                      <div style={{ fontSize:'11px', color:t.textMuted, marginTop:'5px', fontWeight:'500' }}>{stat.label}</div>
                     </div>
                   ))}
                 </div>
 
-                {/* Feature pills */}
-                <div className="hero-fade-4" style={{ display:'flex', flexWrap:'wrap', gap:'8px', justifyContent:'center', marginBottom:'28px' }}>
+                {/* Feature pills — individually animated */}
+                <div style={{ display:'flex', flexWrap:'wrap', gap:'8px', justifyContent:'center', marginBottom:'30px' }}>
                   {[
                     { icon:'🌤️', text:'Live weather-aware lists' },
                     { icon:'🧠', text:'AI packing assistant' },
                     { icon:'⚖️', text:'Weight & bag tracking' },
                     { icon:'📍', text:'200+ global destinations' },
                     { icon:'🌙', text:'Dark mode included' },
-                  ].map(f => (
-                    <div key={f.text} style={{ display:'flex', alignItems:'center', gap:'6px', background:t.surface, border:`1px solid ${t.border}`, borderRadius:'999px', padding:'6px 14px', fontSize:'12px', color:t.textMuted, fontWeight:'500' }}>
+                  ].map((f, i) => (
+                    <div key={f.text} className={`hero-pill-${i}`} style={{ display:'flex', alignItems:'center', gap:'6px', background:t.surface, border:`1px solid ${t.border}`, borderRadius:'999px', padding:'7px 16px', fontSize:'12px', color:t.textMuted, fontWeight:'500', transition:'border-color 200ms, color 200ms' }}>
                       <span>{f.icon}</span><span>{f.text}</span>
                     </div>
                   ))}
                 </div>
 
-                {/* Divider with label */}
-                <div className="hero-fade-5" style={{ display:'flex', alignItems:'center', gap:'12px', marginBottom:'20px' }}>
-                  <div style={{ flex:1, height:'1px', background:t.border }} />
-                  <span style={{ fontSize:'11px', fontWeight:'600', color:t.textDim, textTransform:'uppercase', letterSpacing:'0.1em', whiteSpace:'nowrap' }}>Plan your trip</span>
-                  <div style={{ flex:1, height:'1px', background:t.border }} />
+                {/* Divider */}
+                <div className="hero-fade-5" style={{ display:'flex', alignItems:'center', gap:'12px', marginBottom:'22px' }}>
+                  <div style={{ flex:1, height:'1px', background:`linear-gradient(to right, transparent, ${t.border})` }} />
+                  <span style={{ fontSize:'11px', fontWeight:'600', color:t.textDim, textTransform:'uppercase', letterSpacing:'0.12em', whiteSpace:'nowrap' }}>Plan your trip</span>
+                  <div style={{ flex:1, height:'1px', background:`linear-gradient(to left, transparent, ${t.border})` }} />
                 </div>
 
               </div>
