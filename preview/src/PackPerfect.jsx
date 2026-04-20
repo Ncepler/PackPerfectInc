@@ -2280,7 +2280,7 @@ export default function PackPerfect() {
                 <div style={{ marginTop: '20px', position: 'relative', height: '220px' }}>
                   {/* orbit track */}
                   <div style={{
-                    position: 'absolute', top: '50%', left: '50%',
+                    position: 'absolute', top: '50%', left: '72px',
                     width: '144px', height: '144px',
                     marginLeft: '-72px', marginTop: '-72px',
                     borderRadius: '50%',
@@ -2288,7 +2288,7 @@ export default function PackPerfect() {
                   }} />
                   {/* Ben – CMO */}
                   <div style={{
-                    position: 'absolute', top: '50%', left: '50%',
+                    position: 'absolute', top: '50%', left: '72px',
                     marginLeft: '-44px', marginTop: '-26px',
                     width: '88px',
                     animation: 'orbit-ben 8s linear infinite',
@@ -2306,7 +2306,7 @@ export default function PackPerfect() {
                   </div>
                   {/* Jude – CTO */}
                   <div style={{
-                    position: 'absolute', top: '50%', left: '50%',
+                    position: 'absolute', top: '50%', left: '72px',
                     marginLeft: '-44px', marginTop: '-26px',
                     width: '88px',
                     animation: 'orbit-jude 8s linear infinite',
