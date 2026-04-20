@@ -1075,11 +1075,11 @@ export default function PackPerfect() {
     @keyframes pillSlide { from{opacity:0;transform:translateX(-10px)} to{opacity:1;transform:translateX(0)} }
     @keyframes badgePulse { 0%,100%{box-shadow:0 0 0 0 rgba(37,99,235,0.35)} 50%{box-shadow:0 0 0 6px rgba(37,99,235,0)} }
     @keyframes shirtCenterRise {
-      0%   { transform:translateY(-44px) scaleY(0.06); opacity:0; }
-      22%  { opacity:1; transform:translateY(-18px) scaleY(0.45); }
-      60%  { transform:translateY(4px) scaleY(1.03); }
-      80%  { transform:translateY(-2px) scaleY(0.98); }
-      100% { transform:translateY(0) scaleY(1); opacity:1; }
+      0%   { transform:translateY(-155px) scaleY(0.04) scaleX(0.25); opacity:0; }
+      18%  { opacity:1; transform:translateY(-90px) scaleY(0.22) scaleX(0.55); }
+      50%  { transform:translateY(6px) scaleY(1.04) scaleX(1.01); }
+      72%  { transform:translateY(-3px) scaleY(0.98) scaleX(1.0); }
+      100% { transform:translateY(0) scaleY(1) scaleX(1); opacity:1; }
     }
     @keyframes leftSleeveOpen {
       0%   { transform:perspective(700px) rotateY(-90deg); }
@@ -1262,7 +1262,7 @@ export default function PackPerfect() {
                           const bc = isActive ? stat.color : t.border
                           return (
                             <div key={stat.label} className={`suitcase-wrap ${stat.cls}`}
-                              style={{ position:'relative', paddingTop:'20px', cursor:'pointer' }}
+                              style={{ position:'relative', paddingTop:'20px', cursor:'pointer', transition:'opacity 300ms ease, transform 300ms ease', opacity: activeStatIdx !== null && !isActive ? 0.38 : 1, transform: activeStatIdx !== null && !isActive ? 'scale(0.96)' : 'scale(1)' }}
                               onClick={() => setActiveStatIdx(isActive ? null : idx)}>
 
                               {/* Handle */}
@@ -1317,7 +1317,7 @@ export default function PackPerfect() {
                         return (
                           <div key={activeStatIdx} style={{ position:'relative', marginTop:'10px', marginBottom:'24px' }}>
                             <div style={{ position:'absolute', top:0, left:`calc(${activeStatIdx} * 25% + 12.5% - 1px)`, width:'2px', height:'10px', background:`linear-gradient(to bottom,${C}cc,transparent)` }} />
-                            <div style={{ maxWidth:'520px', margin:'10px auto 0', position:'relative', height:'280px' }}>
+                            <div style={{ maxWidth:'560px', margin:'10px auto 0', position:'relative', height:'310px' }}>
 
                               {/* LEFT SLEEVE — swings in from behind center */}
                               <div className="shirt-left" style={{ position:'absolute', left:0, top:0, width:'38%', height:'100%', overflow:'hidden' }}>
@@ -1358,15 +1358,6 @@ export default function PackPerfect() {
                                     <line x1="100" y1="198" x2="200" y2="198" stroke={C} strokeOpacity="0.11" strokeWidth="0.7" strokeDasharray="2.5 4"/>
                                   </g>
                                 </svg>
-                                {/* Text sits in shirt body — centered vertically in lower 57% */}
-                                <div className="shirt-text-in" style={{ position:'absolute', left:0, right:0, top:'72%', transform:'translateY(-50%)', padding:'0 10%', textAlign:'center' }}>
-                                  <div style={{ fontSize:'10px', fontWeight:'700', color:C, textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:'7px' }}>
-                                    {activeStat.icon}  {activeStat.label}
-                                  </div>
-                                  <div style={{ fontSize:'11px', color:t.textMuted, lineHeight:'1.72' }}>
-                                    {activeStat.explain}
-                                  </div>
-                                </div>
                               </div>
 
                               {/* RIGHT SLEEVE — swings in from behind center */}
@@ -1386,6 +1377,16 @@ export default function PackPerfect() {
                                     <line x1="292" y1="90" x2="242" y2="172" stroke={C} strokeOpacity="0.14" strokeWidth="0.7" strokeDasharray="2 4"/>
                                   </g>
                                 </svg>
+                              </div>
+
+                              {/* Text overlay — full width, positioned in shirt body center */}
+                              <div className="shirt-text-in" style={{ position:'absolute', left:'18%', right:'18%', top:'74%', transform:'translateY(-50%)', textAlign:'center', zIndex:10, pointerEvents:'none' }}>
+                                <div style={{ fontSize:'10.5px', fontWeight:'700', color:C, textTransform:'uppercase', letterSpacing:'0.09em', marginBottom:'7px' }}>
+                                  {activeStat.icon}  {activeStat.label}
+                                </div>
+                                <div style={{ fontSize:'11.5px', color:t.textMuted, lineHeight:'1.72' }}>
+                                  {activeStat.explain}
+                                </div>
                               </div>
 
                             </div>
