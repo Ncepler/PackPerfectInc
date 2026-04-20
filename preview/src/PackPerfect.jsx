@@ -360,7 +360,6 @@ function generateList(tripType, days, climate, liters = 69) {
     { name:'Cash', qty:1, weight:0.1, packed:false, bag:'carry' },
   ]
   const health = [
-    { name:'Pain Relievers', qty:1, weight:0.2, packed:false, bag:'carry' },
     { name:'Hand Sanitizer', qty:1, weight:0.2, packed:false, bag:'carry' },
     { name:'Band-Aids', qty:1, weight:0.1, packed:false, bag:'carry' },
   ]
@@ -1075,18 +1074,28 @@ export default function PackPerfect() {
     @keyframes statPop { 0%{opacity:0;transform:translateY(18px) scale(0.92)} 70%{transform:translateY(-3px) scale(1.03)} 100%{opacity:1;transform:translateY(0) scale(1)} }
     @keyframes pillSlide { from{opacity:0;transform:translateX(-10px)} to{opacity:1;transform:translateX(0)} }
     @keyframes badgePulse { 0%,100%{box-shadow:0 0 0 0 rgba(37,99,235,0.35)} 50%{box-shadow:0 0 0 6px rgba(37,99,235,0)} }
-    @keyframes shirtEmerge {
-      0%   { transform:translateY(-52px) scaleY(0.08) scaleX(0.55); opacity:0; transform-origin:top center; }
-      20%  { opacity:1; transform:translateY(-28px) scaleY(0.35) scaleX(0.78); transform-origin:top center; }
-      55%  { transform:translateY(5px) scaleY(1.04) scaleX(1.01); transform-origin:top center; }
-      75%  { transform:translateY(-3px) scaleY(0.985) scaleX(0.998); transform-origin:top center; }
-      100% { transform:translateY(0) scaleY(1) scaleX(1); opacity:1; transform-origin:top center; }
+    @keyframes shirtCenterRise {
+      0%   { transform:translateY(-44px) scaleY(0.06); opacity:0; }
+      22%  { opacity:1; transform:translateY(-18px) scaleY(0.45); }
+      60%  { transform:translateY(4px) scaleY(1.03); }
+      80%  { transform:translateY(-2px) scaleY(0.98); }
+      100% { transform:translateY(0) scaleY(1); opacity:1; }
     }
-    @keyframes creaseFade { 0%{opacity:0.9} 55%{opacity:0.55} 100%{opacity:0} }
-    @keyframes shirtTextIn { 0%,60%{opacity:0;transform:translateY(12px)} 100%{opacity:1;transform:translateY(0)} }
-    .shirt-emerge  { animation:shirtEmerge 1.15s 0.3s cubic-bezier(0.22,1,0.36,1) both; }
-    .shirt-crease  { animation:creaseFade 1.3s 0.3s both; }
-    .shirt-text-in { animation:shirtTextIn 0.5s 1.1s both; }
+    @keyframes leftSleeveOpen {
+      0%   { transform:perspective(700px) rotateY(-90deg); }
+      100% { transform:perspective(700px) rotateY(0deg); }
+    }
+    @keyframes rightSleeveOpen {
+      0%   { transform:perspective(700px) rotateY(90deg); }
+      100% { transform:perspective(700px) rotateY(0deg); }
+    }
+    @keyframes creaseFade { 0%{opacity:0.8} 60%{opacity:0.35} 100%{opacity:0} }
+    @keyframes shirtTextIn { 0%,65%{opacity:0;transform:translateY(10px)} 100%{opacity:1;transform:translateY(0)} }
+    .shirt-center  { animation:shirtCenterRise 0.85s 0.28s cubic-bezier(0.22,1,0.36,1) both; transform-origin:top center; }
+    .shirt-left    { transform-origin:right center; animation:leftSleeveOpen 0.52s 0.78s cubic-bezier(0.22,1,0.36,1) both; }
+    .shirt-right   { transform-origin:left center;  animation:rightSleeveOpen 0.52s 0.96s cubic-bezier(0.22,1,0.36,1) both; }
+    .shirt-crease  { animation:creaseFade 1.6s 0.28s both; }
+    .shirt-text-in { animation:shirtTextIn 0.45s 1.2s both; }
     .hero-fade-1 { animation:fadeUp 0.7s 0.05s cubic-bezier(0.22,1,0.36,1) both }
     .hero-fade-2 { animation:fadeUp 0.7s 0.18s cubic-bezier(0.22,1,0.36,1) both }
     .hero-fade-3 { animation:fadeUp 0.7s 0.30s cubic-bezier(0.22,1,0.36,1) both }
@@ -1174,7 +1183,8 @@ export default function PackPerfect() {
 
       {/* HEADER */}
       <div className="pp-header" style={{ background:t.headerBg, borderBottom:`1px solid ${t.border}`, padding:'0 24px', display:'flex', alignItems:'center', justifyContent:'space-between', height:'56px', position:'sticky', top:0, zIndex:50 }}>
-        <div style={{ display:'flex', alignItems:'center', gap:'10px', flexShrink:0 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:'10px', flexShrink:0, cursor:'pointer' }}
+          onClick={() => { setActiveTab('Packing List'); setListGenerated(false); setListLoading(false); window.scrollTo({top:0,behavior:'smooth'}) }}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={t.accent} strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.26 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.17 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.09a16 16 0 0 0 6 6l.46-.46a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16z"/></svg>
           <span style={{ fontSize:'16px', fontWeight:'600', color:t.text }}>PackPerfect</span>
           {destination && listGenerated && <span style={{ fontSize:'12px', color:t.textMuted, background:t.accentDim, padding:'2px 10px', borderRadius:'999px' }}>{destination}</span>}
@@ -1270,9 +1280,9 @@ export default function PackPerfect() {
                                 <div style={{
                                   background: dark ? `linear-gradient(180deg,${stat.color}22 0%,${stat.color}0d 100%)` : `linear-gradient(180deg,${stat.color}16 0%,${stat.color}07 100%)`,
                                   borderRadius:'10px 10px 0 0', padding:'16px 10px 14px', textAlign:'center',
-                                  transformOrigin:'50% 100%',
-                                  transform: isActive ? 'perspective(600px) rotateX(-172deg)' : 'perspective(600px) rotateX(0deg)',
-                                  transition:'transform 0.62s cubic-bezier(0.4,0.15,0.15,1)',
+                                  transformOrigin:'0% 50%',
+                                  transform: isActive ? 'perspective(500px) rotateY(165deg)' : 'perspective(500px) rotateY(0deg)',
+                                  transition:'transform 0.64s cubic-bezier(0.4,0.15,0.15,1)',
                                   position:'relative', zIndex:2,
                                 }}>
                                   <div style={{ fontSize:'28px', lineHeight:1 }}>{stat.icon}</div>
@@ -1298,75 +1308,90 @@ export default function PackPerfect() {
                         })}
                       </div>
 
-                      {/* ── T-shirt panel — emerges from suitcase ── */}
-                      {activeStat && (
-                        <div key={activeStatIdx} style={{ position:'relative', marginTop:'4px', marginBottom:'24px' }}>
-                          {/* Thread connector */}
-                          <div style={{ position:'absolute', top:0, left:`calc(${activeStatIdx} * 25% + 12.5% - 1px)`, width:'2px', height:'10px', background:`linear-gradient(to bottom,${activeStat.color}bb,transparent)` }} />
+                      {/* ── T-shirt: 3-panel unfold from suitcase ── */}
+                      {activeStat && (() => {
+                        const C = activeStat.color
+                        const SHIRT = `M100,0 C85,0 52,12 28,42 C14,60 2,72 0,82 C4,96 28,118 60,132 L60,280 L240,280 L240,132 C272,118 296,96 300,82 C298,72 286,60 272,42 C248,12 215,0 200,0 C196,28 178,44 150,50 C122,44 104,28 100,0 Z`
+                        const COLLAR = `M102,1 C105,26 126,42 150,50 C174,42 195,26 198,1 C194,24 176,38 150,44 C124,38 106,24 102,1 Z`
+                        const gid = `sg${activeStatIdx}`
+                        return (
+                          <div key={activeStatIdx} style={{ position:'relative', marginTop:'10px', marginBottom:'24px' }}>
+                            <div style={{ position:'absolute', top:0, left:`calc(${activeStatIdx} * 25% + 12.5% - 1px)`, width:'2px', height:'10px', background:`linear-gradient(to bottom,${C}cc,transparent)` }} />
+                            <div style={{ maxWidth:'520px', margin:'10px auto 0', position:'relative', height:'280px' }}>
 
-                          {/* Shirt wrapper — emerges + scales up */}
-                          <div className="shirt-emerge" style={{ maxWidth:'520px', margin:'10px auto 0', position:'relative', height:'280px' }}>
+                              {/* LEFT SLEEVE — swings in from behind center */}
+                              <div className="shirt-left" style={{ position:'absolute', left:0, top:0, width:'38%', height:'100%', overflow:'hidden' }}>
+                                <svg viewBox="0 0 114 280" style={{ width:'100%', height:'100%', display:'block' }} preserveAspectRatio="none">
+                                  <defs>
+                                    <linearGradient id={`${gid}L`} x1="100%" y1="0%" x2="0%" y2="100%">
+                                      <stop offset="0%" stopColor={C} stopOpacity={dark?0.2:0.13}/>
+                                      <stop offset="100%" stopColor={C} stopOpacity={dark?0.09:0.05}/>
+                                    </linearGradient>
+                                  </defs>
+                                  <path d={SHIRT} transform="translate(1.5,2)" fill={C} fillOpacity="0.07"/>
+                                  <path d={SHIRT} fill={`url(#${gid}L)`} stroke={C} strokeOpacity="0.4" strokeWidth="1.5" strokeLinejoin="round"/>
+                                  {/* sleeve cuff arc */}
+                                  <path d="M3,80 C10,98 30,118 60,130" fill="none" stroke={C} strokeOpacity="0.4" strokeWidth="2" strokeLinecap="round"/>
+                                  <g className="shirt-crease">
+                                    <line x1="28" y1="44" x2="58" y2="130" stroke={C} strokeOpacity="0.22" strokeWidth="0.8" strokeDasharray="3 3.5"/>
+                                    <line x1="8" y1="90" x2="58" y2="172" stroke={C} strokeOpacity="0.14" strokeWidth="0.7" strokeDasharray="2 4"/>
+                                  </g>
+                                </svg>
+                              </div>
 
-                            {/* SVG t-shirt — proper curved shape */}
-                            <svg viewBox="0 0 100 100" preserveAspectRatio="none"
-                              style={{ position:'absolute', inset:0, width:'100%', height:'100%', overflow:'visible' }}>
-                              <defs>
-                                <linearGradient id={`sg${activeStatIdx}`} x1="0%" y1="0%" x2="100%" y2="100%">
-                                  <stop offset="0%" stopColor={activeStat.color} stopOpacity={dark ? 0.22 : 0.15} />
-                                  <stop offset="100%" stopColor={activeStat.color} stopOpacity={dark ? 0.10 : 0.06} />
-                                </linearGradient>
-                              </defs>
-
-                              {/* Drop shadow layer */}
-                              <path transform="translate(0.8,1.2)"
-                                d="M33,0 C29,0 16,3 6,15 L0,25 L15,38 L19,42 L19,100 L81,100 L81,42 L85,38 L100,25 L94,15 C84,3 71,0 67,0 C63,9 57,15 50,18 C43,15 37,9 33,0 Z"
-                                fill={activeStat.color} fillOpacity="0.07" />
-
-                              {/* Main shirt body */}
-                              <path
-                                d="M33,0 C29,0 16,3 6,15 L0,25 L15,38 L19,42 L19,100 L81,100 L81,42 L85,38 L100,25 L94,15 C84,3 71,0 67,0 C63,9 57,15 50,18 C43,15 37,9 33,0 Z"
-                                fill={`url(#sg${activeStatIdx})`}
-                                stroke={activeStat.color} strokeOpacity="0.45" strokeWidth="0.8" />
-
-                              {/* Collar ribbed band */}
-                              <path
-                                d="M36,1 C34,8 43,15 50,18.5 C57,15 66,8 64,1 C61,9 55,13.5 50,16 C45,13.5 39,9 36,1 Z"
-                                fill={activeStat.color} fillOpacity={dark ? 0.28 : 0.18}
-                                stroke={activeStat.color} strokeOpacity="0.5" strokeWidth="0.5" />
-
-                              {/* Sleeve hem cuffs */}
-                              <path d="M0,22 C2,26 5,30 15,38" fill="none" stroke={activeStat.color} strokeOpacity="0.3" strokeWidth="1.2" />
-                              <path d="M100,22 C98,26 95,30 85,38" fill="none" stroke={activeStat.color} strokeOpacity="0.3" strokeWidth="1.2" />
-
-                              {/* Fold crease lines — fade out as shirt opens */}
-                              <g className="shirt-crease">
-                                {/* Center vertical crease */}
-                                <line x1="50" y1="19" x2="50" y2="98" stroke={activeStat.color} strokeOpacity="0.25" strokeWidth="0.5" strokeDasharray="2 2.5" />
-                                {/* Horizontal fold at 1/3 */}
-                                <line x1="19" y1="53" x2="81" y2="53" stroke={activeStat.color} strokeOpacity="0.2" strokeWidth="0.5" strokeDasharray="1.5 3" />
-                                {/* Horizontal fold at 2/3 */}
-                                <line x1="19" y1="74" x2="81" y2="74" stroke={activeStat.color} strokeOpacity="0.15" strokeWidth="0.5" strokeDasharray="1.5 3" />
-                                {/* Sleeve fold creases */}
-                                <line x1="4" y1="19" x2="14" y2="37" stroke={activeStat.color} strokeOpacity="0.18" strokeWidth="0.4" strokeDasharray="1.5 2.5" />
-                                <line x1="96" y1="19" x2="86" y2="37" stroke={activeStat.color} strokeOpacity="0.18" strokeWidth="0.4" strokeDasharray="1.5 2.5" />
-                              </g>
-                            </svg>
-
-                            {/* Text content — sits in shirt body, fades in last */}
-                            <div className="shirt-text-in" style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', padding:'42% 24% 8% 24%' }}>
-                              <div style={{ textAlign:'center' }}>
-                                <div style={{ fontSize:'11px', fontWeight:'700', color:activeStat.color, textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:'8px' }}>
-                                  {activeStat.icon}  {activeStat.label}
-                                </div>
-                                <div style={{ fontSize:'12.5px', color:t.textMuted, lineHeight:'1.72' }}>
-                                  {activeStat.explain}
+                              {/* CENTER BODY — rises from suitcase */}
+                              <div className="shirt-center" style={{ position:'absolute', left:'29%', top:0, width:'42%', height:'100%', overflow:'hidden' }}>
+                                <svg viewBox="87 0 126 280" style={{ width:'100%', height:'100%', display:'block' }} preserveAspectRatio="none">
+                                  <defs>
+                                    <linearGradient id={`${gid}C`} x1="0%" y1="0%" x2="0%" y2="100%">
+                                      <stop offset="0%" stopColor={C} stopOpacity={dark?0.28:0.18}/>
+                                      <stop offset="55%" stopColor={C} stopOpacity={dark?0.15:0.09}/>
+                                      <stop offset="100%" stopColor={C} stopOpacity={dark?0.08:0.05}/>
+                                    </linearGradient>
+                                  </defs>
+                                  <path d={SHIRT} transform="translate(1.5,2)" fill={C} fillOpacity="0.07"/>
+                                  <path d={SHIRT} fill={`url(#${gid}C)`} stroke={C} strokeOpacity="0.4" strokeWidth="1.5" strokeLinejoin="round"/>
+                                  <path d={COLLAR} fill={dark?`${C}38`:`${C}26`} stroke={C} strokeOpacity="0.55" strokeWidth="1"/>
+                                  <g className="shirt-crease">
+                                    <line x1="150" y1="50" x2="150" y2="278" stroke={C} strokeOpacity="0.18" strokeWidth="0.8" strokeDasharray="3 3.5"/>
+                                    <line x1="100" y1="138" x2="200" y2="138" stroke={C} strokeOpacity="0.16" strokeWidth="0.7" strokeDasharray="2.5 4"/>
+                                    <line x1="100" y1="198" x2="200" y2="198" stroke={C} strokeOpacity="0.11" strokeWidth="0.7" strokeDasharray="2.5 4"/>
+                                  </g>
+                                </svg>
+                                {/* Text sits in shirt body — centered vertically in lower 57% */}
+                                <div className="shirt-text-in" style={{ position:'absolute', left:0, right:0, top:'72%', transform:'translateY(-50%)', padding:'0 10%', textAlign:'center' }}>
+                                  <div style={{ fontSize:'10px', fontWeight:'700', color:C, textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:'7px' }}>
+                                    {activeStat.icon}  {activeStat.label}
+                                  </div>
+                                  <div style={{ fontSize:'11px', color:t.textMuted, lineHeight:'1.72' }}>
+                                    {activeStat.explain}
+                                  </div>
                                 </div>
                               </div>
-                            </div>
 
+                              {/* RIGHT SLEEVE — swings in from behind center */}
+                              <div className="shirt-right" style={{ position:'absolute', right:0, top:0, width:'38%', height:'100%', overflow:'hidden' }}>
+                                <svg viewBox="186 0 114 280" style={{ width:'100%', height:'100%', display:'block' }} preserveAspectRatio="none">
+                                  <defs>
+                                    <linearGradient id={`${gid}R`} x1="0%" y1="0%" x2="100%" y2="100%">
+                                      <stop offset="0%" stopColor={C} stopOpacity={dark?0.2:0.13}/>
+                                      <stop offset="100%" stopColor={C} stopOpacity={dark?0.09:0.05}/>
+                                    </linearGradient>
+                                  </defs>
+                                  <path d={SHIRT} transform="translate(1.5,2)" fill={C} fillOpacity="0.07"/>
+                                  <path d={SHIRT} fill={`url(#${gid}R)`} stroke={C} strokeOpacity="0.4" strokeWidth="1.5" strokeLinejoin="round"/>
+                                  <path d="M297,80 C290,98 270,118 240,130" fill="none" stroke={C} strokeOpacity="0.4" strokeWidth="2" strokeLinecap="round"/>
+                                  <g className="shirt-crease">
+                                    <line x1="272" y1="44" x2="242" y2="130" stroke={C} strokeOpacity="0.22" strokeWidth="0.8" strokeDasharray="3 3.5"/>
+                                    <line x1="292" y1="90" x2="242" y2="172" stroke={C} strokeOpacity="0.14" strokeWidth="0.7" strokeDasharray="2 4"/>
+                                  </g>
+                                </svg>
+                              </div>
+
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )
+                      })()}
                     </>
                   )
                 })()}
