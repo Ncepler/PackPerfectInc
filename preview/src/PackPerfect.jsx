@@ -633,7 +633,7 @@ function mergePremiumItems(allItemSets) {
 export default function PackPerfect() {
   const [dark, setDark] = useState(false)
   const [judeFirst] = useState(() => Math.random() < 0.5)
-  const TABS = ['Packing List','Visual Aid','AI Assistant','Settings','About','Premium']
+  const TABS = ['Packing List','Visual Aid','AI Assistant','Profile','About','Premium']
   const [activeTab, setActiveTab] = useState('Packing List')
 
   const handleTabClick = (tab) => {
@@ -1248,7 +1248,7 @@ export default function PackPerfect() {
       <div className="pp-header" style={{ background:t.headerBg, borderBottom:`1px solid ${t.border}`, padding:'0 24px', display:'flex', alignItems:'center', justifyContent:'space-between', height:'56px', position:'sticky', top:0, zIndex:50 }}>
         <div style={{ display:'flex', alignItems:'center', gap:'10px', flexShrink:0, cursor:'pointer' }}
           onClick={() => { setActiveTab('Packing List'); setListGenerated(false); setListLoading(false); window.scrollTo({top:0,behavior:'smooth'}) }}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={t.accent} strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.26 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.17 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.09a16 16 0 0 0 6 6l.46-.46a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16z"/></svg>
+          <img src="/logo.png" alt="PackPerfect logo" style={{ width:'28px', height:'28px', objectFit:'contain' }} />
           <span style={{ fontSize:'16px', fontWeight:'600', color:t.text }}>PackPerfect</span>
           {destination && listGenerated && <span style={{ fontSize:'12px', color:t.textMuted, background:t.accentDim, padding:'2px 10px', borderRadius:'999px' }}>{destination}</span>}
         </div>
@@ -2077,7 +2077,7 @@ export default function PackPerfect() {
         )}
 
         {/* ── SETTINGS ── */}
-        {activeTab === 'Settings' && (
+        {activeTab === 'Profile' && (
           <div>
             {/* Profile */}
             <div style={card}>
