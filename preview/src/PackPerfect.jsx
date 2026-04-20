@@ -707,16 +707,16 @@ export default function PackPerfect() {
     const closing = activeStatIdx === idx
     if (activeStatIdx !== null) {
       setPrevStatIdx(activeStatIdx)
-      statTransitionRef.current = setTimeout(() => setPrevStatIdx(null), 750)
+      statTransitionRef.current = setTimeout(() => setPrevStatIdx(null), 1100)
     }
     if (closing) {
       setPersonCol(activeStatIdx)
       setPersonAnim('up')
-      personAnimRef.current = setTimeout(() => setPersonAnim(null), 900)
+      personAnimRef.current = setTimeout(() => setPersonAnim(null), 1350)
     } else {
       setPersonCol(idx)
       setPersonAnim('down')
-      personAnimRef.current = setTimeout(() => setPersonAnim(null), 1400)
+      personAnimRef.current = setTimeout(() => setPersonAnim(null), 1550)
     }
     setActiveStatIdx(closing ? null : idx)
   }
@@ -1119,31 +1119,33 @@ export default function PackPerfect() {
     @keyframes cardDropIn {
       0%   { transform:translateY(-165px) scale(0.93); opacity:0.15; }
       14%  { opacity:1; }
-      72%  { transform:translateY(7px) scale(1.015); opacity:1; }
+      75%  { transform:translateY(7px) scale(1.015); opacity:1; }
       100% { transform:translateY(0) scale(1); opacity:1; }
     }
     @keyframes cardRiseOut {
       0%   { transform:translateY(0) scale(1); opacity:1; }
-      72%  { transform:translateY(-158px) scale(0.93); opacity:0.2; }
+      25%  { transform:translateY(-8px) scale(1.015); opacity:1; }
+      86%  { transform:translateY(-158px) scale(0.93); opacity:0.15; }
       100% { transform:translateY(-165px) scale(0.93); opacity:0; }
     }
     @keyframes personDragDown {
-      0%   { transform:translateY(-165px); opacity:0; }
+      0%   { transform:translateX(72px) translateY(-165px); opacity:0; }
       10%  { opacity:1; }
-      72%  { transform:translateY(0); opacity:1; }
-      86%  { transform:translateY(0) translateX(8px); opacity:0.7; }
-      100% { transform:translateY(0) translateX(22px); opacity:0; }
+      75%  { transform:translateX(0px) translateY(0px); opacity:1; }
+      84%  { transform:translateX(18px) translateY(0px); opacity:0.8; }
+      100% { transform:translateX(72px) translateY(0px); opacity:0; }
     }
     @keyframes personPushUp {
-      0%   { transform:translateY(0) translateX(22px); opacity:0; }
-      12%  { opacity:1; transform:translateY(0); }
-      72%  { transform:translateY(-158px); opacity:1; }
-      100% { transform:translateY(-165px); opacity:0; }
+      0%   { transform:translateX(72px) translateY(0px); opacity:0; }
+      12%  { transform:translateX(0px) translateY(0px); opacity:1; }
+      86%  { transform:translateX(0px) translateY(-165px); opacity:1; }
+      94%  { transform:translateX(24px) translateY(-165px); opacity:0.7; }
+      100% { transform:translateX(72px) translateY(-165px); opacity:0; }
     }
-    .card-drop-in { animation:cardDropIn 0.95s cubic-bezier(0.25,0.1,0.25,1) both; }
-    .card-rise-out { animation:cardRiseOut 0.72s cubic-bezier(0.4,0,0.6,1) both; }
-    .person-drag-down { animation:personDragDown 1.4s cubic-bezier(0.25,0.1,0.25,1) both; }
-    .person-push-up { animation:personPushUp 0.9s cubic-bezier(0.4,0,0.6,1) both; }
+    .card-drop-in { animation:cardDropIn 1.0s cubic-bezier(0.25,0.1,0.25,1) both; }
+    .card-rise-out { animation:cardRiseOut 1.0s cubic-bezier(0.25,0.1,0.25,1) both; }
+    .person-drag-down { animation:personDragDown 1.5s cubic-bezier(0.25,0.1,0.25,1) both; }
+    .person-push-up { animation:personPushUp 1.3s cubic-bezier(0.25,0.1,0.25,1) both; }
     .shirt-center  { animation:shirtCenterRise 0.85s 0.72s cubic-bezier(0.22,1,0.36,1) both; transform-origin:top center; }
     .shirt-left    { transform-origin:right center; animation:leftSleeveOpen 0.52s 1.22s cubic-bezier(0.22,1,0.36,1) both; }
     .shirt-right   { transform-origin:left center;  animation:rightSleeveOpen 0.52s 1.40s cubic-bezier(0.22,1,0.36,1) both; }
@@ -1367,34 +1369,60 @@ export default function PackPerfect() {
                         </div>
                       )}
 
-                      {/* ── Person figure ── */}
+                      {/* ── Person figure (stands to the right of active card, grabs handle) ── */}
                       {personAnim && (
                         <div
                           key={`person-${personAnim}-${personCol}`}
                           className={personAnim === 'down' ? 'person-drag-down' : 'person-push-up'}
-                          style={{ position:'absolute', top:'20px', left:`calc(${personCol * 25 + 12.5}% + 16px)`, width:'36px', pointerEvents:'none', zIndex:20, color: STAT_INFO[personCol]?.color ?? '#2563eb' }}
+                          style={{ position:'absolute', top:'108px', left:`calc(${(personCol + 1) * 25}% - 6px)`, width:'58px', pointerEvents:'none', zIndex:20, color: STAT_INFO[personCol]?.color ?? '#2563eb', overflow:'visible' }}
                         >
                           {personAnim === 'down' ? (
-                            <svg viewBox="0 0 40 100" width="36" height="100" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
-                              <circle cx="20" cy="10" r="8"/>
-                              <line x1="20" y1="18" x2="20" y2="55"/>
-                              <line x1="20" y1="30" x2="3" y2="58"/>
-                              <line x1="20" y1="30" x2="37" y2="58"/>
-                              <line x1="20" y1="55" x2="11" y2="85"/>
-                              <line x1="20" y1="55" x2="29" y2="85"/>
-                              <line x1="3" y1="58" x2="7" y2="65"/>
-                              <line x1="37" y1="58" x2="33" y2="65"/>
+                            /* Person facing left, arm reaching left-and-down to grab suitcase handle, stride walking pose */
+                            <svg viewBox="0 0 62 128" width="58" height="120" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ overflow:'visible' }}>
+                              {/* Head */}
+                              <circle cx="46" cy="14" r="12" fill="none"/>
+                              {/* Neck */}
+                              <line x1="46" y1="26" x2="44" y2="33"/>
+                              {/* Torso — slight lean forward (toward card) */}
+                              <line x1="44" y1="33" x2="38" y2="75"/>
+                              {/* Left arm reaching across to suitcase handle */}
+                              <line x1="44" y1="46" x2="8" y2="36"/>
+                              {/* Forearm/hand gripping handle */}
+                              <line x1="8" y1="36" x2="2" y2="46"/>
+                              {/* Right arm swinging back (counterbalance) */}
+                              <line x1="44" y1="46" x2="58" y2="60"/>
+                              {/* Left leg stride forward */}
+                              <line x1="38" y1="75" x2="24" y2="114"/>
+                              {/* Right leg stride back */}
+                              <line x1="38" y1="75" x2="52" y2="114"/>
+                              {/* Left foot */}
+                              <line x1="24" y1="114" x2="14" y2="118"/>
+                              {/* Right foot */}
+                              <line x1="52" y1="114" x2="56" y2="118"/>
                             </svg>
                           ) : (
-                            <svg viewBox="0 0 40 100" width="36" height="100" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
-                              <circle cx="20" cy="10" r="8"/>
-                              <line x1="20" y1="18" x2="20" y2="55"/>
-                              <line x1="20" y1="32" x2="3" y2="10"/>
-                              <line x1="20" y1="32" x2="37" y2="10"/>
-                              <line x1="3" y1="10" x2="5" y2="4"/>
-                              <line x1="37" y1="10" x2="35" y2="4"/>
-                              <line x1="20" y1="55" x2="11" y2="85"/>
-                              <line x1="20" y1="55" x2="29" y2="85"/>
+                            /* Person facing left, arm reaching left-and-up to push suitcase handle upward */
+                            <svg viewBox="0 0 62 128" width="58" height="120" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ overflow:'visible' }}>
+                              {/* Head */}
+                              <circle cx="46" cy="14" r="12" fill="none"/>
+                              {/* Neck */}
+                              <line x1="46" y1="26" x2="44" y2="33"/>
+                              {/* Torso — upright, pushing up */}
+                              <line x1="44" y1="33" x2="40" y2="75"/>
+                              {/* Left arm raised to push handle upward */}
+                              <line x1="44" y1="46" x2="8" y2="24"/>
+                              {/* Forearm pushing up */}
+                              <line x1="8" y1="24" x2="2" y2="14"/>
+                              {/* Right arm raised (effort pose) */}
+                              <line x1="44" y1="46" x2="58" y2="34"/>
+                              {/* Left leg pushing (slight squat forward) */}
+                              <line x1="40" y1="75" x2="22" y2="114"/>
+                              {/* Right leg back/braced */}
+                              <line x1="40" y1="75" x2="54" y2="112"/>
+                              {/* Left foot */}
+                              <line x1="22" y1="114" x2="12" y2="118"/>
+                              {/* Right foot */}
+                              <line x1="54" y1="112" x2="58" y2="116"/>
                             </svg>
                           )}
                         </div>
