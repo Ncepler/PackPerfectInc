@@ -1279,7 +1279,7 @@ export default function PackPerfect() {
                     { value: statCounts.trips.toLocaleString(), suffix:'+', label:'Trips Packed',   icon:'✈️', color:'#2563eb', cls:'suitcase-card-0',
                       explain:`Calculated as the total unique trip configurations across all ${DESTINATIONS.length} destinations × 6 trip types × 28 possible durations — every distinct packing plan PackPerfect can generate.` },
                     { value: statCounts.destinations,           suffix:'+', label:'Destinations',   icon:'🌍', color:'#2563eb', cls:'suitcase-card-1',
-                      explain:`PackPerfect covers ${DESTINATIONS.length} cities and regions worldwide, spanning every climate zone — from tropical beaches to arctic cities. We round down so the number only goes up as we add more.` },
+                      explain:`PackPerfect covers ${DESTINATIONS.length} cities and regions worldwide, spanning every climate zone — from tropical beaches to arctic cities.` },
                     { value: statCounts.items,                  suffix:' avg', label:'Items per List', icon:'🎒', color:'#0891b2', cls:'suitcase-card-2',
                       explain:`The average item count across all trip types and lengths. A 3-day beach trip generates around 28 items; a 2-week adventure can reach 60+. We cap quantities so you're never overpacking.` },
                     { value: statCounts.time,                   suffix:'x',  label:'Faster to Pack', icon:'⚡', color:'#059669', cls:'suitcase-card-3',
