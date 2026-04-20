@@ -695,15 +695,28 @@ export default function PackPerfect() {
   const [statCounts, setStatCounts] = useState({ trips: 0, destinations: 0, items: 0, time: 0 })
   const [activeStatIdx, setActiveStatIdx] = useState(null)
   const [prevStatIdx, setPrevStatIdx] = useState(null)
+  const [personAnim, setPersonAnim] = useState(null)
+  const [personCol, setPersonCol] = useState(0)
   const statTransitionRef = useRef(null)
+  const personAnimRef = useRef(null)
   const heroRef = useRef(null)
 
   const handleStatClick = (idx) => {
     if (statTransitionRef.current) clearTimeout(statTransitionRef.current)
+    if (personAnimRef.current) clearTimeout(personAnimRef.current)
     const closing = activeStatIdx === idx
     if (activeStatIdx !== null) {
       setPrevStatIdx(activeStatIdx)
-      statTransitionRef.current = setTimeout(() => setPrevStatIdx(null), 550)
+      statTransitionRef.current = setTimeout(() => setPrevStatIdx(null), 750)
+    }
+    if (closing) {
+      setPersonCol(activeStatIdx)
+      setPersonAnim('up')
+      personAnimRef.current = setTimeout(() => setPersonAnim(null), 900)
+    } else {
+      setPersonCol(idx)
+      setPersonAnim('down')
+      personAnimRef.current = setTimeout(() => setPersonAnim(null), 1400)
     }
     setActiveStatIdx(closing ? null : idx)
   }
@@ -1104,21 +1117,38 @@ export default function PackPerfect() {
     @keyframes creaseFade { 0%{opacity:0.8} 60%{opacity:0.35} 100%{opacity:0} }
     @keyframes shirtTextIn { 0%,65%{opacity:0;transform:translateY(10px)} 100%{opacity:1;transform:translateY(0)} }
     @keyframes cardDropIn {
-      0%   { transform:translateY(-52px) scale(0.94); opacity:0; }
-      60%  { transform:translateY(5px) scale(1.01); opacity:1; }
+      0%   { transform:translateY(-165px) scale(0.93); opacity:0.15; }
+      14%  { opacity:1; }
+      72%  { transform:translateY(7px) scale(1.015); opacity:1; }
       100% { transform:translateY(0) scale(1); opacity:1; }
     }
     @keyframes cardRiseOut {
       0%   { transform:translateY(0) scale(1); opacity:1; }
-      100% { transform:translateY(-52px) scale(0.94); opacity:0; }
+      72%  { transform:translateY(-158px) scale(0.93); opacity:0.2; }
+      100% { transform:translateY(-165px) scale(0.93); opacity:0; }
     }
-    .card-drop-in { animation:cardDropIn 0.48s cubic-bezier(0.22,1,0.36,1) both; }
-    .card-rise-out { animation:cardRiseOut 0.38s cubic-bezier(0.4,0,1,1) both; }
-    .shirt-center  { animation:shirtCenterRise 0.85s 0.28s cubic-bezier(0.22,1,0.36,1) both; transform-origin:top center; }
-    .shirt-left    { transform-origin:right center; animation:leftSleeveOpen 0.52s 0.78s cubic-bezier(0.22,1,0.36,1) both; }
-    .shirt-right   { transform-origin:left center;  animation:rightSleeveOpen 0.52s 0.96s cubic-bezier(0.22,1,0.36,1) both; }
-    .shirt-crease  { animation:creaseFade 1.6s 0.28s both; }
-    .shirt-text-in { animation:shirtTextIn 0.45s 1.2s both; }
+    @keyframes personDragDown {
+      0%   { transform:translateY(-165px); opacity:0; }
+      10%  { opacity:1; }
+      72%  { transform:translateY(0); opacity:1; }
+      86%  { transform:translateY(0) translateX(8px); opacity:0.7; }
+      100% { transform:translateY(0) translateX(22px); opacity:0; }
+    }
+    @keyframes personPushUp {
+      0%   { transform:translateY(0) translateX(22px); opacity:0; }
+      12%  { opacity:1; transform:translateY(0); }
+      72%  { transform:translateY(-158px); opacity:1; }
+      100% { transform:translateY(-165px); opacity:0; }
+    }
+    .card-drop-in { animation:cardDropIn 0.95s cubic-bezier(0.25,0.1,0.25,1) both; }
+    .card-rise-out { animation:cardRiseOut 0.72s cubic-bezier(0.4,0,0.6,1) both; }
+    .person-drag-down { animation:personDragDown 1.4s cubic-bezier(0.25,0.1,0.25,1) both; }
+    .person-push-up { animation:personPushUp 0.9s cubic-bezier(0.4,0,0.6,1) both; }
+    .shirt-center  { animation:shirtCenterRise 0.85s 0.72s cubic-bezier(0.22,1,0.36,1) both; transform-origin:top center; }
+    .shirt-left    { transform-origin:right center; animation:leftSleeveOpen 0.52s 1.22s cubic-bezier(0.22,1,0.36,1) both; }
+    .shirt-right   { transform-origin:left center;  animation:rightSleeveOpen 0.52s 1.40s cubic-bezier(0.22,1,0.36,1) both; }
+    .shirt-crease  { animation:creaseFade 1.6s 0.72s both; }
+    .shirt-text-in { animation:shirtTextIn 0.45s 1.65s both; }
     .hero-fade-1 { animation:fadeUp 0.7s 0.05s cubic-bezier(0.22,1,0.36,1) both }
     .hero-fade-2 { animation:fadeUp 0.7s 0.18s cubic-bezier(0.22,1,0.36,1) both }
     .hero-fade-3 { animation:fadeUp 0.7s 0.30s cubic-bezier(0.22,1,0.36,1) both }
@@ -1302,6 +1332,8 @@ export default function PackPerfect() {
 
                   return (
                     <>
+                      {/* ── Grid + drop zone wrapper (relative for person overlay) ── */}
+                      <div style={{ position:'relative' }}>
                       {/* ── Main grid — active slot becomes invisible ghost ── */}
                       <div className="hero-stats" style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:'12px', marginBottom:'0' }}>
                         {STAT_INFO.map((stat, idx) => {
@@ -1334,6 +1366,40 @@ export default function PackPerfect() {
                           })}
                         </div>
                       )}
+
+                      {/* ── Person figure ── */}
+                      {personAnim && (
+                        <div
+                          key={`person-${personAnim}-${personCol}`}
+                          className={personAnim === 'down' ? 'person-drag-down' : 'person-push-up'}
+                          style={{ position:'absolute', top:'20px', left:`calc(${personCol * 25 + 12.5}% + 16px)`, width:'36px', pointerEvents:'none', zIndex:20, color: STAT_INFO[personCol]?.color ?? '#2563eb' }}
+                        >
+                          {personAnim === 'down' ? (
+                            <svg viewBox="0 0 40 100" width="36" height="100" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
+                              <circle cx="20" cy="10" r="8"/>
+                              <line x1="20" y1="18" x2="20" y2="55"/>
+                              <line x1="20" y1="30" x2="3" y2="58"/>
+                              <line x1="20" y1="30" x2="37" y2="58"/>
+                              <line x1="20" y1="55" x2="11" y2="85"/>
+                              <line x1="20" y1="55" x2="29" y2="85"/>
+                              <line x1="3" y1="58" x2="7" y2="65"/>
+                              <line x1="37" y1="58" x2="33" y2="65"/>
+                            </svg>
+                          ) : (
+                            <svg viewBox="0 0 40 100" width="36" height="100" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
+                              <circle cx="20" cy="10" r="8"/>
+                              <line x1="20" y1="18" x2="20" y2="55"/>
+                              <line x1="20" y1="32" x2="3" y2="10"/>
+                              <line x1="20" y1="32" x2="37" y2="10"/>
+                              <line x1="3" y1="10" x2="5" y2="4"/>
+                              <line x1="37" y1="10" x2="35" y2="4"/>
+                              <line x1="20" y1="55" x2="11" y2="85"/>
+                              <line x1="20" y1="55" x2="29" y2="85"/>
+                            </svg>
+                          )}
+                        </div>
+                      )}
+                      </div>{/* end relative wrapper */}
 
                       {/* ── T-shirt: 3-panel unfold, full width below drop zone ── */}
                       {activeStat && (() => {
