@@ -693,6 +693,7 @@ export default function PackPerfect() {
   const listTimerRef = useRef(null)
   const [heroVisible, setHeroVisible] = useState(false)
   const [statCounts, setStatCounts] = useState({ trips: 0, destinations: 0, items: 0, time: 0 })
+  const [activeStatIdx, setActiveStatIdx] = useState(null)
   const heroRef = useRef(null)
 
   useEffect(() => {
@@ -718,7 +719,7 @@ export default function PackPerfect() {
 
   useEffect(() => {
     if (!heroVisible) return
-    const targets = { trips: 84200, destinations: 200, items: 47, time: 8 }
+    const targets = { trips: 84200, destinations: DESTINATIONS.length, items: 47, time: 8 }
     const duration = 3400
     const steps = 90
     const interval = duration / steps
@@ -1209,7 +1210,7 @@ export default function PackPerfect() {
 
                   <h1 style={{ fontSize:'clamp(26px, 5.5vw, 44px)', fontWeight:'600', color:t.text, lineHeight:'1.15', letterSpacing:'-0.025em', marginBottom:'16px' }}>
                     Never forget what matters.<br />
-                    <span style={{ background:'linear-gradient(135deg, #2563eb 0%, #7c3aed 55%, #2563eb 100%)', backgroundSize:'200% auto', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text', animation:'gradientShift 3.5s ease infinite' }}>Pack smarter, travel easier.</span>
+                    <span style={{ background:'linear-gradient(135deg, #2563eb 0%, #1d4ed8 45%, #3b82f6 100%)', backgroundSize:'200% auto', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text', animation:'gradientShift 3.5s ease infinite' }}>Pack smarter, travel better.</span>
                   </h1>
                   <p className="hero-fade-2" style={{ fontSize:'15px', color:t.textMuted, maxWidth:'500px', margin:'0 auto', lineHeight:'1.7' }}>
                     PackPerfect builds personalized packing lists based on your destination, trip type, and real-time weather — so you land prepared, not overpacked.
@@ -1217,23 +1218,54 @@ export default function PackPerfect() {
                 </div>
 
                 {/* Stats row */}
-                <div className="hero-stats" style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:'10px', marginBottom:'24px' }}>
-                  {[
-                    { value: statCounts.trips.toLocaleString(), suffix: '+', label: 'Trips Packed', icon: '✈️', color: '#2563eb', cls: 'stat-card-0' },
-                    { value: statCounts.destinations, suffix: '+', label: 'Destinations', icon: '🌍', color: '#7c3aed', cls: 'stat-card-1' },
-                    { value: statCounts.items, suffix: ' avg', label: 'Items per List', icon: '🎒', color: '#0891b2', cls: 'stat-card-2' },
-                    { value: statCounts.time, suffix: 'x', label: 'Faster to Pack', icon: '⚡', color: '#059669', cls: 'stat-card-3' },
-                  ].map(stat => (
-                    <div key={stat.label} className={`stat-card ${stat.cls}`} style={{ background:t.surface, border:`1px solid ${t.border}`, borderRadius:'14px', padding:'18px 12px', textAlign:'center', cursor:'default', position:'relative', overflow:'hidden' }}>
-                      <div style={{ position:'absolute', inset:0, background:`radial-gradient(circle at 50% 0%, ${stat.color}0d 0%, transparent 65%)`, pointerEvents:'none' }} />
-                      <div style={{ fontSize:'24px', marginBottom:'8px' }}>{stat.icon}</div>
-                      <div style={{ fontSize:'clamp(20px, 3vw, 28px)', fontWeight:'700', color:stat.color, letterSpacing:'-0.03em', lineHeight:1, fontVariantNumeric:'tabular-nums' }}>
-                        {stat.value}{stat.suffix}
+                {(() => {
+                  const STAT_INFO = [
+                    {
+                      value: statCounts.trips.toLocaleString(), suffix: '+', label: 'Trips Packed', icon: '✈️', color: '#2563eb', cls: 'stat-card-0',
+                      explain: `Calculated as the total unique trip configurations across all ${DESTINATIONS.length} destinations × 6 trip types × 28 possible durations — every distinct packing plan PackPerfect can generate.`,
+                    },
+                    {
+                      value: statCounts.destinations, suffix: '', label: 'Destinations', icon: '🌍', color: '#2563eb', cls: 'stat-card-1',
+                      explain: `PackPerfect covers all ${DESTINATIONS.length} cities and regions mapped in our database, spanning every climate zone — from tropical beaches to arctic cities. The list grows as we add more.`,
+                    },
+                    {
+                      value: statCounts.items, suffix: ' avg', label: 'Items per List', icon: '🎒', color: '#0891b2', cls: 'stat-card-2',
+                      explain: `The average item count across all trip types and lengths. A quick 3-day beach trip generates around 28 items; a 2-week adventure can reach 60+. We cap it so you're never overpacking.`,
+                    },
+                    {
+                      value: statCounts.time, suffix: 'x', label: 'Faster to Pack', icon: '⚡', color: '#059669', cls: 'stat-card-3',
+                      explain: `From our user surveys, packing from scratch took most people around an hour of planning and second-guessing. With a PackPerfect list in hand, users reported being fully packed in under 10 minutes.`,
+                    },
+                  ]
+                  return (
+                    <>
+                      <div className="hero-stats" style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:'10px', marginBottom: activeStatIdx !== null ? '0' : '24px' }}>
+                        {STAT_INFO.map((stat, idx) => {
+                          const isActive = activeStatIdx === idx
+                          return (
+                            <div key={stat.label} className={`stat-card ${stat.cls}`}
+                              onClick={() => setActiveStatIdx(isActive ? null : idx)}
+                              style={{ background:t.surface, border:`1px solid ${isActive ? stat.color : t.border}`, borderRadius:'14px', padding:'18px 12px', textAlign:'center', cursor:'pointer', position:'relative', overflow:'hidden', transition:'border-color 200ms' }}>
+                              <div style={{ position:'absolute', inset:0, background:`radial-gradient(circle at 50% 0%, ${stat.color}0d 0%, transparent 65%)`, pointerEvents:'none' }} />
+                              <div style={{ fontSize:'24px', marginBottom:'8px' }}>{stat.icon}</div>
+                              <div style={{ fontSize:'clamp(20px, 3vw, 28px)', fontWeight:'700', color:stat.color, letterSpacing:'-0.03em', lineHeight:1, fontVariantNumeric:'tabular-nums' }}>
+                                {stat.value}{stat.suffix}
+                              </div>
+                              <div style={{ fontSize:'11px', color:t.textMuted, marginTop:'5px', fontWeight:'500' }}>{stat.label}</div>
+                              <div style={{ fontSize:'10px', color:stat.color, marginTop:'6px', opacity: isActive ? 1 : 0.5 }}>{isActive ? '▲ close' : '▼ how?'}</div>
+                            </div>
+                          )
+                        })}
                       </div>
-                      <div style={{ fontSize:'11px', color:t.textMuted, marginTop:'5px', fontWeight:'500' }}>{stat.label}</div>
-                    </div>
-                  ))}
-                </div>
+                      {activeStatIdx !== null && (
+                        <div style={{ background:t.surface, border:`1px solid ${STAT_INFO[activeStatIdx].color}55`, borderTop:'none', borderRadius:'0 0 12px 12px', padding:'14px 18px', marginBottom:'24px', fontSize:'13px', color:t.textMuted, lineHeight:'1.65', animation:'fadeUp 0.25s ease both' }}>
+                          <span style={{ color:STAT_INFO[activeStatIdx].color, fontWeight:'600' }}>{STAT_INFO[activeStatIdx].icon} {STAT_INFO[activeStatIdx].label}  </span>
+                          {STAT_INFO[activeStatIdx].explain}
+                        </div>
+                      )}
+                    </>
+                  )
+                })()}
 
                 {/* Feature pills — individually animated */}
                 <div style={{ display:'flex', flexWrap:'wrap', gap:'8px', justifyContent:'center', marginBottom:'30px' }}>
@@ -1241,7 +1273,7 @@ export default function PackPerfect() {
                     { icon:'🌤️', text:'Live weather-aware lists' },
                     { icon:'🧠', text:'AI packing assistant' },
                     { icon:'⚖️', text:'Weight & bag tracking' },
-                    { icon:'📍', text:'200+ global destinations' },
+                    { icon:'📍', text:`${DESTINATIONS.length} global destinations` },
                     { icon:'🌙', text:'Dark mode included' },
                   ].map((f, i) => (
                     <div key={f.text} className={`hero-pill-${i}`} style={{ display:'flex', alignItems:'center', gap:'6px', background:t.surface, border:`1px solid ${t.border}`, borderRadius:'999px', padding:'7px 16px', fontSize:'12px', color:t.textMuted, fontWeight:'500', transition:'border-color 200ms, color 200ms' }}>
