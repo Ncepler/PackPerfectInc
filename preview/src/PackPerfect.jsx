@@ -1075,24 +1075,27 @@ export default function PackPerfect() {
     @keyframes statPop { 0%{opacity:0;transform:translateY(18px) scale(0.92)} 70%{transform:translateY(-3px) scale(1.03)} 100%{opacity:1;transform:translateY(0) scale(1)} }
     @keyframes pillSlide { from{opacity:0;transform:translateX(-10px)} to{opacity:1;transform:translateX(0)} }
     @keyframes badgePulse { 0%,100%{box-shadow:0 0 0 0 rgba(37,99,235,0.35)} 50%{box-shadow:0 0 0 6px rgba(37,99,235,0)} }
-    @keyframes unfoldPanel {
-      0%   { opacity:0; transform:perspective(700px) rotateX(-88deg) scaleY(0.3); transform-origin:top center; }
-      45%  { opacity:1; transform:perspective(700px) rotateX(6deg)  scaleY(1.01); transform-origin:top center; }
-      70%  { transform:perspective(700px) rotateX(-2deg) scaleY(0.99); transform-origin:top center; }
-      100% { opacity:1; transform:perspective(700px) rotateX(0deg)  scaleY(1);    transform-origin:top center; }
+    @keyframes shirtUnfold {
+      0%   { clip-path:polygon(38% 42%,32% 46%,38% 50%,36% 100%,64% 100%,62% 50%,68% 46%,62% 42%,57% 45%,50% 48%,43% 45%); transform:scaleY(0.06) scaleX(0.8); opacity:0; }
+      18%  { opacity:1; clip-path:polygon(30% 28%,10% 35%,25% 44%,25% 100%,75% 100%,75% 44%,90% 35%,70% 28%,62% 34%,50% 40%,38% 34%); transform:scaleY(0.38) scaleX(0.9); }
+      55%  { clip-path:polygon(23% 2%,1% 23%,19% 35%,19% 100%,81% 100%,81% 35%,99% 23%,77% 2%,65% 16%,50% 23%,35% 16%); transform:scaleY(1.05) scaleX(1.01); }
+      75%  { transform:scaleY(0.97) scaleX(1.0); }
+      100% { clip-path:polygon(22% 0%,0% 22%,18% 34%,18% 100%,82% 100%,82% 34%,100% 22%,78% 0%,64% 15%,50% 22%,36% 15%); transform:scaleY(1) scaleX(1); opacity:1; }
     }
-    .unfold-panel { animation:unfoldPanel 0.42s cubic-bezier(0.22,1,0.36,1) both }
+    @keyframes shirtTextIn { 0%,55%{opacity:0;transform:translateY(10px)} 100%{opacity:1;transform:translateY(0)} }
+    .tshirt-shape { animation:shirtUnfold 1.0s 0.32s cubic-bezier(0.22,1,0.36,1) both; transform-origin:top center; }
+    .tshirt-text  { animation:shirtTextIn 0.5s 1.0s both; }
     .hero-fade-1 { animation:fadeUp 0.7s 0.05s cubic-bezier(0.22,1,0.36,1) both }
     .hero-fade-2 { animation:fadeUp 0.7s 0.18s cubic-bezier(0.22,1,0.36,1) both }
     .hero-fade-3 { animation:fadeUp 0.7s 0.30s cubic-bezier(0.22,1,0.36,1) both }
     .hero-fade-4 { animation:fadeUp 0.7s 0.42s cubic-bezier(0.22,1,0.36,1) both }
     .hero-fade-5 { animation:fadeUp 0.7s 0.54s cubic-bezier(0.22,1,0.36,1) both }
-    .stat-card-0 { animation:statPop 0.55s 0.32s cubic-bezier(0.22,1,0.36,1) both }
-    .stat-card-1 { animation:statPop 0.55s 0.42s cubic-bezier(0.22,1,0.36,1) both }
-    .stat-card-2 { animation:statPop 0.55s 0.52s cubic-bezier(0.22,1,0.36,1) both }
-    .stat-card-3 { animation:statPop 0.55s 0.62s cubic-bezier(0.22,1,0.36,1) both }
-    .stat-card { transition:transform 220ms cubic-bezier(0.22,1,0.36,1), box-shadow 220ms ease !important }
-    .stat-card:hover { transform:translateY(-6px) scale(1.03) !important; box-shadow:0 16px 40px rgba(37,99,235,0.18) !important }
+    .suitcase-card-0 { animation:statPop 0.55s 0.32s cubic-bezier(0.22,1,0.36,1) both }
+    .suitcase-card-1 { animation:statPop 0.55s 0.42s cubic-bezier(0.22,1,0.36,1) both }
+    .suitcase-card-2 { animation:statPop 0.55s 0.52s cubic-bezier(0.22,1,0.36,1) both }
+    .suitcase-card-3 { animation:statPop 0.55s 0.62s cubic-bezier(0.22,1,0.36,1) both }
+    .suitcase-wrap { transition:filter 220ms ease }
+    .suitcase-wrap:hover { filter:drop-shadow(0 8px 20px rgba(37,99,235,0.22)) }
     .hero-badge { animation:badgePulse 2.4s ease-in-out infinite }
     .hero-dot { animation:float 2s ease-in-out infinite }
     .hero-pill-0 { animation:pillSlide 0.5s 0.44s both }
@@ -1228,71 +1231,96 @@ export default function PackPerfect() {
                 {/* Stats row */}
                 {(() => {
                   const STAT_INFO = [
-                    {
-                      value: statCounts.trips.toLocaleString(), suffix: '+', label: 'Trips Packed', icon: '✈️', color: '#2563eb', cls: 'stat-card-0',
-                      explain: `Calculated as the total unique trip configurations across all ${DESTINATIONS.length} destinations × 6 trip types × 28 possible durations — every distinct packing plan PackPerfect can generate.`,
-                    },
-                    {
-                      value: statCounts.destinations, suffix: '+', label: 'Destinations', icon: '🌍', color: '#2563eb', cls: 'stat-card-1',
-                      explain: `PackPerfect covers ${DESTINATIONS.length} cities and regions worldwide, spanning every climate zone — from tropical beaches to arctic cities. We round down so the number only goes up as we add more.`,
-                    },
-                    {
-                      value: statCounts.items, suffix: ' avg', label: 'Items per List', icon: '🎒', color: '#0891b2', cls: 'stat-card-2',
-                      explain: `The average item count across all trip types and lengths. A quick 3-day beach trip generates around 28 items; a 2-week adventure can reach 60+. We cap it so you're never overpacking.`,
-                    },
-                    {
-                      value: statCounts.time, suffix: 'x', label: 'Faster to Pack', icon: '⚡', color: '#059669', cls: 'stat-card-3',
-                      explain: `From our user surveys, packing from scratch took most people around an hour of planning and second-guessing. With a PackPerfect list in hand, users reported being fully packed in under 10 minutes.`,
-                    },
+                    { value: statCounts.trips.toLocaleString(), suffix:'+', label:'Trips Packed',   icon:'✈️', color:'#2563eb', cls:'suitcase-card-0',
+                      explain:`Calculated as the total unique trip configurations across all ${DESTINATIONS.length} destinations × 6 trip types × 28 possible durations — every distinct packing plan PackPerfect can generate.` },
+                    { value: statCounts.destinations,           suffix:'+', label:'Destinations',   icon:'🌍', color:'#2563eb', cls:'suitcase-card-1',
+                      explain:`PackPerfect covers ${DESTINATIONS.length} cities and regions worldwide, spanning every climate zone — from tropical beaches to arctic cities. We round down so the number only goes up as we add more.` },
+                    { value: statCounts.items,                  suffix:' avg', label:'Items per List', icon:'🎒', color:'#0891b2', cls:'suitcase-card-2',
+                      explain:`The average item count across all trip types and lengths. A 3-day beach trip generates around 28 items; a 2-week adventure can reach 60+. We cap quantities so you're never overpacking.` },
+                    { value: statCounts.time,                   suffix:'x',  label:'Faster to Pack', icon:'⚡', color:'#059669', cls:'suitcase-card-3',
+                      explain:`From our user surveys, packing from scratch took most people around an hour of planning and second-guessing. With a PackPerfect list in hand, users reported being fully packed in under 10 minutes.` },
                   ]
+                  const activeStat = activeStatIdx !== null ? STAT_INFO[activeStatIdx] : null
                   return (
                     <>
-                      <div className="hero-stats" style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:'10px', marginBottom: activeStatIdx !== null ? '0' : '24px' }}>
+                      {/* ── Suitcase stat cards ── */}
+                      <div className="hero-stats" style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:'12px', marginBottom: activeStat ? '0' : '24px' }}>
                         {STAT_INFO.map((stat, idx) => {
                           const isActive = activeStatIdx === idx
+                          const bc = isActive ? stat.color : t.border
                           return (
-                            <div key={stat.label} className={`stat-card ${stat.cls}`}
-                              onClick={() => setActiveStatIdx(isActive ? null : idx)}
-                              style={{ background:t.surface, border:`1px solid ${isActive ? stat.color : t.border}`, borderRadius:'14px', padding:'18px 12px', textAlign:'center', cursor:'pointer', position:'relative', overflow:'hidden', transition:'border-color 200ms' }}>
-                              <div style={{ position:'absolute', inset:0, background:`radial-gradient(circle at 50% 0%, ${stat.color}0d 0%, transparent 65%)`, pointerEvents:'none' }} />
-                              <div style={{ fontSize:'24px', marginBottom:'8px' }}>{stat.icon}</div>
-                              <div style={{ fontSize:'clamp(20px, 3vw, 28px)', fontWeight:'700', color:stat.color, letterSpacing:'-0.03em', lineHeight:1, fontVariantNumeric:'tabular-nums' }}>
-                                {stat.value}{stat.suffix}
+                            <div key={stat.label} className={`suitcase-wrap ${stat.cls}`}
+                              style={{ position:'relative', paddingTop:'20px', cursor:'pointer' }}
+                              onClick={() => setActiveStatIdx(isActive ? null : idx)}>
+
+                              {/* Handle */}
+                              <div style={{ position:'absolute', top:'2px', left:'50%', transform:'translateX(-50%)', width:'36%', height:'18px', border:`2.5px solid ${bc}`, borderBottom:'none', borderRadius:'8px 8px 0 0', transition:'border-color 300ms', background:t.bg, zIndex:2 }} />
+
+                              {/* Suitcase body */}
+                              <div style={{ border:`2px solid ${bc}`, borderRadius:'12px', background:t.surface, overflow:'visible', transition:'border-color 300ms, box-shadow 300ms', boxShadow: isActive ? `0 0 0 3px ${stat.color}22, 0 10px 28px ${stat.color}28` : '0 2px 8px rgba(0,0,0,0.07)', position:'relative', perspective:'700px', perspectiveOrigin:'50% 30%' }}>
+
+                                {/* Corner rivets */}
+                                {[{top:'9px',left:'8px'},{top:'9px',right:'8px'},{bottom:'9px',left:'8px'},{bottom:'9px',right:'8px'}].map((pos, ri) => (
+                                  <div key={ri} style={{ position:'absolute', width:'7px', height:'7px', borderRadius:'50%', background:bc, transition:'background 300ms', zIndex:3, ...pos }} />
+                                ))}
+
+                                {/* Lid — rotates open on click */}
+                                <div style={{
+                                  background: dark ? `linear-gradient(180deg,${stat.color}22 0%,${stat.color}0d 100%)` : `linear-gradient(180deg,${stat.color}16 0%,${stat.color}07 100%)`,
+                                  borderRadius:'10px 10px 0 0', padding:'16px 10px 14px', textAlign:'center',
+                                  transformOrigin:'50% 100%',
+                                  transform: isActive ? 'perspective(700px) rotateX(-148deg)' : 'perspective(700px) rotateX(0deg)',
+                                  transition:'transform 0.56s cubic-bezier(0.4,0.2,0.2,1)',
+                                  position:'relative', zIndex:2,
+                                }}>
+                                  <div style={{ fontSize:'28px', lineHeight:1 }}>{stat.icon}</div>
+                                  {/* Zipper seam */}
+                                  <div style={{ position:'absolute', bottom:0, left:'6%', right:'6%', height:'2px', background:`repeating-linear-gradient(90deg,${bc} 0,${bc} 5px,transparent 5px,transparent 10px)`, transition:'background 300ms' }} />
+                                  {/* Clasp */}
+                                  <div style={{ position:'absolute', bottom:'-5px', left:'50%', transform:'translateX(-50%)', width:'18px', height:'9px', background:t.surface, border:`2px solid ${bc}`, borderRadius:'3px', zIndex:4, transition:'border-color 300ms,background 300ms' }} />
+                                </div>
+
+                                {/* Base — always visible */}
+                                <div style={{ padding:'14px 8px 16px', textAlign:'center', position:'relative', zIndex:1 }}>
+                                  <div style={{ fontSize:'clamp(17px, 2.5vw, 23px)', fontWeight:'700', color:stat.color, letterSpacing:'-0.03em', lineHeight:1, fontVariantNumeric:'tabular-nums' }}>
+                                    {stat.value}{stat.suffix}
+                                  </div>
+                                  <div style={{ fontSize:'10px', color:t.textMuted, marginTop:'5px', fontWeight:'600', textTransform:'uppercase', letterSpacing:'0.05em' }}>{stat.label}</div>
+                                  <div style={{ fontSize:'9px', color: isActive ? stat.color : t.textDim, marginTop:'7px', transition:'color 300ms' }}>
+                                    {isActive ? '▲ close' : '▼ open'}
+                                  </div>
+                                </div>
                               </div>
-                              <div style={{ fontSize:'11px', color:t.textMuted, marginTop:'5px', fontWeight:'500' }}>{stat.label}</div>
-                              <div style={{ fontSize:'10px', color:stat.color, marginTop:'6px', opacity: isActive ? 1 : 0.5 }}>{isActive ? '▲ close' : '▼ how?'}</div>
                             </div>
                           )
                         })}
                       </div>
-                      {activeStatIdx !== null && (
-                        <div key={activeStatIdx} className="unfold-panel" style={{ marginBottom:'24px', position:'relative' }}>
-                          {/* fold crease line connecting to the active card */}
-                          <div style={{
-                            position:'absolute', top:0, left:`calc(${activeStatIdx} * 25% + 12.5% - 1px)`,
-                            width:'2px', height:'10px',
-                            background:`linear-gradient(to bottom, ${STAT_INFO[activeStatIdx].color}88, transparent)`,
-                            pointerEvents:'none',
-                          }} />
-                          <div style={{
-                            background:t.surface,
-                            border:`1px solid ${STAT_INFO[activeStatIdx].color}44`,
-                            borderRadius:'12px',
-                            padding:'16px 20px',
-                            marginTop:'8px',
-                            display:'flex', alignItems:'flex-start', gap:'14px',
-                          }}>
-                            <div style={{
-                              flexShrink:0, width:'36px', height:'36px', borderRadius:'10px',
-                              background:`${STAT_INFO[activeStatIdx].color}15`,
-                              display:'flex', alignItems:'center', justifyContent:'center', fontSize:'18px',
-                            }}>{STAT_INFO[activeStatIdx].icon}</div>
-                            <div>
-                              <div style={{ fontSize:'12px', fontWeight:'700', color:STAT_INFO[activeStatIdx].color, textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:'5px' }}>
-                                {STAT_INFO[activeStatIdx].label}
+
+                      {/* ── T-shirt explanation panel ── */}
+                      {activeStat && (
+                        <div key={activeStatIdx} style={{ position:'relative', marginTop:'12px', marginBottom:'24px' }}>
+                          {/* Connector thread from card */}
+                          <div style={{ position:'absolute', top:0, left:`calc(${activeStatIdx} * 25% + 12.5% - 1px)`, width:'2px', height:'12px', background:`linear-gradient(to bottom,${activeStat.color}cc,transparent)` }} />
+
+                          {/* T-shirt shaped container */}
+                          <div style={{ position:'relative', width:'100%', minHeight:'210px', marginTop:'12px' }}>
+                            {/* T-shirt background — morphs from folded to unfolded */}
+                            <div className="tshirt-shape" style={{
+                              position:'absolute', inset:0,
+                              background: dark
+                                ? `linear-gradient(150deg,${activeStat.color}28 0%,${activeStat.color}12 100%)`
+                                : `linear-gradient(150deg,${activeStat.color}18 0%,${activeStat.color}08 100%)`,
+                              border:`1.5px solid ${activeStat.color}55`,
+                              borderRadius:'4px',
+                            }} />
+
+                            {/* Content — fades in after shirt unfolds */}
+                            <div className="tshirt-text" style={{ position:'relative', zIndex:1, padding:'72px 23% 28px', width:'100%' }}>
+                              <div style={{ fontSize:'11px', fontWeight:'700', color:activeStat.color, textTransform:'uppercase', letterSpacing:'0.09em', marginBottom:'9px' }}>
+                                {activeStat.icon}  {activeStat.label}
                               </div>
-                              <div style={{ fontSize:'13px', color:t.textMuted, lineHeight:'1.7' }}>
-                                {STAT_INFO[activeStatIdx].explain}
+                              <div style={{ fontSize:'13px', color:t.textMuted, lineHeight:'1.72' }}>
+                                {activeStat.explain}
                               </div>
                             </div>
                           </div>
