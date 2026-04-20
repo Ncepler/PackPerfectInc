@@ -159,6 +159,7 @@ const DESTINATIONS = [
   'Montevideo, Uruguay','Punta del Este, Uruguay',
   'La Paz, Bolivia','Sucre, Bolivia','Uyuni, Bolivia',
   'Caracas, Venezuela','Asuncion, Paraguay',
+  'Georgetown, Guyana','Paramaribo, Suriname',
 ]
 
 const SUITCASES = [
@@ -719,7 +720,7 @@ export default function PackPerfect() {
 
   useEffect(() => {
     if (!heroVisible) return
-    const targets = { trips: 84200, destinations: DESTINATIONS.length, items: 47, time: 8 }
+    const targets = { trips: 84200, destinations: Math.floor(DESTINATIONS.length / 10) * 10, items: 47, time: 8 }
     const duration = 3400
     const steps = 90
     const interval = duration / steps
@@ -1074,6 +1075,13 @@ export default function PackPerfect() {
     @keyframes statPop { 0%{opacity:0;transform:translateY(18px) scale(0.92)} 70%{transform:translateY(-3px) scale(1.03)} 100%{opacity:1;transform:translateY(0) scale(1)} }
     @keyframes pillSlide { from{opacity:0;transform:translateX(-10px)} to{opacity:1;transform:translateX(0)} }
     @keyframes badgePulse { 0%,100%{box-shadow:0 0 0 0 rgba(37,99,235,0.35)} 50%{box-shadow:0 0 0 6px rgba(37,99,235,0)} }
+    @keyframes unfoldPanel {
+      0%   { opacity:0; transform:perspective(700px) rotateX(-88deg) scaleY(0.3); transform-origin:top center; }
+      45%  { opacity:1; transform:perspective(700px) rotateX(6deg)  scaleY(1.01); transform-origin:top center; }
+      70%  { transform:perspective(700px) rotateX(-2deg) scaleY(0.99); transform-origin:top center; }
+      100% { opacity:1; transform:perspective(700px) rotateX(0deg)  scaleY(1);    transform-origin:top center; }
+    }
+    .unfold-panel { animation:unfoldPanel 0.42s cubic-bezier(0.22,1,0.36,1) both }
     .hero-fade-1 { animation:fadeUp 0.7s 0.05s cubic-bezier(0.22,1,0.36,1) both }
     .hero-fade-2 { animation:fadeUp 0.7s 0.18s cubic-bezier(0.22,1,0.36,1) both }
     .hero-fade-3 { animation:fadeUp 0.7s 0.30s cubic-bezier(0.22,1,0.36,1) both }
@@ -1225,8 +1233,8 @@ export default function PackPerfect() {
                       explain: `Calculated as the total unique trip configurations across all ${DESTINATIONS.length} destinations × 6 trip types × 28 possible durations — every distinct packing plan PackPerfect can generate.`,
                     },
                     {
-                      value: statCounts.destinations, suffix: '', label: 'Destinations', icon: '🌍', color: '#2563eb', cls: 'stat-card-1',
-                      explain: `PackPerfect covers all ${DESTINATIONS.length} cities and regions mapped in our database, spanning every climate zone — from tropical beaches to arctic cities. The list grows as we add more.`,
+                      value: statCounts.destinations, suffix: '+', label: 'Destinations', icon: '🌍', color: '#2563eb', cls: 'stat-card-1',
+                      explain: `PackPerfect covers ${DESTINATIONS.length} cities and regions worldwide, spanning every climate zone — from tropical beaches to arctic cities. We round down so the number only goes up as we add more.`,
                     },
                     {
                       value: statCounts.items, suffix: ' avg', label: 'Items per List', icon: '🎒', color: '#0891b2', cls: 'stat-card-2',
@@ -1258,9 +1266,36 @@ export default function PackPerfect() {
                         })}
                       </div>
                       {activeStatIdx !== null && (
-                        <div style={{ background:t.surface, border:`1px solid ${STAT_INFO[activeStatIdx].color}55`, borderTop:'none', borderRadius:'0 0 12px 12px', padding:'14px 18px', marginBottom:'24px', fontSize:'13px', color:t.textMuted, lineHeight:'1.65', animation:'fadeUp 0.25s ease both' }}>
-                          <span style={{ color:STAT_INFO[activeStatIdx].color, fontWeight:'600' }}>{STAT_INFO[activeStatIdx].icon} {STAT_INFO[activeStatIdx].label}  </span>
-                          {STAT_INFO[activeStatIdx].explain}
+                        <div key={activeStatIdx} className="unfold-panel" style={{ marginBottom:'24px', position:'relative' }}>
+                          {/* fold crease line connecting to the active card */}
+                          <div style={{
+                            position:'absolute', top:0, left:`calc(${activeStatIdx} * 25% + 12.5% - 1px)`,
+                            width:'2px', height:'10px',
+                            background:`linear-gradient(to bottom, ${STAT_INFO[activeStatIdx].color}88, transparent)`,
+                            pointerEvents:'none',
+                          }} />
+                          <div style={{
+                            background:t.surface,
+                            border:`1px solid ${STAT_INFO[activeStatIdx].color}44`,
+                            borderRadius:'12px',
+                            padding:'16px 20px',
+                            marginTop:'8px',
+                            display:'flex', alignItems:'flex-start', gap:'14px',
+                          }}>
+                            <div style={{
+                              flexShrink:0, width:'36px', height:'36px', borderRadius:'10px',
+                              background:`${STAT_INFO[activeStatIdx].color}15`,
+                              display:'flex', alignItems:'center', justifyContent:'center', fontSize:'18px',
+                            }}>{STAT_INFO[activeStatIdx].icon}</div>
+                            <div>
+                              <div style={{ fontSize:'12px', fontWeight:'700', color:STAT_INFO[activeStatIdx].color, textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:'5px' }}>
+                                {STAT_INFO[activeStatIdx].label}
+                              </div>
+                              <div style={{ fontSize:'13px', color:t.textMuted, lineHeight:'1.7' }}>
+                                {STAT_INFO[activeStatIdx].explain}
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       )}
                     </>
