@@ -1209,7 +1209,7 @@ export default function PackPerfect() {
 
                   <h1 style={{ fontSize:'clamp(26px, 5.5vw, 44px)', fontWeight:'600', color:t.text, lineHeight:'1.15', letterSpacing:'-0.025em', marginBottom:'16px' }}>
                     Never forget what matters.<br />
-                    <span style={{ background:'linear-gradient(135deg, #2563eb 0%, #7c3aed 55%, #2563eb 100%)', backgroundSize:'200% auto', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text', animation:'gradientShift 3.5s ease infinite' }}>Pack smarter, travel better.</span>
+                    <span style={{ background:'linear-gradient(135deg, #2563eb 0%, #7c3aed 55%, #2563eb 100%)', backgroundSize:'200% auto', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text', animation:'gradientShift 3.5s ease infinite' }}>Pack smarter, travel easier.</span>
                   </h1>
                   <p className="hero-fade-2" style={{ fontSize:'15px', color:t.textMuted, maxWidth:'500px', margin:'0 auto', lineHeight:'1.7' }}>
                     PackPerfect builds personalized packing lists based on your destination, trip type, and real-time weather — so you land prepared, not overpacked.
