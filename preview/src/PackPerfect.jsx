@@ -632,6 +632,7 @@ function mergePremiumItems(allItemSets) {
 
 export default function PackPerfect() {
   const [dark, setDark] = useState(false)
+  const [judeFirst] = useState(() => Math.random() < 0.5)
   const TABS = ['Packing List','Visual Aid','AI Assistant','Settings','About','Premium']
   const [activeTab, setActiveTab] = useState('Packing List')
 
@@ -2257,6 +2258,15 @@ export default function PackPerfect() {
                     { name: 'Hannah Friedmann', role: 'CEO', desc: 'Vision, product strategy, and leadership' },
                     { name: 'Noah Cepler', role: 'CFO', desc: 'Financial planning and business strategy' },
                     { name: 'Alana Borkon', role: 'COO', desc: 'Operations and team management' },
+                    ...(judeFirst
+                      ? [
+                          { name: 'Jude Rock', role: 'CTO', desc: 'Designing, presentations, and innovation' },
+                          { name: 'Ben Zarkin', role: 'CMO', desc: 'Marketing, branding, and user growth' },
+                        ]
+                      : [
+                          { name: 'Ben Zarkin', role: 'CMO', desc: 'Marketing, branding, and user growth' },
+                          { name: 'Jude Rock', role: 'CTO', desc: 'Designing, presentations, and innovation' },
+                        ]),
                   ].map(({ name, role, desc }) => (
                     <div key={name} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
                       <span style={{ minWidth: '44px', fontSize: '11px', fontWeight: '700', color: t.accent, background: dark ? 'rgba(99,102,241,0.15)' : 'rgba(99,102,241,0.1)', borderRadius: '6px', padding: '3px 6px', textAlign: 'center', marginTop: '1px' }}>{role}</span>
@@ -2266,62 +2276,6 @@ export default function PackPerfect() {
                       </div>
                     </div>
                   ))}
-                </div>
-                <style>{`
-                  @keyframes orbit-ben {
-                    from { transform: rotate(0deg) translateY(-72px) rotate(0deg); }
-                    to   { transform: rotate(360deg) translateY(-72px) rotate(-360deg); }
-                  }
-                  @keyframes orbit-jude {
-                    from { transform: rotate(180deg) translateY(-72px) rotate(-180deg); }
-                    to   { transform: rotate(540deg) translateY(-72px) rotate(-540deg); }
-                  }
-                `}</style>
-                <div style={{ marginTop: '20px', position: 'relative', height: '220px' }}>
-                  {/* orbit track */}
-                  <div style={{
-                    position: 'absolute', top: '50%', left: '72px',
-                    width: '144px', height: '144px',
-                    marginLeft: '-72px', marginTop: '-72px',
-                    borderRadius: '50%',
-                    border: `1.5px dashed ${t.border}`,
-                  }} />
-                  {/* Ben – CMO */}
-                  <div style={{
-                    position: 'absolute', top: '50%', left: '72px',
-                    marginLeft: '-44px', marginTop: '-26px',
-                    width: '88px',
-                    animation: 'orbit-ben 8s linear infinite',
-                  }}>
-                    <div style={{
-                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px',
-                      padding: '6px 10px', borderRadius: '50px',
-                      border: `2px solid ${t.accent}`,
-                      background: dark ? 'rgba(99,102,241,0.13)' : 'rgba(99,102,241,0.08)',
-                      textAlign: 'center',
-                    }}>
-                      <span style={{ fontSize: '10px', fontWeight: '700', color: t.accent }}>CMO</span>
-                      <div style={{ fontSize: '12px', fontWeight: '600', color: t.text, whiteSpace: 'nowrap' }}>Ben Zarkin</div>
-                    </div>
-                  </div>
-                  {/* Jude – CTO */}
-                  <div style={{
-                    position: 'absolute', top: '50%', left: '72px',
-                    marginLeft: '-44px', marginTop: '-26px',
-                    width: '88px',
-                    animation: 'orbit-jude 8s linear infinite',
-                  }}>
-                    <div style={{
-                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px',
-                      padding: '6px 10px', borderRadius: '50px',
-                      border: `2px solid ${t.accent}`,
-                      background: dark ? 'rgba(99,102,241,0.13)' : 'rgba(99,102,241,0.08)',
-                      textAlign: 'center',
-                    }}>
-                      <span style={{ fontSize: '10px', fontWeight: '700', color: t.accent }}>CTO</span>
-                      <div style={{ fontSize: '12px', fontWeight: '600', color: t.text, whiteSpace: 'nowrap' }}>Jude Rock</div>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
