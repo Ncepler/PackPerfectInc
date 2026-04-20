@@ -694,7 +694,19 @@ export default function PackPerfect() {
   const [heroVisible, setHeroVisible] = useState(false)
   const [statCounts, setStatCounts] = useState({ trips: 0, destinations: 0, items: 0, time: 0 })
   const [activeStatIdx, setActiveStatIdx] = useState(null)
+  const [prevStatIdx, setPrevStatIdx] = useState(null)
+  const statTransitionRef = useRef(null)
   const heroRef = useRef(null)
+
+  const handleStatClick = (idx) => {
+    if (statTransitionRef.current) clearTimeout(statTransitionRef.current)
+    const closing = activeStatIdx === idx
+    if (activeStatIdx !== null) {
+      setPrevStatIdx(activeStatIdx)
+      statTransitionRef.current = setTimeout(() => setPrevStatIdx(null), 550)
+    }
+    setActiveStatIdx(closing ? null : idx)
+  }
 
   useEffect(() => {
     try {
@@ -1091,6 +1103,17 @@ export default function PackPerfect() {
     }
     @keyframes creaseFade { 0%{opacity:0.8} 60%{opacity:0.35} 100%{opacity:0} }
     @keyframes shirtTextIn { 0%,65%{opacity:0;transform:translateY(10px)} 100%{opacity:1;transform:translateY(0)} }
+    @keyframes cardDropIn {
+      0%   { transform:translateY(-52px) scale(0.94); opacity:0; }
+      60%  { transform:translateY(5px) scale(1.01); opacity:1; }
+      100% { transform:translateY(0) scale(1); opacity:1; }
+    }
+    @keyframes cardRiseOut {
+      0%   { transform:translateY(0) scale(1); opacity:1; }
+      100% { transform:translateY(-52px) scale(0.94); opacity:0; }
+    }
+    .card-drop-in { animation:cardDropIn 0.48s cubic-bezier(0.22,1,0.36,1) both; }
+    .card-rise-out { animation:cardRiseOut 0.38s cubic-bezier(0.4,0,1,1) both; }
     .shirt-center  { animation:shirtCenterRise 0.85s 0.28s cubic-bezier(0.22,1,0.36,1) both; transform-origin:top center; }
     .shirt-left    { transform-origin:right center; animation:leftSleeveOpen 0.52s 0.78s cubic-bezier(0.22,1,0.36,1) both; }
     .shirt-right   { transform-origin:left center;  animation:rightSleeveOpen 0.52s 0.96s cubic-bezier(0.22,1,0.36,1) both; }
@@ -1253,73 +1276,78 @@ export default function PackPerfect() {
                       explain:`From our user surveys, packing from scratch took most people around an hour of planning and second-guessing. With a PackPerfect list in hand, users reported being fully packed in under 10 minutes.` },
                   ]
                   const activeStat = activeStatIdx !== null ? STAT_INFO[activeStatIdx] : null
+
+                  // Renders one suitcase card body (used in both grid ghost and drop zone)
+                  const mkCard = (stat, _idx, lidOpen) => {
+                    const bc = lidOpen ? stat.color : t.border
+                    return <>
+                      <div style={{ position:'absolute', top:'2px', left:'50%', transform:'translateX(-50%)', width:'36%', height:'18px', border:`2.5px solid ${bc}`, borderBottom:'none', borderRadius:'8px 8px 0 0', background:t.bg, zIndex:2 }} />
+                      <div style={{ border:`2px solid ${bc}`, borderRadius:'12px', background:t.surface, overflow:'visible', boxShadow: lidOpen ? `0 0 0 3px ${stat.color}22, 0 12px 32px ${stat.color}30` : '0 2px 8px rgba(0,0,0,0.07)', position:'relative', perspective:'700px', perspectiveOrigin:'50% 30%' }}>
+                        {[{top:'9px',left:'8px'},{top:'9px',right:'8px'},{bottom:'9px',left:'8px'},{bottom:'9px',right:'8px'}].map((pos, ri) => (
+                          <div key={ri} style={{ position:'absolute', width:'7px', height:'7px', borderRadius:'50%', background:bc, zIndex:3, ...pos }} />
+                        ))}
+                        <div style={{ background: dark ? `linear-gradient(180deg,${stat.color}22 0%,${stat.color}0d 100%)` : `linear-gradient(180deg,${stat.color}16 0%,${stat.color}07 100%)`, borderRadius:'10px 10px 0 0', padding:'16px 10px 14px', textAlign:'center', transformOrigin:'0% 50%', transform: lidOpen ? 'perspective(500px) rotateY(165deg)' : 'perspective(500px) rotateY(0deg)', transition:'transform 0.64s cubic-bezier(0.4,0.15,0.15,1)', position:'relative', zIndex:2 }}>
+                          <div style={{ fontSize:'28px', lineHeight:1 }}>{stat.icon}</div>
+                          <div style={{ position:'absolute', bottom:0, left:'6%', right:'6%', height:'2px', background:`repeating-linear-gradient(90deg,${bc} 0,${bc} 5px,transparent 5px,transparent 10px)` }} />
+                          <div style={{ position:'absolute', bottom:'-5px', left:'50%', transform:'translateX(-50%)', width:'18px', height:'9px', background:t.surface, border:`2px solid ${bc}`, borderRadius:'3px', zIndex:4 }} />
+                        </div>
+                        <div style={{ padding:'14px 8px 16px', textAlign:'center', position:'relative', zIndex:1 }}>
+                          <div style={{ fontSize:'clamp(17px, 2.5vw, 23px)', fontWeight:'700', color:stat.color, letterSpacing:'-0.03em', lineHeight:1, fontVariantNumeric:'tabular-nums' }}>{stat.value}{stat.suffix}</div>
+                          <div style={{ fontSize:'10px', color:t.textMuted, marginTop:'5px', fontWeight:'600', textTransform:'uppercase', letterSpacing:'0.05em' }}>{stat.label}</div>
+                          <div style={{ fontSize:'9px', color: lidOpen ? stat.color : t.textDim, marginTop:'7px' }}>{lidOpen ? '▲ close' : '▼ open'}</div>
+                        </div>
+                      </div>
+                    </>
+                  }
+
                   return (
                     <>
-                      {/* ── Suitcase stat cards ── */}
-                      <div className="hero-stats" style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:'12px', marginBottom: activeStat ? '0' : '24px' }}>
+                      {/* ── Main grid — active slot becomes invisible ghost ── */}
+                      <div className="hero-stats" style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:'12px', marginBottom:'0' }}>
                         {STAT_INFO.map((stat, idx) => {
                           const isActive = activeStatIdx === idx
-                          const bc = isActive ? stat.color : t.border
+                          const dimmed = activeStatIdx !== null && !isActive
                           return (
                             <div key={stat.label} className={`suitcase-wrap ${stat.cls}`}
-                              style={{ position:'relative', paddingTop:'20px', cursor:'pointer', transition:'opacity 300ms ease, transform 300ms ease', opacity: activeStatIdx !== null && !isActive ? 0.38 : 1, transform: activeStatIdx !== null && !isActive ? 'scale(0.96)' : 'scale(1)' }}
-                              onClick={() => setActiveStatIdx(isActive ? null : idx)}>
-
-                              {/* Handle */}
-                              <div style={{ position:'absolute', top:'2px', left:'50%', transform:'translateX(-50%)', width:'36%', height:'18px', border:`2.5px solid ${bc}`, borderBottom:'none', borderRadius:'8px 8px 0 0', transition:'border-color 300ms', background:t.bg, zIndex:2 }} />
-
-                              {/* Suitcase body */}
-                              <div style={{ border:`2px solid ${bc}`, borderRadius:'12px', background:t.surface, overflow:'visible', transition:'border-color 300ms, box-shadow 300ms', boxShadow: isActive ? `0 0 0 3px ${stat.color}22, 0 10px 28px ${stat.color}28` : '0 2px 8px rgba(0,0,0,0.07)', position:'relative', perspective:'700px', perspectiveOrigin:'50% 30%' }}>
-
-                                {/* Corner rivets */}
-                                {[{top:'9px',left:'8px'},{top:'9px',right:'8px'},{bottom:'9px',left:'8px'},{bottom:'9px',right:'8px'}].map((pos, ri) => (
-                                  <div key={ri} style={{ position:'absolute', width:'7px', height:'7px', borderRadius:'50%', background:bc, transition:'background 300ms', zIndex:3, ...pos }} />
-                                ))}
-
-                                {/* Lid — rotates open on click */}
-                                <div style={{
-                                  background: dark ? `linear-gradient(180deg,${stat.color}22 0%,${stat.color}0d 100%)` : `linear-gradient(180deg,${stat.color}16 0%,${stat.color}07 100%)`,
-                                  borderRadius:'10px 10px 0 0', padding:'16px 10px 14px', textAlign:'center',
-                                  transformOrigin:'0% 50%',
-                                  transform: isActive ? 'perspective(500px) rotateY(165deg)' : 'perspective(500px) rotateY(0deg)',
-                                  transition:'transform 0.64s cubic-bezier(0.4,0.15,0.15,1)',
-                                  position:'relative', zIndex:2,
-                                }}>
-                                  <div style={{ fontSize:'28px', lineHeight:1 }}>{stat.icon}</div>
-                                  {/* Zipper seam */}
-                                  <div style={{ position:'absolute', bottom:0, left:'6%', right:'6%', height:'2px', background:`repeating-linear-gradient(90deg,${bc} 0,${bc} 5px,transparent 5px,transparent 10px)`, transition:'background 300ms' }} />
-                                  {/* Clasp */}
-                                  <div style={{ position:'absolute', bottom:'-5px', left:'50%', transform:'translateX(-50%)', width:'18px', height:'9px', background:t.surface, border:`2px solid ${bc}`, borderRadius:'3px', zIndex:4, transition:'border-color 300ms,background 300ms' }} />
-                                </div>
-
-                                {/* Base — always visible */}
-                                <div style={{ padding:'14px 8px 16px', textAlign:'center', position:'relative', zIndex:1 }}>
-                                  <div style={{ fontSize:'clamp(17px, 2.5vw, 23px)', fontWeight:'700', color:stat.color, letterSpacing:'-0.03em', lineHeight:1, fontVariantNumeric:'tabular-nums' }}>
-                                    {stat.value}{stat.suffix}
-                                  </div>
-                                  <div style={{ fontSize:'10px', color:t.textMuted, marginTop:'5px', fontWeight:'600', textTransform:'uppercase', letterSpacing:'0.05em' }}>{stat.label}</div>
-                                  <div style={{ fontSize:'9px', color: isActive ? stat.color : t.textDim, marginTop:'7px', transition:'color 300ms' }}>
-                                    {isActive ? '▲ close' : '▼ open'}
-                                  </div>
-                                </div>
-                              </div>
+                              style={{ position:'relative', paddingTop:'20px', cursor: isActive ? 'default' : 'pointer', visibility: isActive ? 'hidden' : 'visible', transition:'opacity 300ms ease, transform 300ms ease', opacity: dimmed ? 0.42 : 1, transform: dimmed ? 'scale(0.96)' : 'scale(1)' }}
+                              onClick={() => { if (!isActive) handleStatClick(idx) }}>
+                              {mkCard(stat, idx, false)}
                             </div>
                           )
                         })}
                       </div>
 
-                      {/* ── T-shirt: 3-panel unfold from suitcase ── */}
+                      {/* ── Drop zone — sliding cards below the grid ── */}
+                      {(prevStatIdx !== null || activeStatIdx !== null) && (
+                        <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:'12px', marginTop:'10px' }}>
+                          {STAT_INFO.map((stat, idx) => {
+                            const isDropping = idx === activeStatIdx
+                            const isRising  = idx === prevStatIdx && prevStatIdx !== activeStatIdx
+                            if (!isDropping && !isRising) return <div key={idx} />
+                            return (
+                              <div key={`dz-${idx}`} className={isDropping ? 'card-drop-in' : 'card-rise-out'}
+                                style={{ position:'relative', paddingTop:'20px', cursor:'pointer' }}
+                                onClick={() => handleStatClick(idx)}>
+                                {mkCard(stat, idx, isDropping)}
+                              </div>
+                            )
+                          })}
+                        </div>
+                      )}
+
+                      {/* ── T-shirt: 3-panel unfold, full width below drop zone ── */}
                       {activeStat && (() => {
                         const C = activeStat.color
                         const SHIRT = `M100,0 C85,0 52,12 28,42 C14,60 2,72 0,82 C4,96 28,118 60,132 L60,280 L240,280 L240,132 C272,118 296,96 300,82 C298,72 286,60 272,42 C248,12 215,0 200,0 C196,28 178,44 150,50 C122,44 104,28 100,0 Z`
                         const COLLAR = `M102,1 C105,26 126,42 150,50 C174,42 195,26 198,1 C194,24 176,38 150,44 C124,38 106,24 102,1 Z`
                         const gid = `sg${activeStatIdx}`
                         return (
-                          <div key={activeStatIdx} style={{ position:'relative', marginTop:'10px', marginBottom:'24px' }}>
-                            <div style={{ position:'absolute', top:0, left:`calc(${activeStatIdx} * 25% + 12.5% - 1px)`, width:'2px', height:'10px', background:`linear-gradient(to bottom,${C}cc,transparent)` }} />
-                            <div style={{ maxWidth:'560px', margin:'10px auto 0', position:'relative', height:'310px' }}>
+                          <div key={activeStatIdx} style={{ position:'relative', marginTop:'6px', marginBottom:'24px' }}>
+                            {/* Connector line from dropped card column to shirt */}
+                            <div style={{ position:'absolute', top:0, left:`calc(${activeStatIdx} * (25% + 3px) + 12.5% - 6px)`, width:'2px', height:'8px', background:`linear-gradient(to bottom,${C}bb,transparent)` }} />
+                            <div style={{ maxWidth:'540px', margin:'8px auto 0', position:'relative', height:'330px' }}>
 
-                              {/* LEFT SLEEVE — swings in from behind center */}
+                              {/* LEFT SLEEVE */}
                               <div className="shirt-left" style={{ position:'absolute', left:0, top:0, width:'38%', height:'100%', overflow:'hidden' }}>
                                 <svg viewBox="0 0 114 280" style={{ width:'100%', height:'100%', display:'block' }} preserveAspectRatio="none">
                                   <defs>
@@ -1330,7 +1358,6 @@ export default function PackPerfect() {
                                   </defs>
                                   <path d={SHIRT} transform="translate(1.5,2)" fill={C} fillOpacity="0.07"/>
                                   <path d={SHIRT} fill={`url(#${gid}L)`} stroke={C} strokeOpacity="0.4" strokeWidth="1.5" strokeLinejoin="round"/>
-                                  {/* sleeve cuff arc */}
                                   <path d="M3,80 C10,98 30,118 60,130" fill="none" stroke={C} strokeOpacity="0.4" strokeWidth="2" strokeLinecap="round"/>
                                   <g className="shirt-crease">
                                     <line x1="28" y1="44" x2="58" y2="130" stroke={C} strokeOpacity="0.22" strokeWidth="0.8" strokeDasharray="3 3.5"/>
@@ -1339,7 +1366,7 @@ export default function PackPerfect() {
                                 </svg>
                               </div>
 
-                              {/* CENTER BODY — rises from suitcase */}
+                              {/* CENTER BODY */}
                               <div className="shirt-center" style={{ position:'absolute', left:'29%', top:0, width:'42%', height:'100%', overflow:'hidden' }}>
                                 <svg viewBox="87 0 126 280" style={{ width:'100%', height:'100%', display:'block' }} preserveAspectRatio="none">
                                   <defs>
@@ -1360,7 +1387,7 @@ export default function PackPerfect() {
                                 </svg>
                               </div>
 
-                              {/* RIGHT SLEEVE — swings in from behind center */}
+                              {/* RIGHT SLEEVE */}
                               <div className="shirt-right" style={{ position:'absolute', right:0, top:0, width:'38%', height:'100%', overflow:'hidden' }}>
                                 <svg viewBox="186 0 114 280" style={{ width:'100%', height:'100%', display:'block' }} preserveAspectRatio="none">
                                   <defs>
@@ -1379,12 +1406,12 @@ export default function PackPerfect() {
                                 </svg>
                               </div>
 
-                              {/* Text overlay — full width, positioned in shirt body center */}
-                              <div className="shirt-text-in" style={{ position:'absolute', left:'18%', right:'18%', top:'74%', transform:'translateY(-50%)', textAlign:'center', zIndex:10, pointerEvents:'none' }}>
-                                <div style={{ fontSize:'10.5px', fontWeight:'700', color:C, textTransform:'uppercase', letterSpacing:'0.09em', marginBottom:'7px' }}>
-                                  {activeStat.icon}  {activeStat.label}
+                              {/* Text — centered in shirt body (body starts at ~47% of height) */}
+                              <div className="shirt-text-in" style={{ position:'absolute', left:'22%', right:'22%', top:'70%', transform:'translateY(-50%)', textAlign:'center', zIndex:10, pointerEvents:'none' }}>
+                                <div style={{ fontSize:'10px', fontWeight:'700', color:C, textTransform:'uppercase', letterSpacing:'0.09em', marginBottom:'6px' }}>
+                                  {activeStat.icon} {activeStat.label}
                                 </div>
-                                <div style={{ fontSize:'11.5px', color:t.textMuted, lineHeight:'1.72' }}>
+                                <div style={{ fontSize:'10px', color:t.textMuted, lineHeight:'1.6' }}>
                                   {activeStat.explain}
                                 </div>
                               </div>
