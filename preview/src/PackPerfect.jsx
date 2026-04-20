@@ -690,6 +690,9 @@ export default function PackPerfect() {
   const [selectedDayIdx, setSelectedDayIdx] = useState(null)
   const [premiumSelectedDay, setPremiumSelectedDay] = useState(null) // { legIdx, dayIdx }
   const [showFullscreenAd, setShowFullscreenAd] = useState(false)
+  const [heroVisible, setHeroVisible] = useState(false)
+  const [statCounts, setStatCounts] = useState({ trips: 0, destinations: 0, items: 0, time: 0 })
+  const heroRef = useRef(null)
 
   useEffect(() => {
     try {
@@ -706,6 +709,33 @@ export default function PackPerfect() {
     const h = (e) => { if (destRef.current && !destRef.current.contains(e.target)) setShowSug(false) }
     document.addEventListener('mousedown', h); return () => document.removeEventListener('mousedown', h)
   }, [])
+
+  useEffect(() => {
+    const timer = setTimeout(() => setHeroVisible(true), 80)
+    return () => clearTimeout(timer)
+  }, [])
+
+  useEffect(() => {
+    if (!heroVisible) return
+    const targets = { trips: 84200, destinations: 200, items: 47, time: 8 }
+    const duration = 1800
+    const steps = 60
+    const interval = duration / steps
+    let step = 0
+    const t = setInterval(() => {
+      step++
+      const p = Math.min(step / steps, 1)
+      const ease = 1 - Math.pow(1 - p, 3)
+      setStatCounts({
+        trips: Math.round(targets.trips * ease),
+        destinations: Math.round(targets.destinations * ease),
+        items: Math.round(targets.items * ease),
+        time: Math.round(targets.time * ease),
+      })
+      if (step >= steps) clearInterval(t)
+    }, interval)
+    return () => clearInterval(t)
+  }, [heroVisible])
 
   const toggleDark = () => { const v = !dark; setDark(v); try{ localStorage.setItem('pp_dark', v ? '1' : '0') }catch(e){} }
   const saveProfile = (updates) => { const u = { ...profile, ...updates }; setProfile(u); try{ localStorage.setItem('pp_profile', JSON.stringify(u)) }catch(e){} }
@@ -1038,6 +1068,21 @@ export default function PackPerfect() {
     @keyframes spin { to { transform:rotate(360deg) } }
     @keyframes pulse-dot { 0%,80%,100%{transform:scale(0.6);opacity:0.4} 40%{transform:scale(1);opacity:1} }
     @keyframes vis-shimmer { 0%{background-position:200% center} 100%{background-position:-200% center} }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+    @keyframes gradientShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+    .hero-fade { animation:fadeUp 0.6s cubic-bezier(0.22,1,0.36,1) both }
+    .hero-fade-1 { animation:fadeUp 0.6s 0.05s cubic-bezier(0.22,1,0.36,1) both }
+    .hero-fade-2 { animation:fadeUp 0.6s 0.15s cubic-bezier(0.22,1,0.36,1) both }
+    .hero-fade-3 { animation:fadeUp 0.6s 0.25s cubic-bezier(0.22,1,0.36,1) both }
+    .hero-fade-4 { animation:fadeUp 0.6s 0.35s cubic-bezier(0.22,1,0.36,1) both }
+    .hero-fade-5 { animation:fadeUp 0.6s 0.45s cubic-bezier(0.22,1,0.36,1) both }
+    .stat-card { transition:transform 200ms ease, box-shadow 200ms ease !important }
+    .stat-card:hover { transform:translateY(-4px) !important; box-shadow:0 12px 32px rgba(37,99,235,0.15) !important }
+    .hero-icon { animation:float 3s ease-in-out infinite }
+    .hero-icon-2 { animation:float 3s 0.8s ease-in-out infinite }
+    .hero-icon-3 { animation:float 3s 1.6s ease-in-out infinite }
     .spinner { display:inline-block; width:18px; height:18px; border:2.5px solid rgba(37,99,235,0.18); border-top-color:#2563eb; border-radius:50%; animation:spin 0.7s linear infinite; }
     .dot-pulse span { display:inline-block; width:7px; height:7px; border-radius:50%; background:#2563eb; margin:0 2px; }
     .dot-pulse span:nth-child(1){animation:pulse-dot 1.2s ease-in-out 0s infinite}
@@ -1051,6 +1096,7 @@ export default function PackPerfect() {
       .pp-main { padding:14px 12px !important; }
       .pp-grid-2 { grid-template-columns:1fr !important; }
       .pp-tips-grid { grid-template-columns:1fr !important; }
+      .hero-stats { grid-template-columns:repeat(2, 1fr) !important; }
       .pp-chat-messages { min-height:260px !important; max-height:320px !important; }
     }
   `
@@ -1135,6 +1181,69 @@ export default function PackPerfect() {
         {/* ── PACKING LIST ── */}
         {activeTab === 'Packing List' && (
           <div>
+
+            {/* ── HERO SECTION (shown before list is generated) ── */}
+            {!listGenerated && !listLoading && heroVisible && (
+              <div ref={heroRef} style={{ marginBottom:'28px' }}>
+
+                {/* Main headline */}
+                <div className="hero-fade-1" style={{ textAlign:'center', padding:'40px 16px 28px' }}>
+                  <div style={{ display:'inline-flex', alignItems:'center', gap:'8px', background:t.accentDim, border:`1px solid ${dark ? 'rgba(37,99,235,0.25)' : 'rgba(37,99,235,0.18)'}`, borderRadius:'999px', padding:'5px 16px', marginBottom:'20px' }}>
+                    <span style={{ width:'7px', height:'7px', borderRadius:'50%', background:'#2563eb', display:'inline-block', animation:'float 2s ease-in-out infinite' }} />
+                    <span style={{ fontSize:'12px', fontWeight:'600', color:t.accent, letterSpacing:'0.06em', textTransform:'uppercase' }}>Smart Packing, Every Trip</span>
+                  </div>
+                  <h1 style={{ fontSize:'clamp(26px, 5vw, 42px)', fontWeight:'600', color:t.text, lineHeight:'1.18', letterSpacing:'-0.02em', marginBottom:'14px' }}>
+                    Never forget what matters.<br />
+                    <span style={{ background:'linear-gradient(135deg, #2563eb 0%, #7c3aed 60%, #2563eb 100%)', backgroundSize:'200% auto', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text', animation:'gradientShift 4s ease infinite' }}>Pack smarter, travel better.</span>
+                  </h1>
+                  <p className="hero-fade-2" style={{ fontSize:'15px', color:t.textMuted, maxWidth:'480px', margin:'0 auto', lineHeight:'1.65' }}>
+                    PackPerfect builds personalized packing lists based on your destination, trip type, and real-time weather — so you land prepared, not overpacked.
+                  </p>
+                </div>
+
+                {/* Stats row */}
+                <div className="hero-fade-3 hero-stats" style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:'10px', marginBottom:'24px' }}>
+                  {[
+                    { value: statCounts.trips.toLocaleString(), suffix: '+', label: 'Trips Packed', icon: '✈️', color: '#2563eb' },
+                    { value: statCounts.destinations, suffix: '+', label: 'Destinations', icon: '🌍', color: '#7c3aed' },
+                    { value: statCounts.items, suffix: ' avg', label: 'Items per List', icon: '🎒', color: '#0891b2' },
+                    { value: statCounts.time, suffix: 'x', label: 'Faster to Pack', icon: '⚡', color: '#059669' },
+                  ].map(stat => (
+                    <div key={stat.label} className="stat-card" style={{ background:t.surface, border:`1px solid ${t.border}`, borderRadius:'12px', padding:'16px 12px', textAlign:'center', cursor:'default' }}>
+                      <div style={{ fontSize:'22px', marginBottom:'6px' }}>{stat.icon}</div>
+                      <div style={{ fontSize:'clamp(18px, 3vw, 26px)', fontWeight:'600', color:stat.color, letterSpacing:'-0.02em', lineHeight:1 }}>
+                        {stat.value}{stat.suffix}
+                      </div>
+                      <div style={{ fontSize:'11px', color:t.textMuted, marginTop:'4px', fontWeight:'500' }}>{stat.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Feature pills */}
+                <div className="hero-fade-4" style={{ display:'flex', flexWrap:'wrap', gap:'8px', justifyContent:'center', marginBottom:'28px' }}>
+                  {[
+                    { icon:'🌤️', text:'Live weather-aware lists' },
+                    { icon:'🧠', text:'AI packing assistant' },
+                    { icon:'⚖️', text:'Weight & bag tracking' },
+                    { icon:'📍', text:'200+ global destinations' },
+                    { icon:'🌙', text:'Dark mode included' },
+                  ].map(f => (
+                    <div key={f.text} style={{ display:'flex', alignItems:'center', gap:'6px', background:t.surface, border:`1px solid ${t.border}`, borderRadius:'999px', padding:'6px 14px', fontSize:'12px', color:t.textMuted, fontWeight:'500' }}>
+                      <span>{f.icon}</span><span>{f.text}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Divider with label */}
+                <div className="hero-fade-5" style={{ display:'flex', alignItems:'center', gap:'12px', marginBottom:'20px' }}>
+                  <div style={{ flex:1, height:'1px', background:t.border }} />
+                  <span style={{ fontSize:'11px', fontWeight:'600', color:t.textDim, textTransform:'uppercase', letterSpacing:'0.1em', whiteSpace:'nowrap' }}>Plan your trip</span>
+                  <div style={{ flex:1, height:'1px', background:t.border }} />
+                </div>
+
+              </div>
+            )}
+
             <div style={{ ...card, borderColor: listGenerated ? t.border : t.borderStrong }}>
               <h2 style={{ fontSize:'18px', fontWeight:'600', color:t.text, marginBottom:'4px' }}>{listGenerated ? 'Edit Trip Details' : 'Plan Your Trip'}</h2>
               <p style={{ fontSize:'13px', color:t.textMuted, marginBottom:'18px' }}>Enter your destination and dates to generate a smart packing list</p>
