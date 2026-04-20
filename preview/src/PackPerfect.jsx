@@ -695,28 +695,22 @@ export default function PackPerfect() {
   const [statCounts, setStatCounts] = useState({ trips: 0, destinations: 0, items: 0, time: 0 })
   const [activeStatIdx, setActiveStatIdx] = useState(null)
   const [prevStatIdx, setPrevStatIdx] = useState(null)
-  const [personAnim, setPersonAnim] = useState(null)
-  const [personCol, setPersonCol] = useState(0)
+  const [closingStatIdx, setClosingStatIdx] = useState(null)
   const statTransitionRef = useRef(null)
-  const personAnimRef = useRef(null)
+  const closingRef = useRef(null)
   const heroRef = useRef(null)
 
   const handleStatClick = (idx) => {
     if (statTransitionRef.current) clearTimeout(statTransitionRef.current)
-    if (personAnimRef.current) clearTimeout(personAnimRef.current)
+    if (closingRef.current) clearTimeout(closingRef.current)
     const closing = activeStatIdx === idx
     if (activeStatIdx !== null) {
       setPrevStatIdx(activeStatIdx)
       statTransitionRef.current = setTimeout(() => setPrevStatIdx(null), 1100)
     }
     if (closing) {
-      setPersonCol(activeStatIdx)
-      setPersonAnim('up')
-      personAnimRef.current = setTimeout(() => setPersonAnim(null), 1350)
-    } else {
-      setPersonCol(idx)
-      setPersonAnim('down')
-      personAnimRef.current = setTimeout(() => setPersonAnim(null), 1550)
+      setClosingStatIdx(activeStatIdx)
+      closingRef.current = setTimeout(() => setClosingStatIdx(null), 1050)
     }
     setActiveStatIdx(closing ? null : idx)
   }
@@ -1128,24 +1122,8 @@ export default function PackPerfect() {
       86%  { transform:translateY(-158px) scale(0.93); opacity:0.15; }
       100% { transform:translateY(-165px) scale(0.93); opacity:0; }
     }
-    @keyframes personDragDown {
-      0%   { transform:translateX(72px) translateY(-165px); opacity:0; }
-      10%  { opacity:1; }
-      75%  { transform:translateX(0px) translateY(0px); opacity:1; }
-      84%  { transform:translateX(18px) translateY(0px); opacity:0.8; }
-      100% { transform:translateX(72px) translateY(0px); opacity:0; }
-    }
-    @keyframes personPushUp {
-      0%   { transform:translateX(72px) translateY(0px); opacity:0; }
-      12%  { transform:translateX(0px) translateY(0px); opacity:1; }
-      86%  { transform:translateX(0px) translateY(-165px); opacity:1; }
-      94%  { transform:translateX(24px) translateY(-165px); opacity:0.7; }
-      100% { transform:translateX(72px) translateY(-165px); opacity:0; }
-    }
     .card-drop-in { animation:cardDropIn 1.0s cubic-bezier(0.25,0.1,0.25,1) both; }
     .card-rise-out { animation:cardRiseOut 1.0s cubic-bezier(0.25,0.1,0.25,1) both; }
-    .person-drag-down { animation:personDragDown 1.5s cubic-bezier(0.25,0.1,0.25,1) both; }
-    .person-push-up { animation:personPushUp 1.3s cubic-bezier(0.25,0.1,0.25,1) both; }
     .shirt-center  { animation:shirtCenterRise 0.85s 0.72s cubic-bezier(0.22,1,0.36,1) both; transform-origin:top center; }
     .shirt-left    { transform-origin:right center; animation:leftSleeveOpen 0.52s 1.22s cubic-bezier(0.22,1,0.36,1) both; }
     .shirt-right   { transform-origin:left center;  animation:rightSleeveOpen 0.52s 1.40s cubic-bezier(0.22,1,0.36,1) both; }
@@ -1339,8 +1317,8 @@ export default function PackPerfect() {
                       {/* ── Main grid — active slot becomes invisible ghost ── */}
                       <div className="hero-stats" style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:'12px', marginBottom:'0' }}>
                         {STAT_INFO.map((stat, idx) => {
-                          const isActive = activeStatIdx === idx
-                          const dimmed = activeStatIdx !== null && !isActive
+                          const isActive = activeStatIdx === idx || closingStatIdx === idx
+                          const dimmed = activeStatIdx !== null && activeStatIdx !== idx && closingStatIdx !== idx
                           return (
                             <div key={stat.label} className={`suitcase-wrap ${stat.cls}`}
                               style={{ position:'relative', paddingTop:'20px', cursor: isActive ? 'default' : 'pointer', visibility: isActive ? 'hidden' : 'visible', transition:'opacity 300ms ease, transform 300ms ease', opacity: dimmed ? 0.42 : 1, transform: dimmed ? 'scale(0.96)' : 'scale(1)' }}
@@ -1352,11 +1330,11 @@ export default function PackPerfect() {
                       </div>
 
                       {/* ── Drop zone — sliding cards below the grid ── */}
-                      {(prevStatIdx !== null || activeStatIdx !== null) && (
+                      {(prevStatIdx !== null || activeStatIdx !== null || closingStatIdx !== null) && (
                         <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:'12px', marginTop:'10px' }}>
                           {STAT_INFO.map((stat, idx) => {
                             const isDropping = idx === activeStatIdx
-                            const isRising  = idx === prevStatIdx && prevStatIdx !== activeStatIdx
+                            const isRising  = idx === closingStatIdx || (idx === prevStatIdx && prevStatIdx !== activeStatIdx)
                             if (!isDropping && !isRising) return <div key={idx} />
                             return (
                               <div key={`dz-${idx}`} className={isDropping ? 'card-drop-in' : 'card-rise-out'}
@@ -1369,64 +1347,6 @@ export default function PackPerfect() {
                         </div>
                       )}
 
-                      {/* ── Person figure (stands to the right of active card, grabs handle) ── */}
-                      {personAnim && (
-                        <div
-                          key={`person-${personAnim}-${personCol}`}
-                          className={personAnim === 'down' ? 'person-drag-down' : 'person-push-up'}
-                          style={{ position:'absolute', top:'108px', left:`calc(${(personCol + 1) * 25}% - 6px)`, width:'58px', pointerEvents:'none', zIndex:20, color: STAT_INFO[personCol]?.color ?? '#2563eb', overflow:'visible' }}
-                        >
-                          {personAnim === 'down' ? (
-                            /* Person facing left, arm reaching left-and-down to grab suitcase handle, stride walking pose */
-                            <svg viewBox="0 0 62 128" width="58" height="120" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ overflow:'visible' }}>
-                              {/* Head */}
-                              <circle cx="46" cy="14" r="12" fill="none"/>
-                              {/* Neck */}
-                              <line x1="46" y1="26" x2="44" y2="33"/>
-                              {/* Torso — slight lean forward (toward card) */}
-                              <line x1="44" y1="33" x2="38" y2="75"/>
-                              {/* Left arm reaching across to suitcase handle */}
-                              <line x1="44" y1="46" x2="8" y2="36"/>
-                              {/* Forearm/hand gripping handle */}
-                              <line x1="8" y1="36" x2="2" y2="46"/>
-                              {/* Right arm swinging back (counterbalance) */}
-                              <line x1="44" y1="46" x2="58" y2="60"/>
-                              {/* Left leg stride forward */}
-                              <line x1="38" y1="75" x2="24" y2="114"/>
-                              {/* Right leg stride back */}
-                              <line x1="38" y1="75" x2="52" y2="114"/>
-                              {/* Left foot */}
-                              <line x1="24" y1="114" x2="14" y2="118"/>
-                              {/* Right foot */}
-                              <line x1="52" y1="114" x2="56" y2="118"/>
-                            </svg>
-                          ) : (
-                            /* Person facing left, arm reaching left-and-up to push suitcase handle upward */
-                            <svg viewBox="0 0 62 128" width="58" height="120" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ overflow:'visible' }}>
-                              {/* Head */}
-                              <circle cx="46" cy="14" r="12" fill="none"/>
-                              {/* Neck */}
-                              <line x1="46" y1="26" x2="44" y2="33"/>
-                              {/* Torso — upright, pushing up */}
-                              <line x1="44" y1="33" x2="40" y2="75"/>
-                              {/* Left arm raised to push handle upward */}
-                              <line x1="44" y1="46" x2="8" y2="24"/>
-                              {/* Forearm pushing up */}
-                              <line x1="8" y1="24" x2="2" y2="14"/>
-                              {/* Right arm raised (effort pose) */}
-                              <line x1="44" y1="46" x2="58" y2="34"/>
-                              {/* Left leg pushing (slight squat forward) */}
-                              <line x1="40" y1="75" x2="22" y2="114"/>
-                              {/* Right leg back/braced */}
-                              <line x1="40" y1="75" x2="54" y2="112"/>
-                              {/* Left foot */}
-                              <line x1="22" y1="114" x2="12" y2="118"/>
-                              {/* Right foot */}
-                              <line x1="54" y1="112" x2="58" y2="116"/>
-                            </svg>
-                          )}
-                        </div>
-                      )}
                       </div>{/* end relative wrapper */}
 
                       {/* ── T-shirt: 3-panel unfold, full width below drop zone ── */}
