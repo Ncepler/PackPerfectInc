@@ -1075,16 +1075,18 @@ export default function PackPerfect() {
     @keyframes statPop { 0%{opacity:0;transform:translateY(18px) scale(0.92)} 70%{transform:translateY(-3px) scale(1.03)} 100%{opacity:1;transform:translateY(0) scale(1)} }
     @keyframes pillSlide { from{opacity:0;transform:translateX(-10px)} to{opacity:1;transform:translateX(0)} }
     @keyframes badgePulse { 0%,100%{box-shadow:0 0 0 0 rgba(37,99,235,0.35)} 50%{box-shadow:0 0 0 6px rgba(37,99,235,0)} }
-    @keyframes shirtUnfold {
-      0%   { clip-path:polygon(38% 42%,32% 46%,38% 50%,36% 100%,64% 100%,62% 50%,68% 46%,62% 42%,57% 45%,50% 48%,43% 45%); transform:scaleY(0.06) scaleX(0.8); opacity:0; }
-      18%  { opacity:1; clip-path:polygon(30% 28%,10% 35%,25% 44%,25% 100%,75% 100%,75% 44%,90% 35%,70% 28%,62% 34%,50% 40%,38% 34%); transform:scaleY(0.38) scaleX(0.9); }
-      55%  { clip-path:polygon(23% 2%,1% 23%,19% 35%,19% 100%,81% 100%,81% 35%,99% 23%,77% 2%,65% 16%,50% 23%,35% 16%); transform:scaleY(1.05) scaleX(1.01); }
-      75%  { transform:scaleY(0.97) scaleX(1.0); }
-      100% { clip-path:polygon(22% 0%,0% 22%,18% 34%,18% 100%,82% 100%,82% 34%,100% 22%,78% 0%,64% 15%,50% 22%,36% 15%); transform:scaleY(1) scaleX(1); opacity:1; }
+    @keyframes shirtEmerge {
+      0%   { transform:translateY(-52px) scaleY(0.08) scaleX(0.55); opacity:0; transform-origin:top center; }
+      20%  { opacity:1; transform:translateY(-28px) scaleY(0.35) scaleX(0.78); transform-origin:top center; }
+      55%  { transform:translateY(5px) scaleY(1.04) scaleX(1.01); transform-origin:top center; }
+      75%  { transform:translateY(-3px) scaleY(0.985) scaleX(0.998); transform-origin:top center; }
+      100% { transform:translateY(0) scaleY(1) scaleX(1); opacity:1; transform-origin:top center; }
     }
-    @keyframes shirtTextIn { 0%,55%{opacity:0;transform:translateY(10px)} 100%{opacity:1;transform:translateY(0)} }
-    .tshirt-shape { animation:shirtUnfold 1.0s 0.32s cubic-bezier(0.22,1,0.36,1) both; transform-origin:top center; }
-    .tshirt-text  { animation:shirtTextIn 0.5s 1.0s both; }
+    @keyframes creaseFade { 0%{opacity:0.9} 55%{opacity:0.55} 100%{opacity:0} }
+    @keyframes shirtTextIn { 0%,60%{opacity:0;transform:translateY(12px)} 100%{opacity:1;transform:translateY(0)} }
+    .shirt-emerge  { animation:shirtEmerge 1.15s 0.3s cubic-bezier(0.22,1,0.36,1) both; }
+    .shirt-crease  { animation:creaseFade 1.3s 0.3s both; }
+    .shirt-text-in { animation:shirtTextIn 0.5s 1.1s both; }
     .hero-fade-1 { animation:fadeUp 0.7s 0.05s cubic-bezier(0.22,1,0.36,1) both }
     .hero-fade-2 { animation:fadeUp 0.7s 0.18s cubic-bezier(0.22,1,0.36,1) both }
     .hero-fade-3 { animation:fadeUp 0.7s 0.30s cubic-bezier(0.22,1,0.36,1) both }
@@ -1221,7 +1223,7 @@ export default function PackPerfect() {
 
                   <h1 style={{ fontSize:'clamp(26px, 5.5vw, 44px)', fontWeight:'600', color:t.text, lineHeight:'1.15', letterSpacing:'-0.025em', marginBottom:'16px' }}>
                     Never forget what matters.<br />
-                    <span style={{ background:'linear-gradient(135deg, #2563eb 0%, #1d4ed8 45%, #3b82f6 100%)', backgroundSize:'200% auto', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text', animation:'gradientShift 3.5s ease infinite' }}>Pack smarter, travel better.</span>
+                    <span style={{ background:'linear-gradient(135deg, #2563eb 0%, #1d4ed8 45%, #3b82f6 100%)', backgroundSize:'200% auto', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text', animation:'gradientShift 3.5s ease infinite' }}>Pack smarter, travel easier.</span>
                   </h1>
                   <p className="hero-fade-2" style={{ fontSize:'15px', color:t.textMuted, maxWidth:'500px', margin:'0 auto', lineHeight:'1.7' }}>
                     PackPerfect builds personalized packing lists based on your destination, trip type, and real-time weather — so you land prepared, not overpacked.
@@ -1269,8 +1271,8 @@ export default function PackPerfect() {
                                   background: dark ? `linear-gradient(180deg,${stat.color}22 0%,${stat.color}0d 100%)` : `linear-gradient(180deg,${stat.color}16 0%,${stat.color}07 100%)`,
                                   borderRadius:'10px 10px 0 0', padding:'16px 10px 14px', textAlign:'center',
                                   transformOrigin:'50% 100%',
-                                  transform: isActive ? 'perspective(700px) rotateX(-148deg)' : 'perspective(700px) rotateX(0deg)',
-                                  transition:'transform 0.56s cubic-bezier(0.4,0.2,0.2,1)',
+                                  transform: isActive ? 'perspective(600px) rotateX(-172deg)' : 'perspective(600px) rotateX(0deg)',
+                                  transition:'transform 0.62s cubic-bezier(0.4,0.15,0.15,1)',
                                   position:'relative', zIndex:2,
                                 }}>
                                   <div style={{ fontSize:'28px', lineHeight:1 }}>{stat.icon}</div>
@@ -1296,33 +1298,72 @@ export default function PackPerfect() {
                         })}
                       </div>
 
-                      {/* ── T-shirt explanation panel ── */}
+                      {/* ── T-shirt panel — emerges from suitcase ── */}
                       {activeStat && (
-                        <div key={activeStatIdx} style={{ position:'relative', marginTop:'12px', marginBottom:'24px' }}>
-                          {/* Connector thread from card */}
-                          <div style={{ position:'absolute', top:0, left:`calc(${activeStatIdx} * 25% + 12.5% - 1px)`, width:'2px', height:'12px', background:`linear-gradient(to bottom,${activeStat.color}cc,transparent)` }} />
+                        <div key={activeStatIdx} style={{ position:'relative', marginTop:'4px', marginBottom:'24px' }}>
+                          {/* Thread connector */}
+                          <div style={{ position:'absolute', top:0, left:`calc(${activeStatIdx} * 25% + 12.5% - 1px)`, width:'2px', height:'10px', background:`linear-gradient(to bottom,${activeStat.color}bb,transparent)` }} />
 
-                          {/* T-shirt shaped container */}
-                          <div style={{ position:'relative', width:'100%', minHeight:'210px', marginTop:'12px' }}>
-                            {/* T-shirt background — morphs from folded to unfolded */}
-                            <div className="tshirt-shape" style={{
-                              position:'absolute', inset:0,
-                              background: dark
-                                ? `linear-gradient(150deg,${activeStat.color}28 0%,${activeStat.color}12 100%)`
-                                : `linear-gradient(150deg,${activeStat.color}18 0%,${activeStat.color}08 100%)`,
-                              border:`1.5px solid ${activeStat.color}55`,
-                              borderRadius:'4px',
-                            }} />
+                          {/* Shirt wrapper — emerges + scales up */}
+                          <div className="shirt-emerge" style={{ maxWidth:'520px', margin:'10px auto 0', position:'relative', height:'280px' }}>
 
-                            {/* Content — fades in after shirt unfolds */}
-                            <div className="tshirt-text" style={{ position:'relative', zIndex:1, padding:'72px 23% 28px', width:'100%' }}>
-                              <div style={{ fontSize:'11px', fontWeight:'700', color:activeStat.color, textTransform:'uppercase', letterSpacing:'0.09em', marginBottom:'9px' }}>
-                                {activeStat.icon}  {activeStat.label}
-                              </div>
-                              <div style={{ fontSize:'13px', color:t.textMuted, lineHeight:'1.72' }}>
-                                {activeStat.explain}
+                            {/* SVG t-shirt — proper curved shape */}
+                            <svg viewBox="0 0 100 100" preserveAspectRatio="none"
+                              style={{ position:'absolute', inset:0, width:'100%', height:'100%', overflow:'visible' }}>
+                              <defs>
+                                <linearGradient id={`sg${activeStatIdx}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                                  <stop offset="0%" stopColor={activeStat.color} stopOpacity={dark ? 0.22 : 0.15} />
+                                  <stop offset="100%" stopColor={activeStat.color} stopOpacity={dark ? 0.10 : 0.06} />
+                                </linearGradient>
+                              </defs>
+
+                              {/* Drop shadow layer */}
+                              <path transform="translate(0.8,1.2)"
+                                d="M33,0 C29,0 16,3 6,15 L0,25 L15,38 L19,42 L19,100 L81,100 L81,42 L85,38 L100,25 L94,15 C84,3 71,0 67,0 C63,9 57,15 50,18 C43,15 37,9 33,0 Z"
+                                fill={activeStat.color} fillOpacity="0.07" />
+
+                              {/* Main shirt body */}
+                              <path
+                                d="M33,0 C29,0 16,3 6,15 L0,25 L15,38 L19,42 L19,100 L81,100 L81,42 L85,38 L100,25 L94,15 C84,3 71,0 67,0 C63,9 57,15 50,18 C43,15 37,9 33,0 Z"
+                                fill={`url(#sg${activeStatIdx})`}
+                                stroke={activeStat.color} strokeOpacity="0.45" strokeWidth="0.8" />
+
+                              {/* Collar ribbed band */}
+                              <path
+                                d="M36,1 C34,8 43,15 50,18.5 C57,15 66,8 64,1 C61,9 55,13.5 50,16 C45,13.5 39,9 36,1 Z"
+                                fill={activeStat.color} fillOpacity={dark ? 0.28 : 0.18}
+                                stroke={activeStat.color} strokeOpacity="0.5" strokeWidth="0.5" />
+
+                              {/* Sleeve hem cuffs */}
+                              <path d="M0,22 C2,26 5,30 15,38" fill="none" stroke={activeStat.color} strokeOpacity="0.3" strokeWidth="1.2" />
+                              <path d="M100,22 C98,26 95,30 85,38" fill="none" stroke={activeStat.color} strokeOpacity="0.3" strokeWidth="1.2" />
+
+                              {/* Fold crease lines — fade out as shirt opens */}
+                              <g className="shirt-crease">
+                                {/* Center vertical crease */}
+                                <line x1="50" y1="19" x2="50" y2="98" stroke={activeStat.color} strokeOpacity="0.25" strokeWidth="0.5" strokeDasharray="2 2.5" />
+                                {/* Horizontal fold at 1/3 */}
+                                <line x1="19" y1="53" x2="81" y2="53" stroke={activeStat.color} strokeOpacity="0.2" strokeWidth="0.5" strokeDasharray="1.5 3" />
+                                {/* Horizontal fold at 2/3 */}
+                                <line x1="19" y1="74" x2="81" y2="74" stroke={activeStat.color} strokeOpacity="0.15" strokeWidth="0.5" strokeDasharray="1.5 3" />
+                                {/* Sleeve fold creases */}
+                                <line x1="4" y1="19" x2="14" y2="37" stroke={activeStat.color} strokeOpacity="0.18" strokeWidth="0.4" strokeDasharray="1.5 2.5" />
+                                <line x1="96" y1="19" x2="86" y2="37" stroke={activeStat.color} strokeOpacity="0.18" strokeWidth="0.4" strokeDasharray="1.5 2.5" />
+                              </g>
+                            </svg>
+
+                            {/* Text content — sits in shirt body, fades in last */}
+                            <div className="shirt-text-in" style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', padding:'42% 24% 8% 24%' }}>
+                              <div style={{ textAlign:'center' }}>
+                                <div style={{ fontSize:'11px', fontWeight:'700', color:activeStat.color, textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:'8px' }}>
+                                  {activeStat.icon}  {activeStat.label}
+                                </div>
+                                <div style={{ fontSize:'12.5px', color:t.textMuted, lineHeight:'1.72' }}>
+                                  {activeStat.explain}
+                                </div>
                               </div>
                             </div>
+
                           </div>
                         </div>
                       )}
