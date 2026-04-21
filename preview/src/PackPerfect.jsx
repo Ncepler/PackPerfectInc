@@ -357,7 +357,6 @@ function generateList(tripType, days, climate, liters = 69, gender = '') {
   const health = [
     { name:'Hand Sanitizer', qty:1, weight:0.2, packed:false, bag:'carry' },
     { name:'Band-Aids', qty:1, weight:0.1, packed:false, bag:'carry' },
-    { name:'Pain Reliever', qty:1, weight:0.2, packed:false, bag:'carry' },
   ]
 
   if (tripType === 'Business') {
@@ -512,8 +511,8 @@ function generateList(tripType, days, climate, liters = 69, gender = '') {
       { name:'Underwear', qty:undies, weight:0.2, packed:false, bag:'main' },
     )
     footwear.push(
-      { name:'Ski Boots (or rent on-site)', qty:1, weight:7.0, packed:false, bag:'main' },
-      { name:'Warm Snow Boots (après-ski)', qty:1, weight:3.0, packed:false, bag:'main' },
+      { name:'Ski Boots (or rent on-site)', qty:1, weight:7.0, packed:false, bag:'boot bag' },
+      { name:'Warm Snow Boots (après-ski)', qty:1, weight:3.0, packed:false, bag:'boot bag' },
     )
     health.push(
       { name:'Sunscreen SPF 50 (UV is intense at altitude)', qty:2, weight:0.5, packed:false, bag:'carry' },
@@ -581,7 +580,6 @@ function generateList(tripType, days, climate, liters = 69, gender = '') {
   if (gender === 'Female') {
     toiletries.push({ name:'Makeup Bag / Cosmetics', qty:1, weight:1.0, packed:false, bag:'main' })
     toiletries.push({ name:'Hair Accessories', qty:1, weight:0.2, packed:false, bag:'main' })
-    health.push({ name:'Feminine Hygiene Products', qty:1, weight:0.3, packed:false, bag:'carry' })
   }
 
   // Climate additions (only for non-Adventure since Adventure handles its own climate gear)
