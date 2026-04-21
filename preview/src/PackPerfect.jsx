@@ -302,15 +302,8 @@ function getVisualImage(climate, tripType) {
   return IMG_NORM
 }
 
-function suggestTripTypes(climate) {
-  const map = {
-    tropical: ['Leisure','Beach','Adventure','Family'],
-    cold: ['Leisure','Adventure','Family','Business'],
-    desert: ['Leisure','Business','Adventure'],
-    warm: ['Leisure','Beach','Family','Adventure','Business'],
-    temperate: ['Leisure','Business','Family','Adventure','Backpacking'],
-  }
-  return map[climate] || ['Leisure','Business','Family','Adventure']
+function suggestTripTypes() {
+  return ['Leisure','Business','Beach','Adventure','Family','Backpacking','Skiing','Sports Tournament']
 }
 
 // Cap clothing quantities — for long trips recommend washing instead
@@ -502,6 +495,52 @@ function generateList(tripType, days, climate, liters = 69, gender = '') {
     health.push({ name:'Travel Towel', qty:1, weight:0.5, packed:false, bag:'main' })
     documents.push({ name:'Passport Holder', qty:1, weight:0.1, packed:false, bag:'carry' })
     electronics.push({ name:'Travel Padlock', qty:1, weight:0.3, packed:false, bag:'main' })
+  } else if (tripType === 'Skiing') {
+    clothing.push(
+      { name:'Ski Jacket', qty:1, weight:2.5, packed:false, bag:'main' },
+      { name:'Ski Pants', qty:1, weight:1.8, packed:false, bag:'main' },
+      { name:'Thermal Base Layer (Top)', qty:2, weight:0.6, packed:false, bag:'main' },
+      { name:'Thermal Base Layer (Bottom)', qty:2, weight:0.5, packed:false, bag:'main' },
+      { name:'Fleece Mid-Layer', qty:1, weight:1.2, packed:false, bag:'main' },
+      { name:'Wool Socks', qty:Math.min(socks, 6), weight:0.3, packed:false, bag:'main' },
+      { name:'Ski Gloves', qty:1, weight:0.5, packed:false, bag:'main' },
+      { name:'Neck Gaiter / Balaclava', qty:1, weight:0.2, packed:false, bag:'main' },
+      { name:'Warm Hat / Beanie', qty:1, weight:0.2, packed:false, bag:'main' },
+      { name:'Goggles', qty:1, weight:0.4, packed:false, bag:'main' },
+      { name:'Helmet', qty:1, weight:2.5, packed:false, bag:'main' },
+      { name:'Casual Après-Ski Outfit', qty:Math.min(Math.ceil(days / 2), 3), weight:0.6, packed:false, bag:'main' },
+      { name:'Underwear', qty:undies, weight:0.2, packed:false, bag:'main' },
+    )
+    footwear.push(
+      { name:'Ski Boots (or rent on-site)', qty:1, weight:7.0, packed:false, bag:'main' },
+      { name:'Warm Snow Boots (après-ski)', qty:1, weight:3.0, packed:false, bag:'main' },
+    )
+    health.push(
+      { name:'Sunscreen SPF 50 (UV is intense at altitude)', qty:2, weight:0.5, packed:false, bag:'carry' },
+      { name:'Lip Balm with SPF', qty:1, weight:0.1, packed:false, bag:'carry' },
+      { name:'Hand Warmers', qty:6, weight:0.1, packed:false, bag:'carry' },
+    )
+  } else if (tripType === 'Sports Tournament') {
+    clothing.push(
+      { name:'Jersey / Team Uniform', qty:2, weight:0.4, packed:false, bag:'main' },
+      { name:'Athletic Shorts', qty:Math.min(days + 1, 5), weight:0.3, packed:false, bag:'main' },
+      { name:'Compression Shorts / Leggings', qty:Math.min(Math.ceil(days / 2), 3), weight:0.3, packed:false, bag:'main' },
+      { name:'Athletic Socks', qty:Math.min(socks, 7), weight:0.2, packed:false, bag:'main' },
+      { name:'Moisture-Wicking T-Shirts', qty:Math.min(shirts, 5), weight:0.4, packed:false, bag:'main' },
+      { name:'Casual Outfit (off-field)', qty:Math.min(Math.ceil(days / 2), 3), weight:0.6, packed:false, bag:'main' },
+      { name:'Underwear', qty:undies, weight:0.2, packed:false, bag:'main' },
+    )
+    if (gender === 'Female') clothing.push({ name:'Sports Bra', qty:Math.min(Math.ceil(days / 2), 4), weight:0.2, packed:false, bag:'main' })
+    footwear.push(
+      { name:'Athletic / Sport Shoes', qty:1, weight:2.2, packed:false, bag:'main' },
+      { name:'Casual Shoes / Slides', qty:1, weight:1.0, packed:false, bag:'main' },
+    )
+    health.push(
+      { name:'Athletic Tape / KT Tape', qty:1, weight:0.2, packed:false, bag:'carry' },
+      { name:'Muscle Rub / Recovery Balm', qty:1, weight:0.3, packed:false, bag:'main' },
+      { name:'Reusable Water Bottle', qty:1, weight:0.5, packed:false, bag:'main' },
+      { name:'Protein Bars / Snacks', qty:Math.min(days * 2, 10), weight:0.1, packed:false, bag:'carry' },
+    )
   } else if (tripType === 'Family') {
     clothing.push(
       { name:'T-Shirts', qty:shirts, weight:0.5, packed:false, bag:'main' },
@@ -1154,7 +1193,7 @@ export default function PackPerfect() {
   const labelStyle = { display:'block', fontSize:'11px', fontWeight:'600', color:t.textMuted, marginBottom:'6px', textTransform:'uppercase', letterSpacing:'0.08em' }
   const btnPrimary = { background:t.accent, color:'#fff', border:'none', borderRadius:'8px', padding:'11px 20px', fontSize:'14px', fontWeight:'500', cursor:'pointer', width:'100%' }
 
-  const availableTripTypes = destination ? suggestTripTypes(climate) : ['Leisure','Business','Beach','Adventure','Family','Backpacking']
+  const availableTripTypes = ['Leisure','Business','Beach','Adventure','Family','Backpacking','Skiing','Sports Tournament']
   const visImage = getVisualImage(climate, tripType)
 
   const CSS = `
@@ -2017,7 +2056,7 @@ export default function PackPerfect() {
                     <div style={{ marginTop:'12px' }}>
                       <label style={labelStyle}>Trip Type</label>
                       <div style={{ display:'flex', gap:'6px', flexWrap:'wrap' }}>
-                        {(leg.destination ? suggestTripTypes(leg.climate) : ['Leisure','Beach','Adventure','Business','Family','Backpacking']).map(ty => (
+                        {['Leisure','Business','Beach','Adventure','Family','Backpacking','Skiing','Sports Tournament'].map(ty => (
                           <button key={ty} className="btn-pill" onClick={() => updatePremiumLeg(idx, { tripType: ty })} style={{
                             ...t.pill(leg.tripType === ty), borderRadius:'999px', padding:'4px 12px',
                             fontSize:'12px', fontWeight:'500', cursor:'pointer', fontFamily:"'Sora',sans-serif",
