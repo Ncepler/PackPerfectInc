@@ -1748,14 +1748,31 @@ export default function PackPerfect() {
 
                 {/* Weight tracker — main bag only vs 50lb limit */}
                 <div style={card}>
-                  <div style={{ fontSize:'13px', fontWeight:'600', color:t.text, marginBottom:'14px' }}>Weight Tracker</div>
+                  <div style={{ display:'flex', alignItems:'baseline', justifyContent:'space-between', marginBottom:'14px' }}>
+                    <div style={{ fontSize:'13px', fontWeight:'600', color:t.text }}>Weight Tracker</div>
+                    {selectedSuitcase && (
+                      <div style={{ fontSize:'11px', color:t.textMuted }}>
+                        limit adjusted for <span style={{ color:t.accent, fontWeight:'500' }}>{selectedSuitcase.name}</span>
+                      </div>
+                    )}
+                  </div>
                   {selectedSuitcase && (
-                    <div style={{ fontSize:'12px', color:t.textMuted, padding:'8px 12px', background:t.accentDim, border:`1px solid ${t.borderStrong}`, borderRadius:'7px', marginBottom:'12px' }}>
-                      <span style={{ color:t.accent, fontWeight:'500' }}>{selectedSuitcase.name}</span> weighs <span style={{ fontFamily:"'JetBrains Mono',monospace" }}>{selectedSuitcase.weightLbs} lbs</span> — airlines count that toward the 50 lb limit, so you have <span style={{ fontFamily:"'JetBrains Mono',monospace", color:t.text, fontWeight:'600' }}>{weightLimit.toFixed(1)} lbs</span> left for your stuff (50 − {selectedSuitcase.weightLbs} = {weightLimit.toFixed(1)} lbs).
+                    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'8px', marginBottom:'12px', textAlign:'center' }}>
+                      {[
+                        { label:'Airline Limit', val:'50.0', sub:'lbs total', color:t.textMuted },
+                        { label:'Bag Weight', val:`− ${selectedSuitcase.weightLbs.toFixed(1)}`, sub:`${selectedSuitcase.brand} ${selectedSuitcase.name.split(' ').slice(-1)[0]}`, color:'#f59e0b' },
+                        { label:'Your Allowance', val:weightLimit.toFixed(1), sub:'lbs for contents', color:t.accent },
+                      ].map(r => (
+                        <div key={r.label} style={{ background:t.inputBg, border:`1px solid ${t.border}`, borderRadius:'8px', padding:'10px 6px' }}>
+                          <div style={{ fontSize:'10px', color:t.textDim, textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:'4px' }}>{r.label}</div>
+                          <div style={{ fontSize:'18px', fontWeight:'700', color:r.color, fontFamily:"'JetBrains Mono',monospace" }}>{r.val}</div>
+                          <div style={{ fontSize:'10px', color:t.textDim, marginTop:'2px' }}>{r.sub}</div>
+                        </div>
+                      ))}
                     </div>
                   )}
                   <div className="pp-grid-2" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px', marginBottom:'12px' }}>
-                    {[{ label:'Main Suitcase', val:mainWeight, limit:true }, { label:'Carry-On', val:carryWeight, limit:false }].map(b => (
+                    {[{ label:'Contents in Main', val:mainWeight, limit:true }, { label:'Carry-On', val:carryWeight, limit:false }].map(b => (
                       <div key={b.label} style={{ background:t.inputBg, borderRadius:'8px', padding:'12px', textAlign:'center', border:`1px solid ${b.limit && b.val > weightLimit ? '#dc2626' : t.border}` }}>
                         <div style={{ fontSize:'22px', fontWeight:'600', color: b.limit && b.val > weightLimit ? '#dc2626' : t.accent, fontFamily:"'JetBrains Mono',monospace" }}>{b.val.toFixed(1)}</div>
                         <div style={{ fontSize:'11px', color:t.textMuted, marginTop:'2px' }}>{b.label} lbs{b.limit ? ` / ${weightLimit.toFixed(1)} max` : ''}</div>
