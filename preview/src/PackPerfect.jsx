@@ -1197,14 +1197,14 @@ export default function PackPerfect() {
               <>
                 <p style={{ fontSize:'12px', fontWeight:'600', color:t.textMuted, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:'14px' }}>Choose a plan</p>
                 <div style={{ display:'flex', gap:'12px', marginBottom:'20px' }}>
-                  <button onClick={() => setPremiumSelectedPlan('monthly')} style={{ flex:1, border:`2px solid rgba(202,138,4,0.4)`, borderRadius:'14px', padding:'18px 12px', background: dark ? 'rgba(202,138,4,0.07)' : 'rgba(254,243,199,0.5)', cursor:'pointer', transition:'all 0.15s' }}
-                    onMouseEnter={e => e.currentTarget.style.borderColor='#ca8a04'} onMouseLeave={e => e.currentTarget.style.borderColor='rgba(202,138,4,0.4)'}>
-                    <div style={{ fontSize:'22px', fontWeight:'700', color:'#ca8a04' }}>$6.99</div>
-                    <div style={{ fontSize:'12px', color:t.textMuted, marginTop:'4px' }}>per month</div>
-                  </button>
-                  <button onClick={() => setPremiumSelectedPlan('yearly')} style={{ flex:1, border:`2px solid rgba(202,138,4,0.4)`, borderRadius:'14px', padding:'18px 12px', background: dark ? 'rgba(202,138,4,0.07)' : 'rgba(254,243,199,0.5)', cursor:'pointer', transition:'all 0.15s', position:'relative' }}
+                  <button onClick={() => setPremiumSelectedPlan('monthly')} style={{ flex:1, border:`2px solid rgba(202,138,4,0.4)`, borderRadius:'14px', padding:'18px 12px', background: dark ? 'rgba(202,138,4,0.07)' : 'rgba(254,243,199,0.5)', cursor:'pointer', transition:'all 0.15s', position:'relative' }}
                     onMouseEnter={e => e.currentTarget.style.borderColor='#ca8a04'} onMouseLeave={e => e.currentTarget.style.borderColor='rgba(202,138,4,0.4)'}>
                     <div style={{ position:'absolute', top:'-10px', left:'50%', transform:'translateX(-50%)', background:'#ca8a04', color:'#fff', fontSize:'10px', fontWeight:'700', padding:'2px 8px', borderRadius:'999px', whiteSpace:'nowrap' }}>BEST VALUE</div>
+                    <div style={{ fontSize:'22px', fontWeight:'700', color:'#ca8a04' }}>$6.99</div>
+                    <div style={{ fontSize:'12px', color:t.textMuted, marginTop:'4px' }}>annually</div>
+                  </button>
+                  <button onClick={() => setPremiumSelectedPlan('yearly')} style={{ flex:1, border:`2px solid rgba(202,138,4,0.4)`, borderRadius:'14px', padding:'18px 12px', background: dark ? 'rgba(202,138,4,0.07)' : 'rgba(254,243,199,0.5)', cursor:'pointer', transition:'all 0.15s' }}
+                    onMouseEnter={e => e.currentTarget.style.borderColor='#ca8a04'} onMouseLeave={e => e.currentTarget.style.borderColor='rgba(202,138,4,0.4)'}>
                     <div style={{ fontSize:'22px', fontWeight:'700', color:'#ca8a04' }}>$18.99</div>
                     <div style={{ fontSize:'12px', color:t.textMuted, marginTop:'4px' }}>per year</div>
                   </button>
