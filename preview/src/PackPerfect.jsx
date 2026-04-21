@@ -319,7 +319,7 @@ function smartQty(base, cap) {
   return cap  // will add laundry note
 }
 
-function generateList(tripType, days, climate, liters = 69) {
+function generateList(tripType, days, climate, liters = 69, gender = '') {
   const needsLaundryNote = days > 10
 
   // Capacity factor: carry-on squeezes items, large bag allows more
@@ -335,6 +335,8 @@ function generateList(tripType, days, climate, liters = 69) {
 
   // Swimsuits scale with trip length: 2 for <1wk, +1 per additional week, max 5
   const swimsuits = Math.min(2 + Math.floor(days / 7), 5)
+  // Cold beach or temperate beach = fewer swimsuits
+  const beachSwimQty = (climate === 'cold' || climate === 'temperate') ? 1 : Math.min(swimsuits, cycleLen)
 
   const clothing = []
   const footwear = []
@@ -362,33 +364,55 @@ function generateList(tripType, days, climate, liters = 69) {
   const health = [
     { name:'Hand Sanitizer', qty:1, weight:0.2, packed:false, bag:'carry' },
     { name:'Band-Aids', qty:1, weight:0.1, packed:false, bag:'carry' },
+    { name:'Pain Reliever', qty:1, weight:0.2, packed:false, bag:'carry' },
   ]
 
   if (tripType === 'Business') {
     const suits = Math.min(Math.max(1, Math.ceil(days / 3)), 3)
     const dressShirts = Math.min(days + 1, 6)
-    clothing.push(
-      { name:'Suit', qty:suits, weight:3.0, packed:false, bag:'main' },
-      { name:'Dress Shirt', qty:dressShirts, weight:0.5, packed:false, bag:'main' },
-      { name:'Tie', qty:suits, weight:0.1, packed:false, bag:'main' },
-      { name:'Dress Pants', qty:Math.min(suits, 3), weight:1.0, packed:false, bag:'main' },
-      { name:'Belt', qty:1, weight:0.3, packed:false, bag:'main' },
-      { name:'T-Shirts (casual)', qty:Math.min(Math.ceil(days / 2), 4), weight:0.5, packed:false, bag:'main' },
-      { name:'Underwear', qty:undies, weight:0.2, packed:false, bag:'main' },
-      { name:'Dress Socks', qty:Math.min(dressShirts, 6), weight:0.2, packed:false, bag:'main' },
-    )
-    footwear.push(
-      { name:'Dress Shoes', qty:1, weight:2.5, packed:false, bag:'main' },
-      { name:'Casual Shoes', qty:1, weight:2.0, packed:false, bag:'main' },
-    )
+    if (gender === 'Female') {
+      clothing.push(
+        { name:'Blazer', qty:suits, weight:1.5, packed:false, bag:'main' },
+        { name:'Blouse', qty:dressShirts, weight:0.4, packed:false, bag:'main' },
+        { name:'Dress Pants / Skirt', qty:Math.min(suits + 1, 4), weight:1.0, packed:false, bag:'main' },
+        { name:'Business Dress', qty:1, weight:0.8, packed:false, bag:'main' },
+        { name:'T-Shirts (casual)', qty:Math.min(Math.ceil(days / 2), 4), weight:0.5, packed:false, bag:'main' },
+        { name:'Underwear', qty:undies, weight:0.2, packed:false, bag:'main' },
+        { name:'Dress Socks / Hosiery', qty:Math.min(dressShirts, 6), weight:0.2, packed:false, bag:'main' },
+      )
+      footwear.push(
+        { name:'Heels / Dress Flats', qty:1, weight:2.0, packed:false, bag:'main' },
+        { name:'Casual Shoes', qty:1, weight:2.0, packed:false, bag:'main' },
+      )
+    } else {
+      clothing.push(
+        { name:'Suit', qty:suits, weight:3.0, packed:false, bag:'main' },
+        { name:'Dress Shirt', qty:dressShirts, weight:0.5, packed:false, bag:'main' },
+        { name:'Tie', qty:suits, weight:0.1, packed:false, bag:'main' },
+        { name:'Dress Pants', qty:Math.min(suits, 3), weight:1.0, packed:false, bag:'main' },
+        { name:'Belt', qty:1, weight:0.3, packed:false, bag:'main' },
+        { name:'T-Shirts (casual)', qty:Math.min(Math.ceil(days / 2), 4), weight:0.5, packed:false, bag:'main' },
+        { name:'Underwear', qty:undies, weight:0.2, packed:false, bag:'main' },
+        { name:'Dress Socks', qty:Math.min(dressShirts, 6), weight:0.2, packed:false, bag:'main' },
+      )
+      footwear.push(
+        { name:'Dress Shoes', qty:1, weight:2.5, packed:false, bag:'main' },
+        { name:'Casual Shoes', qty:1, weight:2.0, packed:false, bag:'main' },
+      )
+    }
+    if (climate === 'cold') clothing.push({ name:'Overcoat', qty:1, weight:3.0, packed:false, bag:'main' })
     electronics.push(
       { name:'Laptop', qty:1, weight:4.0, packed:false, bag:'carry' },
       { name:'Laptop Charger', qty:1, weight:0.8, packed:false, bag:'carry' },
+      { name:'Universal Power Adapter', qty:1, weight:0.5, packed:false, bag:'carry' },
     )
-    documents.push({ name:'Business Cards', qty:1, weight:0.1, packed:false, bag:'carry' })
+    documents.push(
+      { name:'Business Cards', qty:1, weight:0.1, packed:false, bag:'carry' },
+      { name:'Printed Itinerary', qty:1, weight:0.1, packed:false, bag:'carry' },
+    )
   } else if (tripType === 'Beach') {
     clothing.push(
-      { name:'Swimsuit', qty:cycleLen, weight:0.3, packed:false, bag:'main' },
+      { name:'Swimsuit', qty:beachSwimQty, weight:0.3, packed:false, bag:'main' },
       { name:'Shorts', qty:Math.min(days, 5), weight:0.4, packed:false, bag:'main' },
       { name:'T-Shirts', qty:shirts, weight:0.5, packed:false, bag:'main' },
       { name:'Cover-Up', qty:1, weight:0.3, packed:false, bag:'main' },
@@ -396,24 +420,32 @@ function generateList(tripType, days, climate, liters = 69) {
       { name:'Underwear', qty:undies, weight:0.2, packed:false, bag:'main' },
       { name:'Socks', qty:Math.max(2, Math.round(cycleLen * 0.5)), weight:0.2, packed:false, bag:'main' },
     )
+    if (gender === 'Female') clothing.push({ name:'Sarong / Pareo', qty:1, weight:0.3, packed:false, bag:'main' })
     footwear.push(
       { name:'Sandals', qty:1, weight:1.0, packed:false, bag:'main' },
       { name:'Flip Flops', qty:1, weight:0.5, packed:false, bag:'main' },
       { name:'Sneakers', qty:1, weight:2.0, packed:false, bag:'main' },
     )
-    toiletries.push(
-      { name:'Sunscreen SPF 50', qty:2, weight:0.6, packed:false, bag:'main' },
-      { name:'After-Sun Lotion', qty:1, weight:0.5, packed:false, bag:'main' },
-    )
-    health.push({ name:'Bug Spray', qty:1, weight:0.3, packed:false, bag:'main' })
+    // Cold / temperate beach: add warmth layers instead of intense sun gear
+    if (climate === 'cold' || climate === 'temperate') {
+      clothing.push({ name:'Light Jacket', qty:1, weight:1.0, packed:false, bag:'main' })
+      toiletries.push({ name:'Sunscreen SPF 30', qty:1, weight:0.5, packed:false, bag:'main' })
+    } else {
+      toiletries.push(
+        { name:'Sunscreen SPF 50', qty:2, weight:0.6, packed:false, bag:'main' },
+        { name:'After-Sun Lotion', qty:1, weight:0.5, packed:false, bag:'main' },
+      )
+      clothing.push({ name:'Sun Hat', qty:1, weight:0.3, packed:false, bag:'main' })
+      clothing.push({ name:'Sunglasses', qty:1, weight:0.1, packed:false, bag:'carry' })
+      health.push({ name:'Bug Spray', qty:1, weight:0.3, packed:false, bag:'main' })
+    }
+    health.push({ name:'Waterproof Phone Pouch', qty:1, weight:0.1, packed:false, bag:'main' })
   } else if (tripType === 'Adventure') {
     clothing.push(
       { name:'Moisture-Wicking Shirts', qty:Math.min(shirts, 5), weight:0.4, packed:false, bag:'main' },
       { name:'Hiking Pants', qty:Math.min(Math.ceil(days / 2), pantCap), weight:0.8, packed:false, bag:'main' },
       { name:'Shorts', qty:Math.min(Math.ceil(days / 2), 3), weight:0.4, packed:false, bag:'main' },
-      { name:'Thermal Base Layer', qty:1, weight:0.6, packed:false, bag:'main' },
       { name:'Rain Jacket', qty:1, weight:1.0, packed:false, bag:'main' },
-      { name:'Fleece', qty:1, weight:1.2, packed:false, bag:'main' },
       { name:'Underwear', qty:undies, weight:0.2, packed:false, bag:'main' },
       { name:'Wool Socks', qty:Math.min(socks, 6), weight:0.3, packed:false, bag:'main' },
     )
@@ -423,9 +455,37 @@ function generateList(tripType, days, climate, liters = 69) {
     )
     health.push(
       { name:'Blister Bandages', qty:1, weight:0.1, packed:false, bag:'carry' },
-      { name:'Bug Spray', qty:1, weight:0.3, packed:false, bag:'main' },
       { name:'Sunscreen', qty:1, weight:0.5, packed:false, bag:'main' },
+      { name:'First Aid Kit', qty:1, weight:0.8, packed:false, bag:'main' },
     )
+    // Climate-specific adventure gear
+    if (climate === 'tropical') {
+      clothing.push(
+        { name:'Quick-Dry Shirts', qty:2, weight:0.3, packed:false, bag:'main' },
+        { name:'Swimsuit', qty:1, weight:0.3, packed:false, bag:'main' },
+      )
+      footwear.push({ name:'Water Shoes', qty:1, weight:0.8, packed:false, bag:'main' })
+      health.push({ name:'Bug Spray (DEET)', qty:2, weight:0.4, packed:false, bag:'main' })
+      health.push({ name:'Water Purification Tablets', qty:1, weight:0.1, packed:false, bag:'carry' })
+    } else if (climate === 'cold') {
+      clothing.push(
+        { name:'Thermal Base Layer', qty:2, weight:0.6, packed:false, bag:'main' },
+        { name:'Fleece Mid-Layer', qty:1, weight:1.2, packed:false, bag:'main' },
+        { name:'Insulated Jacket', qty:1, weight:2.0, packed:false, bag:'main' },
+      )
+      health.push({ name:'Hand Warmers', qty:4, weight:0.1, packed:false, bag:'carry' })
+    } else if (climate === 'desert') {
+      clothing.push(
+        { name:'Long-Sleeve Sun Shirt', qty:2, weight:0.4, packed:false, bag:'main' },
+        { name:'Sun Hat / Boonie Hat', qty:1, weight:0.3, packed:false, bag:'main' },
+      )
+      health.push({ name:'Bug Spray', qty:1, weight:0.3, packed:false, bag:'main' })
+      health.push({ name:'Electrolyte Packets', qty:8, weight:0.1, packed:false, bag:'carry' })
+    } else {
+      clothing.push({ name:'Thermal Base Layer', qty:1, weight:0.6, packed:false, bag:'main' })
+      clothing.push({ name:'Fleece', qty:1, weight:1.2, packed:false, bag:'main' })
+      health.push({ name:'Bug Spray', qty:1, weight:0.3, packed:false, bag:'main' })
+    }
   } else if (tripType === 'Backpacking') {
     clothing.push(
       { name:'T-Shirts', qty:Math.min(shirts, 4), weight:0.5, packed:false, bag:'main' },
@@ -436,9 +496,12 @@ function generateList(tripType, days, climate, liters = 69) {
       { name:'Light Jacket', qty:1, weight:1.0, packed:false, bag:'main' },
     )
     footwear.push(
-      { name:'Sneakers', qty:1, weight:2.0, packed:false, bag:'main' },
+      { name:'Sneakers / Walking Shoes', qty:1, weight:2.0, packed:false, bag:'main' },
       { name:'Flip Flops', qty:1, weight:0.5, packed:false, bag:'main' },
     )
+    health.push({ name:'Travel Towel', qty:1, weight:0.5, packed:false, bag:'main' })
+    documents.push({ name:'Passport Holder', qty:1, weight:0.1, packed:false, bag:'carry' })
+    electronics.push({ name:'Travel Padlock', qty:1, weight:0.3, packed:false, bag:'main' })
   } else if (tripType === 'Family') {
     clothing.push(
       { name:'T-Shirts', qty:shirts, weight:0.5, packed:false, bag:'main' },
@@ -447,6 +510,7 @@ function generateList(tripType, days, climate, liters = 69) {
       { name:'Underwear', qty:undies, weight:0.2, packed:false, bag:'main' },
       { name:'Socks', qty:socks, weight:0.2, packed:false, bag:'main' },
     )
+    if (gender === 'Female') clothing.push({ name:'Casual Dress', qty:Math.min(2, Math.ceil(days / 4)), weight:0.4, packed:false, bag:'main' })
     footwear.push(
       { name:'Sneakers', qty:1, weight:2.0, packed:false, bag:'main' },
       { name:'Sandals', qty:1, weight:1.0, packed:false, bag:'main' },
@@ -454,7 +518,9 @@ function generateList(tripType, days, climate, liters = 69) {
     health.push(
       { name:"Children's Medication", qty:1, weight:0.3, packed:false, bag:'carry' },
       { name:'Sunscreen', qty:2, weight:0.5, packed:false, bag:'main' },
+      { name:'Insect Repellent', qty:1, weight:0.3, packed:false, bag:'main' },
     )
+    electronics.push({ name:'Tablet / Kids Device', qty:1, weight:1.5, packed:false, bag:'carry' })
   } else {
     // Leisure
     clothing.push(
@@ -463,41 +529,70 @@ function generateList(tripType, days, climate, liters = 69) {
       { name:'Shorts', qty:Math.min(Math.ceil(days / 2), 3), weight:0.4, packed:false, bag:'main' },
       { name:'Underwear', qty:undies, weight:0.2, packed:false, bag:'main' },
       { name:'Socks', qty:socks, weight:0.2, packed:false, bag:'main' },
+      { name:'One Nice Outfit (evening)', qty:1, weight:0.8, packed:false, bag:'main' },
     )
+    if (gender === 'Female') clothing.push({ name:'Casual Dress / Skirt', qty:Math.min(Math.ceil(days / 3), 3), weight:0.4, packed:false, bag:'main' })
     footwear.push(
       { name:'Sneakers', qty:1, weight:2.0, packed:false, bag:'main' },
       { name:'Sandals', qty:1, weight:1.0, packed:false, bag:'main' },
     )
   }
 
-  // Climate additions
+  // Gender-specific toiletries
+  if (gender === 'Female') {
+    toiletries.push({ name:'Makeup Bag / Cosmetics', qty:1, weight:1.0, packed:false, bag:'main' })
+    toiletries.push({ name:'Hair Accessories', qty:1, weight:0.2, packed:false, bag:'main' })
+    health.push({ name:'Feminine Hygiene Products', qty:1, weight:0.3, packed:false, bag:'carry' })
+  }
+
+  // Climate additions (only for non-Adventure since Adventure handles its own climate gear)
   if (climate === 'tropical') {
     if (!toiletries.find(i => i.name.includes('Sunscreen')))
       toiletries.push({ name:'Sunscreen SPF 50', qty:2, weight:0.5, packed:false, bag:'main' })
-    if (!clothing.find(i => i.name === 'Swimsuit'))
+    if (!clothing.find(i => i.name === 'Swimsuit') && tripType !== 'Adventure')
       clothing.push({ name:'Swimsuit', qty:Math.max(swimsuits, Math.min(days, 5)), weight:0.3, packed:false, bag:'main' })
+    if (!clothing.find(i => i.name === 'Sunglasses'))
+      clothing.push({ name:'Sunglasses', qty:1, weight:0.1, packed:false, bag:'carry' })
   } else if (climate === 'cold') {
-    clothing.push(
-      { name:'Heavy Winter Coat', qty:1, weight:3.5, packed:false, bag:'main' },
-      { name:'Thermal Base Layers', qty:2, weight:0.6, packed:false, bag:'main' },
-      { name:'Gloves', qty:1, weight:0.3, packed:false, bag:'main' },
-      { name:'Scarf', qty:1, weight:0.4, packed:false, bag:'main' },
-      { name:'Warm Hat', qty:1, weight:0.2, packed:false, bag:'main' },
-    )
+    if (tripType !== 'Adventure') {
+      clothing.push(
+        { name:'Heavy Winter Coat', qty:1, weight:3.5, packed:false, bag:'main' },
+        { name:'Thermal Base Layers', qty:2, weight:0.6, packed:false, bag:'main' },
+        { name:'Gloves', qty:1, weight:0.3, packed:false, bag:'main' },
+        { name:'Scarf', qty:1, weight:0.4, packed:false, bag:'main' },
+        { name:'Warm Hat', qty:1, weight:0.2, packed:false, bag:'main' },
+      )
+    } else {
+      // Adventure already has cold gear — just add the outer shell if not there
+      clothing.push(
+        { name:'Gloves', qty:1, weight:0.3, packed:false, bag:'main' },
+        { name:'Warm Hat', qty:1, weight:0.2, packed:false, bag:'main' },
+      )
+    }
     if (!footwear.find(i => i.name.toLowerCase().includes('boot')))
       footwear.push({ name:'Insulated Boots', qty:1, weight:3.0, packed:false, bag:'main' })
   } else if (climate === 'desert') {
-    toiletries.push({ name:'High-SPF Sunscreen', qty:2, weight:0.6, packed:false, bag:'main' })
-    clothing.push(
-      { name:'Lightweight Long-Sleeve', qty:2, weight:0.4, packed:false, bag:'main' },
-      { name:'Sun Hat', qty:1, weight:0.3, packed:false, bag:'main' },
-    )
-    health.push({ name:'Electrolyte Packets', qty:6, weight:0.1, packed:false, bag:'carry' })
+    if (!toiletries.find(i => i.name.includes('Sunscreen')))
+      toiletries.push({ name:'High-SPF Sunscreen', qty:2, weight:0.6, packed:false, bag:'main' })
+    if (!clothing.find(i => i.name.includes('Long-Sleeve') || i.name.includes('Sun Shirt')))
+      clothing.push({ name:'Lightweight Long-Sleeve', qty:2, weight:0.4, packed:false, bag:'main' })
+    if (!clothing.find(i => i.name.includes('Sun Hat') || i.name.includes('Boonie')))
+      clothing.push({ name:'Sun Hat', qty:1, weight:0.3, packed:false, bag:'main' })
+    if (!clothing.find(i => i.name === 'Sunglasses'))
+      clothing.push({ name:'Sunglasses', qty:1, weight:0.1, packed:false, bag:'carry' })
+    if (!health.find(i => i.name.includes('Electrolyte')))
+      health.push({ name:'Electrolyte Packets', qty:6, weight:0.1, packed:false, bag:'carry' })
   } else if (climate === 'warm') {
-    toiletries.push({ name:'Sunscreen SPF 30', qty:1, weight:0.5, packed:false, bag:'main' })
-    clothing.push({ name:'Light Jacket / Cardigan', qty:1, weight:0.8, packed:false, bag:'main' })
+    if (!toiletries.find(i => i.name.includes('Sunscreen')))
+      toiletries.push({ name:'Sunscreen SPF 30', qty:1, weight:0.5, packed:false, bag:'main' })
+    if (!clothing.find(i => i.name.includes('Jacket') || i.name.includes('Cardigan')))
+      clothing.push({ name:'Light Jacket / Cardigan', qty:1, weight:0.8, packed:false, bag:'main' })
+    if (!clothing.find(i => i.name === 'Sunglasses'))
+      clothing.push({ name:'Sunglasses', qty:1, weight:0.1, packed:false, bag:'carry' })
   } else {
-    clothing.push({ name:'Light Jacket', qty:1, weight:1.5, packed:false, bag:'main' })
+    // Temperate
+    if (!clothing.find(i => i.name.includes('Jacket')))
+      clothing.push({ name:'Light Jacket', qty:1, weight:1.5, packed:false, bag:'main' })
   }
 
   return {
@@ -665,7 +760,7 @@ export default function PackPerfect() {
   const [chatLoading, setChatLoading] = useState(false)
   const [listLoading, setListLoading] = useState(false)
   const [visualAidReady, setVisualAidReady] = useState(false)
-  const [profile, setProfile] = useState({ name:'', homeCity:'', travelStyle:'Average', frequentFlyer:'Sometimes' })
+  const [profile, setProfile] = useState({ name:'', homeCity:'', gender:'', travelStyle:'Average', frequentFlyer:'Sometimes' })
   const chatEndRef = useRef(null)
   const destRef = useRef(null)
 
@@ -677,9 +772,8 @@ export default function PackPerfect() {
   const [premiumPasswordError, setPremiumPasswordError] = useState(false)
   const [numLocations, setNumLocations] = useState(2)
   const [premiumLegs, setPremiumLegs] = useState(
-    Array.from({length:5}, () => ({ destInput:'', destination:'', climate:'temperate', startDate:'', endDate:'', suggestions:[], showSug:false }))
+    Array.from({length:5}, () => ({ destInput:'', destination:'', climate:'temperate', tripType:'Leisure', startDate:'', endDate:'', suggestions:[], showSug:false }))
   )
-  const [premiumTripType, setPremiumTripType] = useState('Leisure')
   const [premiumGenerated, setPremiumGenerated] = useState(false)
   const [premiumItems, setPremiumItems] = useState({})
   const [premiumLaundryNote, setPremiumLaundryNote] = useState(false)
@@ -863,7 +957,10 @@ export default function PackPerfect() {
 
   const selectPremiumDest = (idx, d) => {
     const c = classifyClimate(d)
-    updatePremiumLeg(idx, { destInput: d, destination: d, climate: c, showSug: false })
+    const suggested = suggestTripTypes(c)
+    const currentTripType = premiumLegs[idx].tripType
+    const newTripType = suggested.includes(currentTripType) ? currentTripType : suggested[0]
+    updatePremiumLeg(idx, { destInput: d, destination: d, climate: c, showSug: false, tripType: newTripType })
   }
 
   const getLegDays = (leg) => {
@@ -944,23 +1041,25 @@ export default function PackPerfect() {
     const legs = premiumLegs.slice(0, numLocations)
     if (!legs.some(l => l.destination || l.destInput)) return
     const resolvedLegs = legs.map(l => ({ ...l, destination: l.destination || l.destInput, climate: l.destination ? l.climate : classifyClimate(l.destInput) }))
-    const allItemSets = resolvedLegs.map(leg => generateList(premiumTripType, getLegDays(leg), leg.climate, selectedSuitcase?.liters ?? 69))
+    const allItemSets = resolvedLegs.map(leg => generateList(leg.tripType, getLegDays(leg), leg.climate, selectedSuitcase?.liters ?? 69, profile.gender))
     const merged = mergePremiumItems(allItemSets.map(r => r.items))
     const totalDays = resolvedLegs.reduce((s, leg) => s + getLegDays(leg), 0)
     setPremiumItems(merged); setPremiumLaundryNote(totalDays > 10); setPremiumGenerated(true)
     const weatherResults = await fetchPremiumWeather(resolvedLegs)
     const validWeathers = weatherResults.filter(Boolean)
+    // Pick visual based on first leg's trip type + average temps
+    const firstLegTripType = resolvedLegs[0]?.tripType || 'Leisure'
     if (validWeathers.length > 0) {
       const allTemps = validWeathers.flatMap(w => w.daily.temperature_2m_max || [])
       const overallAvg = allTemps.length > 0 ? allTemps.reduce((a,b) => a+b, 0) / allTemps.length : null
       if (overallAvg !== null) {
-        if (premiumTripType === 'Business') setPremiumVisImage(IMG_BIZ)
-        else if (overallAvg >= 72) setPremiumVisImage(IMG_WARM)
+        if (firstLegTripType === 'Business') setPremiumVisImage(IMG_BIZ)
+        else if (overallAvg >= 72 || firstLegTripType === 'Beach') setPremiumVisImage(IMG_WARM)
         else if (overallAvg < 50) setPremiumVisImage(IMG_COLD)
         else setPremiumVisImage(IMG_NORM)
-      } else setPremiumVisImage(getVisualImage(resolvedLegs[0].climate, premiumTripType))
+      } else setPremiumVisImage(getVisualImage(resolvedLegs[0].climate, firstLegTripType))
     } else {
-      setPremiumVisImage(getVisualImage(resolvedLegs[0]?.climate || 'temperate', premiumTripType))
+      setPremiumVisImage(getVisualImage(resolvedLegs[0]?.climate || 'temperate', firstLegTripType))
     }
   }
 
@@ -977,7 +1076,7 @@ export default function PackPerfect() {
     if (!dest) return
     setDestination(dest)
     const c = classifyClimate(dest); setClimate(c)
-    const result = generateList(tripType, getDays(), c, selectedSuitcase?.liters ?? 69)
+    const result = generateList(tripType, getDays(), c, selectedSuitcase?.liters ?? 69, profile.gender)
     setItems(result.items)
     setLaundryNote(result.laundryNote)
     setListGenerated(false)
@@ -1891,22 +1990,23 @@ export default function PackPerfect() {
                         {getLegDays(leg)} day{getLegDays(leg) !== 1 ? 's' : ''} in {leg.destination || 'this location'}
                       </div>
                     )}
+                    <div style={{ marginTop:'12px' }}>
+                      <label style={labelStyle}>Trip Type</label>
+                      <div style={{ display:'flex', gap:'6px', flexWrap:'wrap' }}>
+                        {(leg.destination ? suggestTripTypes(leg.climate) : ['Leisure','Beach','Adventure','Business','Family','Backpacking']).map(ty => (
+                          <button key={ty} className="btn-pill" onClick={() => updatePremiumLeg(idx, { tripType: ty })} style={{
+                            ...t.pill(leg.tripType === ty), borderRadius:'999px', padding:'4px 12px',
+                            fontSize:'12px', fontWeight:'500', cursor:'pointer', fontFamily:"'Sora',sans-serif",
+                            border: leg.tripType === ty ? '1px solid #ca8a04' : `1px solid ${t.border}`,
+                            background: leg.tripType === ty ? 'rgba(202,138,4,0.15)' : 'transparent',
+                            color: leg.tripType === ty ? '#ca8a04' : t.textMuted,
+                          }}>{ty}</button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 )
               })}
-
-              {/* Trip type */}
-              <div style={{ marginBottom:'18px' }}>
-                <label style={labelStyle}>Trip Type</label>
-                <div style={{ display:'flex', gap:'7px', flexWrap:'wrap' }}>
-                  {['Leisure','Beach','Adventure','Business','Family','Backpacking'].map(ty => (
-                    <button key={ty} className="btn-pill" onClick={() => setPremiumTripType(ty)} style={{
-                      ...t.pill(premiumTripType === ty), borderRadius:'999px', padding:'5px 14px',
-                      fontSize:'13px', fontWeight:'500', cursor:'pointer', fontFamily:"'Sora',sans-serif",
-                    }}>{ty}</button>
-                  ))}
-                </div>
-              </div>
 
               <button className="btn-primary" onClick={handlePremiumGenerate}
                 style={{ ...btnPrimary, background:'linear-gradient(135deg, #ca8a04, #d97706)' }}>
@@ -2083,6 +2183,15 @@ export default function PackPerfect() {
                 <div>
                   <label style={labelStyle}>Home City</label>
                   <input value={profile.homeCity} onChange={e => saveProfile({ homeCity: e.target.value })} placeholder="Where do you usually travel from?" style={inputStyle} />
+                </div>
+                <div>
+                  <label style={labelStyle}>Gender</label>
+                  <div style={{ display:'flex', gap:'7px', flexWrap:'wrap' }}>
+                    {['Male','Female','Prefer not to say'].map(s => (
+                      <button key={s} className="btn-pill" onClick={() => saveProfile({ gender: s })} style={{ ...t.pill(profile.gender === s), borderRadius:'999px', padding:'5px 14px', fontSize:'13px', fontWeight:'500', cursor:'pointer', fontFamily:"'Sora',sans-serif" }}>{s}</button>
+                    ))}
+                  </div>
+                  <div style={{ fontSize:'11px', color:t.textMuted, marginTop:'5px' }}>Helps tailor clothing suggestions in your packing list</div>
                 </div>
                 <div>
                   <label style={labelStyle}>Packing Style</label>
