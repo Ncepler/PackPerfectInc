@@ -568,12 +568,14 @@ function generateList(tripType, days, climate, liters = 69, gender = '') {
       { name:'Ski Gloves', qty:1, weight:0.5, packed:false, bag:'main' },
       { name:'Neck Gaiter / Balaclava', qty:1, weight:0.2, packed:false, bag:'main' },
       { name:'Warm Hat / Beanie', qty:1, weight:0.2, packed:false, bag:'main' },
-      { name:'Goggles', qty:1, weight:0.4, packed:false, bag:'main' },
-      { name:'Helmet', qty:1, weight:2.5, packed:false, bag:'main' },
+      { name:'Goggles', qty:1, weight:0.4, packed:false, bag:'boot bag' },
+      { name:'Helmet', qty:1, weight:2.5, packed:false, bag:'boot bag' },
       { name:'Casual Après-Ski Outfit', qty:Math.min(Math.ceil(days / 2), 3), weight:0.6, packed:false, bag:'main' },
       { name:'Underwear', qty:undies, weight:0.2, packed:false, bag:'main' },
     )
     footwear.push(
+      { name:'Skis / Ski Bag (or rent on-site)', qty:1, weight:15.0, packed:false, bag:'boot bag' },
+      { name:'Ski Poles (or rent on-site)', qty:1, weight:2.5, packed:false, bag:'boot bag' },
       { name:'Ski Boots (or rent on-site)', qty:1, weight:7.0, packed:false, bag:'boot bag' },
       { name:'Warm Snow Boots (après-ski)', qty:1, weight:3.0, packed:false, bag:'boot bag' },
     )
@@ -841,8 +843,8 @@ export default function PackPerfect() {
   const [suggestions, setSuggestions] = useState([])
   const [showSug, setShowSug] = useState(false)
   const [tripType, setTripType] = useState('Leisure')
-  const [startDate, setStartDate] = useState('')
-  const [endDate, setEndDate] = useState('')
+  const [startDate, setStartDate] = useState(() => { const d = new Date(); return d.toISOString().split('T')[0] })
+  const [endDate, setEndDate] = useState(() => { const d = new Date(); d.setDate(d.getDate() + 2); return d.toISOString().split('T')[0] })
   const [listGenerated, setListGenerated] = useState(false)
   const [items, setItems] = useState({})
   const [laundryNote, setLaundryNote] = useState(false)
@@ -938,7 +940,7 @@ export default function PackPerfect() {
 
   useEffect(() => {
     if (!heroVisible) return
-    const targets = { trips: 84200, destinations: Math.floor(DESTINATIONS.length / 10) * 10, items: 47, time: 8 }
+    const targets = { trips: DESTINATIONS.length * 8 * 28, destinations: Math.floor(DESTINATIONS.length / 10) * 10, items: 47, time: 8 }
     const duration = 3400
     const steps = 90
     const interval = duration / steps
@@ -977,8 +979,8 @@ export default function PackPerfect() {
   }
 
   const getDays = () => {
-    if (!startDate || !endDate) return 5
-    return Math.max(1, Math.ceil((new Date(endDate) - new Date(startDate)) / 86400000))
+    if (!startDate || !endDate) return 3
+    return Math.max(1, Math.round((new Date(endDate) - new Date(startDate)) / 86400000) + 1)
   }
 
   const allItems = Object.values(items).flat()
@@ -1071,7 +1073,7 @@ export default function PackPerfect() {
 
   const getLegDays = (leg) => {
     if (!leg.startDate || !leg.endDate) return 3
-    return Math.max(1, Math.ceil((new Date(leg.endDate) - new Date(leg.startDate)) / 86400000))
+    return Math.max(1, Math.round((new Date(leg.endDate) - new Date(leg.startDate)) / 86400000) + 1)
   }
 
   const renderHourlyPanel = (weatherData, dayIdx, accentColor) => {
@@ -1613,8 +1615,8 @@ export default function PackPerfect() {
                 {/* Stats row */}
                 {(() => {
                   const STAT_INFO = [
-                    { value: statCounts.trips.toLocaleString(), suffix:'+', label:'Trips Packed',   icon:'✈️', color:'#2563eb', cls:'suitcase-card-0',
-                      explain:`Calculated as the total unique trip configurations across all ${DESTINATIONS.length} destinations × 6 trip types × 28 possible durations — every distinct packing plan PackPerfect can generate.` },
+                    { value: statCounts.trips.toLocaleString(), suffix:'+', label:'Trips to Pack',  icon:'✈️', color:'#2563eb', cls:'suitcase-card-0',
+                      explain:`${DESTINATIONS.length} destinations × 8 trip types × 28 possible durations — the total number of unique packing plans PackPerfect can generate for you.` },
                     { value: statCounts.destinations,           suffix:'+', label:'Destinations',   icon:'🌍', color:'#2563eb', cls:'suitcase-card-1',
                       explain:`PackPerfect covers ${DESTINATIONS.length} cities and regions worldwide, spanning every climate zone — from tropical beaches to arctic cities.` },
                     { value: statCounts.items,                  suffix:' avg', label:'Items per List', icon:'🎒', color:'#0891b2', cls:'suitcase-card-2',
