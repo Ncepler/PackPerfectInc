@@ -335,6 +335,82 @@ const DESTINATIONS = [
   'Yamoussoukro, Ivory Coast',
   'Lome, Togo','Porto-Novo, Benin',
   'Malabo, Equatorial Guinea',
+  // US Coastal & Island Gems
+  'Cape Cod, MA','Nantucket, MA',"Martha's Vineyard, MA",'Outer Banks, NC','Hilton Head, SC',
+  'Cape May, NJ','Jekyll Island, GA','Amelia Island, FL','St. Augustine, FL','Marco Island, FL',
+  'Sanibel Island, FL','Clearwater, FL','Fort Myers, FL','Tybee Island, GA','Wrightsville Beach, NC',
+  'Rehoboth Beach, DE','Ocean City, MD',
+  // US Mountains, Parks & Outdoors
+  'Grand Canyon, AZ','Joshua Tree, CA','Zion, UT','Bryce Canyon, UT','Arches National Park, UT',
+  'Lake Placid, NY','Finger Lakes, NY','Stowe, VT','Bar Harbor, ME','Newport, RI',
+  'Gatlinburg, TN','Boone, NC','Williamsburg, VA','Shenandoah Valley, VA','Hot Springs, AR',
+  'Steamboat Springs, CO','Durango, CO','Ouray, CO','Whitefish, MT','Hood River, OR',
+  'Leavenworth, WA','Bellingham, WA','Astoria, OR',
+  // US Southwest & California
+  'Carmel, CA','Mendocino, CA','San Luis Obispo, CA','Santa Cruz, CA','Monterey, CA',
+  'Fredericksburg, TX','Marfa, TX',
+  // Greece — more islands
+  'Corfu, Greece','Zakynthos, Greece','Lefkada, Greece','Paros, Greece','Naxos, Greece',
+  'Milos, Greece','Skiathos, Greece','Kefalonia, Greece','Lesbos, Greece','Kos, Greece',
+  // Italy — culture & nature
+  'Cinque Terre, Italy','Dolomites, Italy','Matera, Italy','Lecce, Italy','Siena, Italy',
+  'Verona, Italy','Trieste, Italy','Perugia, Italy','Agrigento, Italy','Trapani, Italy',
+  // France — regions
+  'Normandy, France','Brittany, France','Loire Valley, France','Alsace, France','Burgundy, France',
+  'Dordogne, France','Corsica, France',
+  // Scandinavia extras
+  'Lofoten Islands, Norway','Flam, Norway','Geirangerfjord, Norway',
+  'Abisko, Sweden','Gotland, Sweden','Visby, Sweden','Bornholm, Denmark',
+  // Eastern Europe
+  'Wroclaw, Poland','Poznan, Poland','Zakopane, Poland','Bled, Slovenia',
+  'Plitvice Lakes, Croatia','Brac, Croatia','Vis, Croatia','Mljet, Croatia','Sibenik, Croatia',
+  // Portugal Islands
+  'Funchal, Madeira, Portugal','Ponta Delgada, Azores, Portugal',
+  // Thailand extras
+  'Chiang Rai, Thailand','Koh Tao, Thailand','Koh Phangan, Thailand','Hua Hin, Thailand',
+  'Pai, Thailand','Ayutthaya, Thailand','Khao Yai, Thailand','Kanchanaburi, Thailand',
+  // Bali & Indonesia extras
+  'Canggu, Bali','Amed, Bali','Gili Islands, Indonesia','Flores, Indonesia',
+  'Nusa Penida, Indonesia','Sumba, Indonesia','Belitung, Indonesia',
+  // Philippines extras
+  'El Nido, Philippines','Siargao, Philippines','Coron, Philippines',
+  'Dumaguete, Philippines','Siquijor, Philippines',
+  // Vietnam & Indochina extras
+  'Ha Giang, Vietnam','Dalat, Vietnam','Phu Quoc, Vietnam',
+  'Kep, Cambodia','Kampot, Cambodia','Mekong Delta, Vietnam',
+  // Pacific & Oceania
+  'Palau','Noumea, New Caledonia','Rarotonga, Cook Islands','Moorea, French Polynesia',
+  'Rotorua, New Zealand','Abel Tasman, New Zealand','Milford Sound, New Zealand','Napier, New Zealand',
+  'Byron Bay, Australia','Broome, Australia','Margaret River, Australia','Uluru, Australia',
+  'Port Douglas, Australia','Noosa, Australia','Kakadu, Australia','Exmouth, Australia',
+  'Kangaroo Island, Australia',
+  // Mexico extras
+  'Bacalar, Mexico','Holbox, Mexico','Sayulita, Mexico','Todos Santos, Mexico',
+  'Guanajuato, Mexico','Morelia, Mexico','Taxco, Mexico','Copper Canyon, Mexico','Zihuatanejo, Mexico',
+  // Central America & Caribbean extras
+  'Caye Caulker, Belize','Utila, Honduras','San Blas Islands, Panama',
+  'Ometepe, Nicaragua','Corn Islands, Nicaragua','Suchitoto, El Salvador',
+  // South America extras
+  'Mancora, Peru','Colca Canyon, Peru','Paracas, Peru',
+  'Fernando de Noronha, Brazil','Chapada Diamantina, Brazil','Jericoacoara, Brazil',
+  'Pantanal, Brazil','Bonito, Brazil',
+  'San Andres, Colombia','Tayrona, Colombia','Villa de Leyva, Colombia','Salento, Colombia',
+  'Margarita Island, Venezuela',
+  // Africa — East & Indian Ocean
+  'Chefchaouen, Morocco','Merzouga, Morocco',
+  'Diani Beach, Kenya','Lamu, Kenya','Masai Mara, Kenya',
+  'Arusha, Tanzania','Ngorongoro, Tanzania','Serengeti, Tanzania','Pemba Island, Tanzania','Zanzibar Stone Town, Tanzania',
+  'Lake Malawi, Malawi','Inhambane, Mozambique',
+  'Nosy Be, Madagascar',"Ile Sainte-Marie, Madagascar",
+  // Africa — South
+  'Okavango Delta, Botswana','Sossusvlei, Namibia',
+  'Drakensberg, South Africa','Stellenbosch, South Africa','Garden Route, South Africa',
+  // Middle East extras
+  'Wadi Rum, Jordan','Jerash, Jordan',
+  'Al Ain, UAE','Sur, Oman','Nizwa, Oman','Wadi Shab, Oman',
+  'Dahab, Egypt','Siwa Oasis, Egypt','El Gouna, Egypt',
+  // Central Asia extras
+  'Khiva, Uzbekistan','Bukhara, Uzbekistan',
 ]
 
 const SUITCASES = [
@@ -481,13 +557,22 @@ function suggestTripTypes() {
   return ['Leisure','Business','Beach','Adventure','Family','Backpacking','Skiing','Sports Tournament']
 }
 
+function isUSDestination(dest) {
+  if (!dest) return false
+  const US_STATE = /,\s*(AL|AK|AZ|AR|CA|CO|CT|DE|FL|GA|HI|ID|IL|IN|IA|KS|KY|LA|ME|MD|MA|MI|MN|MS|MO|MT|NE|NV|NH|NJ|NM|NY|NC|ND|OH|OK|OR|PA|RI|SC|SD|TN|TX|UT|VT|VA|WA|WV|WI|WY|DC)$/i
+  return US_STATE.test(dest) ||
+    /washington dc/i.test(dest) ||
+    /puerto rico/i.test(dest) ||
+    /us virgin islands/i.test(dest)
+}
+
 // Cap clothing quantities — for long trips recommend washing instead
 function smartQty(base, cap) {
   if (base <= cap) return base
   return cap  // will add laundry note
 }
 
-function generateList(tripType, days, climate, liters = 69, gender = '') {
+function generateList(tripType, days, climate, liters = 69, gender = '', dest = '', hotelType = '') {
   const needsLaundryNote = days > 10
 
   // Capacity factor: carry-on squeezes items, large bag allows more
@@ -524,7 +609,7 @@ function generateList(tripType, days, climate, liters = 69, gender = '') {
     { name:'Portable Charger', qty:1, weight:0.8, packed:false, bag:'carry' },
   ]
   const documents = [
-    { name:'Passport', qty:1, weight:0.1, packed:false, bag:'carry' },
+    ...(!isUSDestination(dest) ? [{ name:'Passport', qty:1, weight:0.1, packed:false, bag:'carry' }] : []),
     { name:'Travel Insurance', qty:1, weight:0.1, packed:false, bag:'carry' },
     { name:'Credit Cards', qty:2, weight:0.1, packed:false, bag:'carry' },
     { name:'Cash', qty:1, weight:0.1, packed:false, bag:'carry' },
@@ -809,6 +894,28 @@ function generateList(tripType, days, climate, liters = 69, gender = '') {
       clothing.push({ name:'Light Jacket', qty:1, weight:1.5, packed:false, bag:'main' })
   }
 
+  // Hotel / accommodation extras
+  if (hotelType === 'resort' || hotelType === 'all-inclusive') {
+    const swimQty = hotelType === 'all-inclusive' ? 3 : 2
+    if (!clothing.find(i => i.name === 'Swimsuit'))
+      clothing.push({ name:'Swimsuit', qty:swimQty, weight:0.3, packed:false, bag:'main' })
+    if (!toiletries.find(i => i.name.toLowerCase().includes('sunscreen')))
+      toiletries.push({ name:'Sunscreen SPF 50', qty:2, weight:0.6, packed:false, bag:'main' })
+    if (!footwear.find(i => i.name.toLowerCase().includes('flip') || i.name.toLowerCase().includes('pool') || i.name.toLowerCase().includes('slide')))
+      footwear.push({ name:'Pool Slides / Flip Flops', qty:1, weight:0.5, packed:false, bag:'main' })
+    if (!health.find(i => i.name.toLowerCase().includes('phone pouch') || i.name.toLowerCase().includes('waterproof')))
+      health.push({ name:'Waterproof Phone Pouch', qty:1, weight:0.1, packed:false, bag:'main' })
+    if (hotelType === 'all-inclusive')
+      clothing.push({ name:'Casual Evening Outfit', qty:2, weight:0.6, packed:false, bag:'main' })
+  }
+  if (hotelType === 'hostel') {
+    if (!electronics.find(i => i.name.toLowerCase().includes('padlock')))
+      electronics.push({ name:'Travel Padlock', qty:1, weight:0.3, packed:false, bag:'main' })
+    health.push({ name:'Sleep Sheet / Liner', qty:1, weight:0.3, packed:false, bag:'main' })
+    if (!footwear.find(i => i.name.toLowerCase().includes('flip') || i.name.toLowerCase().includes('shower')))
+      footwear.push({ name:'Shower Flip Flops', qty:1, weight:0.4, packed:false, bag:'main' })
+  }
+
   return {
     items: { Clothing: clothing, Footwear: footwear, Toiletries: toiletries, Electronics: electronics, Documents: documents, Health: health },
     laundryNote: needsLaundryNote
@@ -963,6 +1070,7 @@ export default function PackPerfect() {
   const [selectedSuitcase, setSelectedSuitcase] = useState(null)
   const weightLimit = selectedSuitcase ? Math.max(0, 50 - selectedSuitcase.weightLbs) : 50
   const [suitcaseBrandFilter, setSuitcaseBrandFilter] = useState('')
+  const [hotelType, setHotelType] = useState('')
   const [customItem, setCustomItem] = useState('')
   const [weather, setWeather] = useState(null)
   const [weatherLoading, setWeatherLoading] = useState(false)
@@ -1035,6 +1143,7 @@ export default function PackPerfect() {
       const d = localStorage.getItem('pp_dark'); if (d !== null) setDark(d === '1')
       const p = localStorage.getItem('pp_profile'); if (p) setProfile(JSON.parse(p))
       const sc = localStorage.getItem('pp_suitcase'); if (sc) { const found = SUITCASES.find(s => s.id === sc); if (found) setSelectedSuitcase(found) }
+      const ht = localStorage.getItem('pp_hotel'); if (ht) setHotelType(ht)
     } catch(e) {}
   }, [])
 
@@ -1261,7 +1370,7 @@ export default function PackPerfect() {
     const legs = premiumLegs.slice(0, numLocations)
     if (!legs.some(l => l.destination || l.destInput)) return
     const resolvedLegs = legs.map(l => ({ ...l, destination: l.destination || l.destInput, climate: l.destination ? l.climate : classifyClimate(l.destInput) }))
-    const allItemSets = resolvedLegs.map(leg => generateList(leg.tripType, getLegDays(leg), leg.climate, selectedSuitcase?.liters ?? 69, profile.gender))
+    const allItemSets = resolvedLegs.map(leg => generateList(leg.tripType, getLegDays(leg), leg.climate, selectedSuitcase?.liters ?? 69, profile.gender, leg.destination, hotelType))
     const merged = mergePremiumItems(allItemSets.map(r => r.items))
     const totalDays = resolvedLegs.reduce((s, leg) => s + getLegDays(leg), 0)
     setPremiumItems(merged); setPremiumLaundryNote(totalDays > 10); setPremiumGenerated(true)
@@ -1323,7 +1432,7 @@ export default function PackPerfect() {
       setStartDate(resolvedStart); setEndDate(resolvedEnd)
     }
     const days = Math.max(1, Math.round((new Date(resolvedEnd) - new Date(resolvedStart)) / 86400000) + 1)
-    const result = generateList(tripType, days, c, selectedSuitcase?.liters ?? 69, profile.gender)
+    const result = generateList(tripType, days, c, selectedSuitcase?.liters ?? 69, profile.gender, destination, hotelType)
     setItems(result.items)
     setLaundryNote(result.laundryNote)
     setListGenerated(false)
@@ -2690,6 +2799,44 @@ export default function PackPerfect() {
                   </div>
                 )}
               </div>
+            </div>
+
+            {/* Hotel / Accommodation Type */}
+            <div style={card}>
+              <div style={{ fontSize:'11px', fontWeight:'600', color:t.textMuted, textTransform:'uppercase', letterSpacing:'0.09em', marginBottom:'14px' }}>Accommodation Type</div>
+              <p style={{ fontSize:'12px', color:t.textMuted, marginBottom:'14px', lineHeight:'1.5' }}>Tell us where you're staying so we can tailor your list — resort guests get pool gear, hostel travelers get a padlock and sleep liner.</p>
+              <div style={{ display:'flex', flexWrap:'wrap', gap:'8px' }}>
+                {[
+                  { value:'',              label:'Not specified',        icon:'🏨' },
+                  { value:'standard',      label:'Hotel',                icon:'🏨' },
+                  { value:'resort',        label:'Resort (pool)',        icon:'🏊' },
+                  { value:'all-inclusive', label:'All-Inclusive Resort', icon:'🌴' },
+                  { value:'airbnb',        label:'Airbnb / Rental',      icon:'🏠' },
+                  { value:'hostel',        label:'Hostel',               icon:'🛏️' },
+                  { value:'boutique',      label:'Boutique Hotel',       icon:'✨' },
+                ].map(opt => (
+                  <button key={opt.value} className="btn-pill" onClick={() => {
+                    setHotelType(opt.value)
+                    try { localStorage.setItem('pp_hotel', opt.value) } catch(_) {}
+                  }} style={{
+                    ...t.pill(hotelType === opt.value),
+                    borderRadius:'999px', padding:'6px 15px', fontSize:'13px', fontWeight:'500',
+                    cursor:'pointer', fontFamily:"'Sora',sans-serif", display:'flex', alignItems:'center', gap:'5px',
+                  }}>
+                    <span>{opt.icon}</span>{opt.label}
+                  </button>
+                ))}
+              </div>
+              {(hotelType === 'resort' || hotelType === 'all-inclusive') && (
+                <div style={{ marginTop:'12px', padding:'10px 13px', background: dark ? 'rgba(5,150,105,0.1)' : 'rgba(5,150,105,0.06)', border:'1px solid rgba(5,150,105,0.25)', borderRadius:'8px', fontSize:'12px', color:'#059669', lineHeight:'1.5' }}>
+                  🏊 Pool items added to your list — swimwear, sunscreen, pool slides & waterproof phone pouch.{hotelType === 'all-inclusive' ? ' Plus casual evening outfits for resort dining.' : ''}
+                </div>
+              )}
+              {hotelType === 'hostel' && (
+                <div style={{ marginTop:'12px', padding:'10px 13px', background: dark ? 'rgba(37,99,235,0.1)' : 'rgba(37,99,235,0.06)', border:`1px solid rgba(37,99,235,0.25)`, borderRadius:'8px', fontSize:'12px', color:t.accent, lineHeight:'1.5' }}>
+                  🛏️ Hostel extras added — travel padlock, sleep sheet/liner & shower flip flops.
+                </div>
+              )}
             </div>
 
             <div style={card}>
