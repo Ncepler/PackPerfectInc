@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from "react"
 
-const IMG_WARM = "/img-warm.jpg"
-const IMG_COLD = "/img-cold.jpg"
-const IMG_NORM = "/img-norm.jpg"
-const IMG_BIZ  = "/img-biz.jpg"
+const IMG_WARM      = "/img-warm.jpg"
+const IMG_COLD      = "/img-cold.jpg"
+const IMG_NORM      = "/img-norm.jpg"
+const IMG_BIZ       = "/img-biz.jpg"
+const IMG_BIZ_BEACH = "/business-beach.jpg"
+const IMG_SKI_BEACH = "/ski-beach.jpg"
 
 const DESTINATIONS = [
   // New York City & boroughs
@@ -160,6 +162,67 @@ const DESTINATIONS = [
   'La Paz, Bolivia','Sucre, Bolivia','Uyuni, Bolivia',
   'Caracas, Venezuela','Asuncion, Paraguay',
   'Georgetown, Guyana','Paramaribo, Suriname',
+  // Additional Europe
+  'Palma de Mallorca, Spain','Tenerife, Spain','Lanzarote, Spain','Gran Canaria, Spain',
+  'Brest, France','Nantes, France','Montpellier, France','Toulouse, France','Perpignan, France',
+  'Turin, Italy','Bologna, Italy','Palermo, Italy','Catania, Italy','Bari, Italy','Pisa, Italy',
+  'Alicante, Spain','Malaga, Spain','Bilbao, Spain','Cordoba, Spain',
+  'Porto Santo, Portugal','Madeira, Portugal','Azores, Portugal',
+  'Nicosia, Cyprus','Paphos, Cyprus',
+  'Tbilisi, Georgia','Yerevan, Armenia','Baku, Azerbaijan',
+  'Chisinau, Moldova','Skopje, North Macedonia','Tirana, Albania','Podgorica, Montenegro','Pristina, Kosovo',
+  'Valletta, Malta','Gozo, Malta',
+  'Innsbruck, Austria','Graz, Austria','Linz, Austria',
+  'Bern, Switzerland','Basel, Switzerland','Zermatt, Switzerland','Davos, Switzerland',
+  'Eindhoven, Netherlands','The Hague, Netherlands','Utrecht, Netherlands',
+  'Antwerp, Belgium','Liege, Belgium',
+  'Gothenburg, Sweden','Malmo, Sweden','Uppsala, Sweden',
+  'Tampere, Finland','Turku, Finland','Rovaniemi, Finland',
+  'Aarhus, Denmark','Odense, Denmark',
+  'Stavanger, Norway','Tromso, Norway','Alesund, Norway',
+  // Additional Middle East & Africa
+  'Riyadh, Saudi Arabia','Jeddah, Saudi Arabia','Mecca, Saudi Arabia','Medina, Saudi Arabia',
+  'Kuwait City, Kuwait','Manama, Bahrain','Musandam, Oman','Salalah, Oman',
+  'Aqaba, Jordan','Dead Sea, Jordan',
+  'Haifa, Israel','Nazareth, Israel',
+  'Addis Ababa, Ethiopia','Kampala, Uganda','Kigali, Rwanda','Dar es Salaam, Tanzania',
+  'Maputo, Mozambique','Lusaka, Zambia','Harare, Zimbabwe','Windhoek, Namibia','Gaborone, Botswana',
+  'Dakar, Senegal','Abidjan, Ivory Coast','Accra, Ghana','Lome, Togo','Cotonou, Benin',
+  'Tunis, Tunisia','Sfax, Tunisia','Sousse, Tunisia',
+  'Alexandria, Egypt','Aswan, Egypt','Port Said, Egypt',
+  // Additional Asia
+  'Hanoi, Vietnam','Nha Trang, Vietnam','Hue, Vietnam','Mui Ne, Vietnam',
+  'Colombo, Sri Lanka','Negombo, Sri Lanka','Galle, Sri Lanka',
+  'Dhaka, Bangladesh','Chittagong, Bangladesh',
+  'Kathmandu, Nepal','Pokhara, Nepal','Chitwan, Nepal',
+  'Ulaanbaatar, Mongolia',
+  'Almaty, Kazakhstan','Nur-Sultan, Kazakhstan','Tashkent, Uzbekistan','Bishkek, Kyrgyzstan',
+  'Phnom Penh, Cambodia','Battambang, Cambodia',
+  'Vientiane, Laos','Luang Prabang, Laos','Vang Vieng, Laos',
+  'Mandalay, Myanmar','Inle Lake, Myanmar','Bagan, Myanmar',
+  'Nusa Dua, Indonesia','Seminyak, Bali','Ubud, Bali','Komodo, Indonesia','Raja Ampat, Indonesia',
+  'Cebu, Philippines','Davao, Philippines','Boracay, Philippines',
+  'Penang, Malaysia','Kuching, Malaysia','Kota Kinabalu, Malaysia','Johor Bahru, Malaysia',
+  // Additional Americas
+  'Whistler, Canada','Kelowna, Canada','Saskatoon, Canada','Thunder Bay, Canada','Fredericton, Canada',
+  'Guadalajara, Mexico','Puebla, Mexico','Veracruz, Mexico','Tijuana, Mexico','Leon, Mexico',
+  'Medellín, Colombia','Cali, Colombia','Barranquilla, Colombia',
+  'Guayaquil, Ecuador','Otavalo, Ecuador',
+  'Recife, Brazil','Manaus, Brazil','Belo Horizonte, Brazil','Curitiba, Brazil','Porto Alegre, Brazil',
+  'Asuncion, Paraguay','Ciudad del Este, Paraguay',
+  'Sucre, Bolivia','Cochabamba, Bolivia','Santa Cruz, Bolivia',
+  'Trujillo, Peru','Iquitos, Peru','Puno, Peru',
+  'Rosario, Argentina','Cordoba, Argentina','Salta, Argentina','Mar del Plata, Argentina',
+  'Montevideo, Uruguay','Colonia del Sacramento, Uruguay',
+  'Panama City Beach, Panama','Bocas del Toro, Panama',
+  'San Pedro Sula, Honduras','La Ceiba, Honduras',
+  'Cartago, Costa Rica','Quepos, Costa Rica','Jaco, Costa Rica',
+  'Flores, Guatemala','Quetzaltenango, Guatemala',
+  'Negril, Jamaica','Ocho Rios, Jamaica','Port Antonio, Jamaica',
+  'Providenciales, Turks and Caicos','George Town, Cayman Islands',
+  'Charlotte Amalie, US Virgin Islands','Frederiksted, US Virgin Islands',
+  'Fort-de-France, Martinique','Pointe-a-Pitre, Guadeloupe','Castries, St Lucia',
+  'Kingstown, St Vincent','Basseterre, St Kitts','Saint George, Grenada',
 ]
 
 const SUITCASES = [
@@ -408,7 +471,7 @@ function generateList(tripType, days, climate, liters = 69, gender = '') {
       { name:'Shorts', qty:Math.min(days, 5), weight:0.4, packed:false, bag:'main' },
       { name:'T-Shirts', qty:shirts, weight:0.5, packed:false, bag:'main' },
       { name:'Cover-Up', qty:1, weight:0.3, packed:false, bag:'main' },
-      { name:'Light Dress / Linen Shirt', qty:2, weight:0.3, packed:false, bag:'main' },
+      { name:'Light Dress / Linen Shirt', qty:1, weight:0.3, packed:false, bag:'main' },
       { name:'Underwear', qty:undies, weight:0.2, packed:false, bag:'main' },
       { name:'Socks', qty:Math.max(2, Math.round(cycleLen * 0.5)), weight:0.2, packed:false, bag:'main' },
     )
@@ -798,6 +861,10 @@ export default function PackPerfect() {
   const [listLoading, setListLoading] = useState(false)
   const [visualAidReady, setVisualAidReady] = useState(false)
   const [profile, setProfile] = useState({ name:'', homeCity:'', gender:'', travelStyle:'Average', frequentFlyer:'Sometimes' })
+  const [showTripSurvey, setShowTripSurvey] = useState(false)
+  const [surveyStep, setSurveyStep] = useState(0)
+  const [surveyAnswers, setSurveyAnswers] = useState({ usedEverything:'', leftBehind:'', shouldHavePacked:'', otherFeedback:'' })
+  const [surveyDone, setSurveyDone] = useState(false)
   const chatEndRef = useRef(null)
   const destRef = useRef(null)
 
@@ -917,13 +984,15 @@ export default function PackPerfect() {
   const allItems = Object.values(items).flat()
   const mainItems = allItems.filter(i => i.bag === 'main')
   const carryItems = allItems.filter(i => i.bag === 'carry')
+  const bootBagItems = allItems.filter(i => i.bag === 'boot bag')
   const mainWeight = mainItems.reduce((s, i) => s + i.weight * i.qty, 0)
   const carryWeight = carryItems.reduce((s, i) => s + i.weight * i.qty, 0)
+  const bootBagWeight = bootBagItems.reduce((s, i) => s + i.weight * i.qty, 0)
   const packedCount = allItems.filter(i => i.packed).length
   const mainOverLimit = mainWeight > weightLimit
 
   const togglePacked = (cat, idx) => setItems(p => { const u = {...p}; u[cat] = [...u[cat]]; u[cat][idx] = {...u[cat][idx], packed: !u[cat][idx].packed}; return u })
-  const toggleBag = (cat, idx) => setItems(p => { const u = {...p}; u[cat] = [...u[cat]]; u[cat][idx] = {...u[cat][idx], bag: u[cat][idx].bag === 'main' ? 'carry' : 'main'}; return u })
+  const toggleBag = (cat, idx) => setItems(p => { const u = {...p}; u[cat] = [...u[cat]]; const cur = u[cat][idx].bag; u[cat][idx] = {...u[cat][idx], bag: cur === 'main' ? 'carry' : cur === 'carry' ? (bootBagItems.length > 0 ? 'boot bag' : 'main') : cur === 'boot bag' ? 'main' : 'main'}; return u })
 
   const addCustomItem = () => {
     if (!customItem.trim()) return
@@ -1084,24 +1153,41 @@ export default function PackPerfect() {
     setPremiumItems(merged); setPremiumLaundryNote(totalDays > 10); setPremiumGenerated(true)
     const weatherResults = await fetchPremiumWeather(resolvedLegs)
     const validWeathers = weatherResults.filter(Boolean)
-    // Pick visual based on first leg's trip type + average temps
+    // Pick visual based on trip types and average temps across all legs
+    const allTripTypes = resolvedLegs.map(l => l.tripType)
+    const hasSki = allTripTypes.includes('Skiing')
+    const hasBiz = allTripTypes.includes('Business')
     const firstLegTripType = resolvedLegs[0]?.tripType || 'Leisure'
     if (validWeathers.length > 0) {
       const allTemps = validWeathers.flatMap(w => w.daily.temperature_2m_max || [])
       const overallAvg = allTemps.length > 0 ? allTemps.reduce((a,b) => a+b, 0) / allTemps.length : null
+      const isWarm = overallAvg !== null ? (overallAvg >= 72) : resolvedLegs.some(l => l.climate === 'tropical' || l.climate === 'warm' || l.climate === 'desert')
+      const hasBeach = allTripTypes.includes('Beach')
       if (overallAvg !== null) {
-        if (firstLegTripType === 'Business') setPremiumVisImage(IMG_BIZ)
-        else if (overallAvg >= 72 || firstLegTripType === 'Beach') setPremiumVisImage(IMG_WARM)
+        if (hasBiz && (isWarm || hasBeach)) setPremiumVisImage(IMG_BIZ_BEACH)
+        else if (hasSki && (isWarm || hasBeach)) setPremiumVisImage(IMG_SKI_BEACH)
+        else if (hasBiz) setPremiumVisImage(IMG_BIZ)
+        else if (isWarm || hasBeach) setPremiumVisImage(IMG_WARM)
         else if (overallAvg < 50) setPremiumVisImage(IMG_COLD)
         else setPremiumVisImage(IMG_NORM)
-      } else setPremiumVisImage(getVisualImage(resolvedLegs[0].climate, firstLegTripType))
+      } else {
+        const climates = resolvedLegs.map(l => l.climate)
+        const warmClimate = climates.some(c => c === 'tropical' || c === 'warm' || c === 'desert')
+        if (hasBiz && warmClimate) setPremiumVisImage(IMG_BIZ_BEACH)
+        else if (hasSki && warmClimate) setPremiumVisImage(IMG_SKI_BEACH)
+        else setPremiumVisImage(getVisualImage(resolvedLegs[0].climate, firstLegTripType))
+      }
     } else {
-      setPremiumVisImage(getVisualImage(resolvedLegs[0]?.climate || 'temperate', firstLegTripType))
+      const climates = resolvedLegs.map(l => l.climate)
+      const warmClimate = climates.some(c => c === 'tropical' || c === 'warm' || c === 'desert')
+      if (hasBiz && warmClimate) setPremiumVisImage(IMG_BIZ_BEACH)
+      else if (hasSki && warmClimate) setPremiumVisImage(IMG_SKI_BEACH)
+      else setPremiumVisImage(getVisualImage(resolvedLegs[0]?.climate || 'temperate', firstLegTripType))
     }
   }
 
   const togglePremiumPacked = (cat, idx) => setPremiumItems(p => { const u={...p}; u[cat]=[...u[cat]]; u[cat][idx]={...u[cat][idx], packed:!u[cat][idx].packed}; return u })
-  const togglePremiumBag = (cat, idx) => setPremiumItems(p => { const u={...p}; u[cat]=[...u[cat]]; u[cat][idx]={...u[cat][idx], bag:u[cat][idx].bag==='main'?'carry':'main'}; return u })
+  const togglePremiumBag = (cat, idx) => setPremiumItems(p => { const u={...p}; u[cat]=[...u[cat]]; const cur=u[cat][idx].bag; const hasBoot = Object.values(p).flat().some(i => i.bag === 'boot bag'); u[cat][idx]={...u[cat][idx], bag:cur==='main'?'carry':cur==='carry'?(hasBoot?'boot bag':'main'):cur==='boot bag'?'main':'main'}; return u })
   const addPremiumCustomItem = () => {
     if (!premiumCustomItem.trim()) return
     setPremiumItems(p => ({ ...p, Clothing: [...(p.Clothing||[]), { name:premiumCustomItem, qty:1, weight:0.5, packed:false, bag:'main' }] }))
@@ -1369,6 +1455,98 @@ export default function PackPerfect() {
               style={{ background:'transparent', border:'none', color:t.textMuted, fontSize:'13px', cursor:'pointer', width:'100%', padding:'6px' }}>
               Cancel
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* TRIP SURVEY MODAL */}
+      {showTripSurvey && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.65)', zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}
+          onClick={e => { if (e.target === e.currentTarget) setShowTripSurvey(false) }}>
+          <div style={{ background:t.surface, border:`1px solid ${t.border}`, borderRadius:'18px', padding:'32px 28px', maxWidth:'460px', width:'100%' }}>
+            {!surveyDone ? (
+              <>
+                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'20px' }}>
+                  <div>
+                    <div style={{ fontSize:'18px', fontWeight:'600', color:t.text }}>Trip Debrief</div>
+                    <div style={{ fontSize:'12px', color:t.textMuted, marginTop:'2px' }}>Question {surveyStep + 1} of 4</div>
+                  </div>
+                  <button onClick={() => setShowTripSurvey(false)} style={{ background:'transparent', border:'none', fontSize:'18px', cursor:'pointer', color:t.textMuted }}>✕</button>
+                </div>
+                <div style={{ background:t.inputBg, borderRadius:'6px', height:'4px', marginBottom:'20px', overflow:'hidden' }}>
+                  <div style={{ background:'#10b981', height:'100%', width:`${((surveyStep + 1) / 4) * 100}%`, transition:'width 0.3s' }} />
+                </div>
+
+                {surveyStep === 0 && (
+                  <div>
+                    <div style={{ fontSize:'15px', fontWeight:'500', color:t.text, marginBottom:'14px' }}>Did you use everything you packed?</div>
+                    <div style={{ display:'flex', flexDirection:'column', gap:'8px' }}>
+                      {['Yes, used everything', 'Mostly — left a few things behind', 'No, I overpacked significantly'].map(opt => (
+                        <button key={opt} onClick={() => setSurveyAnswers(a => ({ ...a, usedEverything: opt }))}
+                          style={{ padding:'11px 14px', borderRadius:'8px', border:`1px solid ${surveyAnswers.usedEverything === opt ? '#10b981' : t.border}`, background: surveyAnswers.usedEverything === opt ? 'rgba(16,185,129,0.1)' : t.inputBg, color: surveyAnswers.usedEverything === opt ? '#10b981' : t.text, fontSize:'14px', cursor:'pointer', textAlign:'left', fontFamily:"'Sora',sans-serif" }}>
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {surveyStep === 1 && (
+                  <div>
+                    <div style={{ fontSize:'15px', fontWeight:'500', color:t.text, marginBottom:'6px' }}>Anything you packed but didn't end up needing?</div>
+                    <div style={{ fontSize:'12px', color:t.textMuted, marginBottom:'12px' }}>e.g. "extra jacket", "formal shoes", "3rd pair of shorts"</div>
+                    <textarea value={surveyAnswers.leftBehind} onChange={e => setSurveyAnswers(a => ({ ...a, leftBehind: e.target.value }))}
+                      placeholder="Leave blank if nothing comes to mind..."
+                      rows={3} style={{ ...inputStyle, resize:'vertical', lineHeight:'1.5' }} />
+                  </div>
+                )}
+
+                {surveyStep === 2 && (
+                  <div>
+                    <div style={{ fontSize:'15px', fontWeight:'500', color:t.text, marginBottom:'6px' }}>Anything you wished you had packed?</div>
+                    <div style={{ fontSize:'12px', color:t.textMuted, marginBottom:'12px' }}>e.g. "rain jacket", "extra charger", "nicer shoes"</div>
+                    <textarea value={surveyAnswers.shouldHavePacked} onChange={e => setSurveyAnswers(a => ({ ...a, shouldHavePacked: e.target.value }))}
+                      placeholder="Leave blank if nothing comes to mind..."
+                      rows={3} style={{ ...inputStyle, resize:'vertical', lineHeight:'1.5' }} />
+                  </div>
+                )}
+
+                {surveyStep === 3 && (
+                  <div>
+                    <div style={{ fontSize:'15px', fontWeight:'500', color:t.text, marginBottom:'6px' }}>Any other packing feedback?</div>
+                    <div style={{ fontSize:'12px', color:t.textMuted, marginBottom:'12px' }}>Optional — anything else about your last trip we should know</div>
+                    <textarea value={surveyAnswers.otherFeedback} onChange={e => setSurveyAnswers(a => ({ ...a, otherFeedback: e.target.value }))}
+                      placeholder="Optional..."
+                      rows={3} style={{ ...inputStyle, resize:'vertical', lineHeight:'1.5' }} />
+                  </div>
+                )}
+
+                <div style={{ display:'flex', gap:'8px', marginTop:'20px' }}>
+                  {surveyStep > 0 && (
+                    <button onClick={() => setSurveyStep(s => s - 1)} style={{ flex:1, background:'transparent', border:`1px solid ${t.border}`, borderRadius:'8px', padding:'10px', fontSize:'14px', color:t.textMuted, cursor:'pointer', fontFamily:"'Sora',sans-serif" }}>← Back</button>
+                  )}
+                  {surveyStep < 3 ? (
+                    <button className="btn-primary" onClick={() => setSurveyStep(s => s + 1)}
+                      disabled={surveyStep === 0 && !surveyAnswers.usedEverything}
+                      style={{ flex:2, ...btnPrimary, background:'#10b981', opacity: surveyStep === 0 && !surveyAnswers.usedEverything ? 0.5 : 1 }}>
+                      Next →
+                    </button>
+                  ) : (
+                    <button className="btn-primary" onClick={() => { setSurveyDone(true); setShowTripSurvey(false) }}
+                      style={{ flex:2, ...btnPrimary, background:'#10b981' }}>
+                      Submit Feedback ✓
+                    </button>
+                  )}
+                </div>
+              </>
+            ) : (
+              <div style={{ textAlign:'center', padding:'20px 0' }}>
+                <div style={{ fontSize:'40px', marginBottom:'12px' }}>🎉</div>
+                <div style={{ fontSize:'18px', fontWeight:'600', color:t.text, marginBottom:'8px' }}>Thanks for the feedback!</div>
+                <div style={{ fontSize:'13px', color:t.textMuted, lineHeight:'1.6' }}>We'll use what you shared to improve your next packing list.</div>
+                <button className="btn-primary" onClick={() => setShowTripSurvey(false)} style={{ ...btnPrimary, marginTop:'20px', width:'auto', padding:'10px 28px' }}>Done</button>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -1808,8 +1986,8 @@ export default function PackPerfect() {
                       ))}
                     </div>
                   )}
-                  <div className="pp-grid-2" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px', marginBottom:'12px' }}>
-                    {[{ label:'Contents in Main', val:mainWeight, limit:true }, { label:'Carry-On', val:carryWeight, limit:false }].map(b => (
+                  <div className="pp-grid-2" style={{ display:'grid', gridTemplateColumns: bootBagWeight > 0 ? '1fr 1fr 1fr' : '1fr 1fr', gap:'10px', marginBottom:'12px' }}>
+                    {[{ label:'Contents in Main', val:mainWeight, limit:true }, { label:'Carry-On', val:carryWeight, limit:false }, ...(bootBagWeight > 0 ? [{ label:'Boot Bag', val:bootBagWeight, limit:false }] : [])].map(b => (
                       <div key={b.label} style={{ background:t.inputBg, borderRadius:'8px', padding:'12px', textAlign:'center', border:`1px solid ${b.limit && b.val > weightLimit ? '#dc2626' : t.border}` }}>
                         <div style={{ fontSize:'22px', fontWeight:'600', color: b.limit && b.val > weightLimit ? '#dc2626' : t.accent, fontFamily:"'JetBrains Mono',monospace" }}>{b.val.toFixed(1)}</div>
                         <div style={{ fontSize:'11px', color:t.textMuted, marginTop:'2px' }}>{b.label} lbs{b.limit ? ` / ${weightLimit.toFixed(1)} max` : ''}</div>
@@ -1840,21 +2018,32 @@ export default function PackPerfect() {
                     <div style={{ fontSize:'11px', fontWeight:'600', color:t.textMuted, textTransform:'uppercase', letterSpacing:'0.09em', marginBottom:'12px' }}>
                       {cat} <span style={{ color:t.textDim }}>({catItems.length})</span>
                     </div>
-                    {catItems.map((item, i) => (
-                      <div key={i} className="item-row" style={{ display:'flex', alignItems:'center', gap:'10px', padding:'8px 6px', borderRadius:'6px', borderBottom: i < catItems.length-1 ? `1px solid ${t.border}` : 'none' }}>
-                        <input type="checkbox" checked={item.packed} onChange={() => togglePacked(cat, i)} style={{ width:'15px', height:'15px', flexShrink:0, cursor:'pointer' }} />
-                        <span style={{ flex:1, fontSize:'14px', color: item.packed ? t.textDim : t.text, textDecoration: item.packed ? 'line-through' : 'none' }}>
-                          {item.name} <span style={{ color:t.textDim, fontSize:'12px', fontFamily:"'JetBrains Mono',monospace" }}>×{item.qty}</span>
-                        </span>
-                        <span style={{ fontSize:'11px', color:t.textDim, fontFamily:"'JetBrains Mono',monospace" }}>{item.weight} lb</span>
-                        <button onClick={() => toggleBag(cat, i)} style={{
-                          fontSize:'11px', background:t.accentDim, color:t.accent, border:`1px solid ${t.borderStrong}`,
-                          padding:'2px 10px', borderRadius:'999px', cursor:'pointer', fontWeight:'500', whiteSpace:'nowrap',
-                        }}>
-                          {item.bag === 'carry' ? 'Carry-On' : 'Main'}
-                        </button>
-                      </div>
-                    ))}
+                    {catItems.map((item, i) => {
+                      const isJersey = item.name === 'Jersey / Team Uniform'
+                      return (
+                        <div key={i}>
+                          {isJersey && (
+                            <div style={{ background:'rgba(220,38,38,0.08)', border:'2px solid #dc2626', borderRadius:'8px', padding:'8px 12px', marginBottom:'6px', display:'flex', alignItems:'center', gap:'8px' }}>
+                              <span style={{ fontSize:'18px' }}>⚠️</span>
+                              <span style={{ fontSize:'13px', fontWeight:'700', color:'#dc2626' }}>DO NOT FORGET YOUR JERSEY!</span>
+                            </div>
+                          )}
+                          <div className="item-row" style={{ display:'flex', alignItems:'center', gap:'10px', padding:'8px 6px', borderRadius:'6px', borderBottom: i < catItems.length-1 ? `1px solid ${t.border}` : 'none' }}>
+                            <input type="checkbox" checked={item.packed} onChange={() => togglePacked(cat, i)} style={{ width:'15px', height:'15px', flexShrink:0, cursor:'pointer' }} />
+                            <span style={{ flex:1, fontSize: isJersey ? '16px' : '14px', fontWeight: isJersey ? '700' : '400', color: item.packed ? t.textDim : (isJersey ? '#dc2626' : t.text), textDecoration: item.packed ? 'line-through' : 'none' }}>
+                              {item.name} <span style={{ color: isJersey ? 'rgba(220,38,38,0.7)' : t.textDim, fontSize:'12px', fontFamily:"'JetBrains Mono',monospace" }}>×{item.qty}</span>
+                            </span>
+                            <span style={{ fontSize:'11px', color:t.textDim, fontFamily:"'JetBrains Mono',monospace" }}>{item.weight} lb</span>
+                            <button onClick={() => toggleBag(cat, i)} style={{
+                              fontSize:'11px', background:t.accentDim, color:t.accent, border:`1px solid ${t.borderStrong}`,
+                              padding:'2px 10px', borderRadius:'999px', cursor:'pointer', fontWeight:'500', whiteSpace:'nowrap',
+                            }}>
+                              {item.bag === 'carry' ? 'Carry-On' : item.bag === 'boot bag' ? 'Boot Bag' : 'Main'}
+                            </button>
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
                 ))}
 
@@ -1878,17 +2067,10 @@ export default function PackPerfect() {
         {activeTab === 'Visual Aid' && (
           <div>
             <div style={card}>
-              <h2 style={{ fontSize:'18px', fontWeight:'600', marginBottom:'4px', color:t.text }}>Visual Packing Aid</h2>
-              <p style={{ fontSize:'13px', color:t.textMuted, marginBottom:'4px' }}>
-                Showing: <strong style={{ color:t.accent }}>
-                  {tripType === 'Business' ? 'Business trip' :
-                   (climate === 'tropical' || climate === 'desert' || climate === 'warm') ? 'Warm / Tropical trip' :
-                   climate === 'cold' ? 'Cold weather trip' : 'Standard leisure trip'}
-                </strong>
-              </p>
+              <h2 style={{ fontSize:'18px', fontWeight:'600', marginBottom:'12px', color:t.text }}>Visual Packing Aid</h2>
               {!listGenerated && !listLoading && <p style={{ fontSize:'12px', color:t.textDim, marginBottom:'14px' }}>Generate a list first to see the right image for your trip type.</p>}
               {(listLoading || (listGenerated && !visualAidReady)) ? (
-                <div style={{ width:'100%', borderRadius:'12px', marginTop:'12px', background: dark ? '#0d1625' : '#eef2f8', border:`1px solid ${t.border}`, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'16px', padding:'48px 20px' }}>
+                <div style={{ width:'100%', borderRadius:'12px', background: dark ? '#0d1625' : '#eef2f8', border:`1px solid ${t.border}`, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'16px', padding:'48px 20px' }}>
                   <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:'12px' }}>
                     <div className="spinner" style={{ width:'22px', height:'22px', borderWidth:'3px' }} />
                     <div className="dot-pulse"><span /><span /><span /></div>
@@ -1897,9 +2079,9 @@ export default function PackPerfect() {
                   <div style={{ fontSize:'14px', fontWeight:'500', color:t.textMuted }}>Perfecting your visual aid…</div>
                   <div style={{ fontSize:'12px', color:t.textDim }}>Rendering the perfect scene for your trip</div>
                 </div>
-              ) : (
-                <img src={visImage} alt="Packing visual guide" style={{ width:'100%', borderRadius:'12px', display:'block', marginTop:'12px' }} />
-              )}
+              ) : listGenerated ? (
+                <img src={visImage} alt="Packing visual guide" style={{ width:'100%', borderRadius:'12px', display:'block' }} />
+              ) : null}
             </div>
             <div style={card}>
               <div style={{ fontSize:'11px', fontWeight:'600', color:t.textMuted, textTransform:'uppercase', letterSpacing:'0.09em', marginBottom:'14px' }}>Expert Packing Tips</div>
@@ -2087,10 +2269,7 @@ export default function PackPerfect() {
                 )}
 
                 {/* Visual image */}
-                <div style={{ ...card, marginBottom:'12px' }}>
-                  <div style={{ fontSize:'11px', fontWeight:'600', color:'#ca8a04', textTransform:'uppercase', letterSpacing:'0.09em', marginBottom:'10px' }}>
-                    Visual Aid — based on average temperatures across all destinations
-                  </div>
+                <div style={{ ...card, marginBottom:'12px', padding:'12px' }}>
                   <img src={premiumVisImage} alt="Packing visual" style={{ width:'100%', borderRadius:'10px', display:'block' }} />
                 </div>
 
@@ -2165,8 +2344,8 @@ export default function PackPerfect() {
                 {/* Weight tracker */}
                 {(() => {
                   const pAllItems = Object.values(premiumItems).flat()
-                  const pMain = pAllItems.filter(i => i.bag === 'main'); const pCarry = pAllItems.filter(i => i.bag === 'carry')
-                  const pMainW = pMain.reduce((s,i) => s + i.weight*i.qty, 0); const pCarryW = pCarry.reduce((s,i) => s + i.weight*i.qty, 0)
+                  const pMain = pAllItems.filter(i => i.bag === 'main'); const pCarry = pAllItems.filter(i => i.bag === 'carry'); const pBoot = pAllItems.filter(i => i.bag === 'boot bag')
+                  const pMainW = pMain.reduce((s,i) => s + i.weight*i.qty, 0); const pCarryW = pCarry.reduce((s,i) => s + i.weight*i.qty, 0); const pBootW = pBoot.reduce((s,i) => s + i.weight*i.qty, 0)
                   const pPacked = pAllItems.filter(i => i.packed).length; const pOver = pMainW > weightLimit
                   return (
                     <div style={card}>
@@ -2176,8 +2355,8 @@ export default function PackPerfect() {
                           <span style={{ color:t.accent, fontWeight:'500' }}>{selectedSuitcase.name}</span> weighs <span style={{ fontFamily:"'JetBrains Mono',monospace" }}>{selectedSuitcase.weightLbs} lbs</span> — you have <span style={{ fontFamily:"'JetBrains Mono',monospace", color:t.text, fontWeight:'600' }}>{weightLimit.toFixed(1)} lbs</span> left for contents (50 − {selectedSuitcase.weightLbs} = {weightLimit.toFixed(1)} lbs).
                         </div>
                       )}
-                      <div className="pp-grid-2" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px', marginBottom:'12px' }}>
-                        {[{ label:'Main Suitcase', val:pMainW, limit:true }, { label:'Carry-On', val:pCarryW, limit:false }].map(b => (
+                      <div className="pp-grid-2" style={{ display:'grid', gridTemplateColumns: pBootW > 0 ? '1fr 1fr 1fr' : '1fr 1fr', gap:'10px', marginBottom:'12px' }}>
+                        {[{ label:'Main Suitcase', val:pMainW, limit:true }, { label:'Carry-On', val:pCarryW, limit:false }, ...(pBootW > 0 ? [{ label:'Boot Bag', val:pBootW, limit:false }] : [])].map(b => (
                           <div key={b.label} style={{ background:t.inputBg, borderRadius:'8px', padding:'12px', textAlign:'center', border:`1px solid ${b.limit && b.val > weightLimit ? '#dc2626' : t.border}` }}>
                             <div style={{ fontSize:'22px', fontWeight:'600', color: b.limit && b.val > weightLimit ? '#dc2626' : '#ca8a04', fontFamily:"'JetBrains Mono',monospace" }}>{b.val.toFixed(1)}</div>
                             <div style={{ fontSize:'11px', color:t.textMuted, marginTop:'2px' }}>{b.label} lbs{b.limit ? ` / ${weightLimit.toFixed(1)} max` : ''}</div>
@@ -2202,21 +2381,32 @@ export default function PackPerfect() {
                     <div style={{ fontSize:'11px', fontWeight:'600', color:'#ca8a04', textTransform:'uppercase', letterSpacing:'0.09em', marginBottom:'12px' }}>
                       {cat} <span style={{ color:t.textDim }}>({catItems.length})</span>
                     </div>
-                    {catItems.map((item, i) => (
-                      <div key={i} className="item-row" style={{ display:'flex', alignItems:'center', gap:'10px', padding:'8px 6px', borderRadius:'6px', borderBottom: i < catItems.length-1 ? `1px solid ${t.border}` : 'none' }}>
-                        <input type="checkbox" checked={item.packed} onChange={() => togglePremiumPacked(cat, i)} style={{ width:'15px', height:'15px', flexShrink:0, cursor:'pointer' }} />
-                        <span style={{ flex:1, fontSize:'14px', color: item.packed ? t.textDim : t.text, textDecoration: item.packed ? 'line-through' : 'none' }}>
-                          {item.name} <span style={{ color:t.textDim, fontSize:'12px', fontFamily:"'JetBrains Mono',monospace" }}>×{item.qty}</span>
-                        </span>
-                        <span style={{ fontSize:'11px', color:t.textDim, fontFamily:"'JetBrains Mono',monospace" }}>{item.weight} lb</span>
-                        <button onClick={() => togglePremiumBag(cat, i)} style={{
-                          fontSize:'11px', background:'rgba(202,138,4,0.1)', color:'#ca8a04', border:'1px solid rgba(202,138,4,0.3)',
-                          padding:'2px 10px', borderRadius:'999px', cursor:'pointer', fontWeight:'500', whiteSpace:'nowrap',
-                        }}>
-                          {item.bag === 'carry' ? 'Carry-On' : 'Main'}
-                        </button>
-                      </div>
-                    ))}
+                    {catItems.map((item, i) => {
+                      const isJersey = item.name === 'Jersey / Team Uniform'
+                      return (
+                        <div key={i}>
+                          {isJersey && (
+                            <div style={{ background:'rgba(220,38,38,0.08)', border:'2px solid #dc2626', borderRadius:'8px', padding:'8px 12px', marginBottom:'6px', display:'flex', alignItems:'center', gap:'8px' }}>
+                              <span style={{ fontSize:'18px' }}>⚠️</span>
+                              <span style={{ fontSize:'13px', fontWeight:'700', color:'#dc2626' }}>DO NOT FORGET YOUR JERSEY!</span>
+                            </div>
+                          )}
+                          <div className="item-row" style={{ display:'flex', alignItems:'center', gap:'10px', padding:'8px 6px', borderRadius:'6px', borderBottom: i < catItems.length-1 ? `1px solid ${t.border}` : 'none' }}>
+                            <input type="checkbox" checked={item.packed} onChange={() => togglePremiumPacked(cat, i)} style={{ width:'15px', height:'15px', flexShrink:0, cursor:'pointer' }} />
+                            <span style={{ flex:1, fontSize: isJersey ? '16px' : '14px', fontWeight: isJersey ? '700' : '400', color: item.packed ? t.textDim : (isJersey ? '#dc2626' : t.text), textDecoration: item.packed ? 'line-through' : 'none' }}>
+                              {item.name} <span style={{ color: isJersey ? 'rgba(220,38,38,0.7)' : t.textDim, fontSize:'12px', fontFamily:"'JetBrains Mono',monospace" }}>×{item.qty}</span>
+                            </span>
+                            <span style={{ fontSize:'11px', color:t.textDim, fontFamily:"'JetBrains Mono',monospace" }}>{item.weight} lb</span>
+                            <button onClick={() => togglePremiumBag(cat, i)} style={{
+                              fontSize:'11px', background:'rgba(202,138,4,0.1)', color:'#ca8a04', border:'1px solid rgba(202,138,4,0.3)',
+                              padding:'2px 10px', borderRadius:'999px', cursor:'pointer', fontWeight:'500', whiteSpace:'nowrap',
+                            }}>
+                              {item.bag === 'carry' ? 'Carry-On' : item.bag === 'boot bag' ? 'Boot Bag' : 'Main'}
+                            </button>
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
                 ))}
 
@@ -2280,6 +2470,23 @@ export default function PackPerfect() {
                     Welcome, {profile.name}! Your preferences are saved automatically.
                   </div>
                 )}
+
+                {/* Trip feedback survey button */}
+                <div style={{ paddingTop:'6px' }}>
+                  <button className="btn-ghost" onClick={() => { setShowTripSurvey(true); setSurveyStep(0); setSurveyAnswers({ usedEverything:'', leftBehind:'', shouldHavePacked:'', otherFeedback:'' }); setSurveyDone(false) }}
+                    style={{ width:'100%', background: dark ? 'rgba(16,185,129,0.08)' : 'rgba(16,185,129,0.06)', border:'1px solid rgba(16,185,129,0.35)', borderRadius:'10px', padding:'14px 16px', cursor:'pointer', textAlign:'left', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                    <div>
+                      <div style={{ fontSize:'14px', fontWeight:'600', color:'#10b981' }}>Just finished your trip?</div>
+                      <div style={{ fontSize:'12px', color:t.textMuted, marginTop:'2px' }}>Take a quick survey — we'll use your feedback next time</div>
+                    </div>
+                    <span style={{ fontSize:'18px' }}>✈️</span>
+                  </button>
+                  {surveyDone && (
+                    <div style={{ marginTop:'8px', padding:'10px 14px', background:'rgba(16,185,129,0.08)', border:'1px solid rgba(16,185,129,0.3)', borderRadius:'8px', fontSize:'13px', color:'#10b981' }}>
+                      Thanks for the feedback! We'll tailor your next list based on what you shared.
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
