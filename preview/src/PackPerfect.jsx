@@ -843,8 +843,8 @@ export default function PackPerfect() {
   const [suggestions, setSuggestions] = useState([])
   const [showSug, setShowSug] = useState(false)
   const [tripType, setTripType] = useState('Leisure')
-  const [startDate, setStartDate] = useState(() => { const d = new Date(); return d.toISOString().split('T')[0] })
-  const [endDate, setEndDate] = useState(() => { const d = new Date(); d.setDate(d.getDate() + 2); return d.toISOString().split('T')[0] })
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
   const [listGenerated, setListGenerated] = useState(false)
   const [items, setItems] = useState({})
   const [laundryNote, setLaundryNote] = useState(false)
@@ -940,7 +940,7 @@ export default function PackPerfect() {
 
   useEffect(() => {
     if (!heroVisible) return
-    const targets = { trips: DESTINATIONS.length * 8 * 28, destinations: Math.floor(DESTINATIONS.length / 10) * 10, items: 47, time: 8 }
+    const targets = { trips: Math.round(DESTINATIONS.length * 8 * 28 / 100) * 100, destinations: Math.floor(DESTINATIONS.length / 10) * 10, items: 47, time: 8 }
     const duration = 3400
     const steps = 90
     const interval = duration / steps
@@ -1201,7 +1201,17 @@ export default function PackPerfect() {
     if (!dest) return
     setDestination(dest)
     const c = classifyClimate(dest); setClimate(c)
-    const result = generateList(tripType, getDays(), c, selectedSuitcase?.liters ?? 69, profile.gender)
+    // Auto-fill dates if empty: default to today → today+2 (3-day trip)
+    let resolvedStart = startDate, resolvedEnd = endDate
+    if (!startDate || !endDate) {
+      const today = new Date()
+      resolvedStart = today.toISOString().split('T')[0]
+      const end = new Date(today); end.setDate(end.getDate() + 2)
+      resolvedEnd = end.toISOString().split('T')[0]
+      setStartDate(resolvedStart); setEndDate(resolvedEnd)
+    }
+    const days = Math.max(1, Math.round((new Date(resolvedEnd) - new Date(resolvedStart)) / 86400000) + 1)
+    const result = generateList(tripType, days, c, selectedSuitcase?.liters ?? 69, profile.gender)
     setItems(result.items)
     setLaundryNote(result.laundryNote)
     setListGenerated(false)
@@ -2003,6 +2013,11 @@ export default function PackPerfect() {
                         : 'Main suitcase over 50 lbs — most airlines will charge overweight fees. Move some items to carry-on or leave them behind.'}
                     </div>
                   )}
+                  {bootBagWeight > 0 && (mainWeight + bootBagWeight) > weightLimit && (
+                    <div style={{ fontSize:'12px', color:'#f59e0b', padding:'8px 12px', background:'rgba(245,158,11,0.08)', borderRadius:'7px', marginBottom:'10px' }}>
+                      ⚠️ Your boot bag ({bootBagWeight.toFixed(1)} lbs) + main suitcase ({mainWeight.toFixed(1)} lbs) together exceed the 50 lb checked bag limit. Airlines typically count the boot bag as a separate checked bag — confirm with your airline, as it may incur overweight or extra bag fees.
+                    </div>
+                  )}
                   <div style={{ background:t.inputBg, borderRadius:'999px', height:'6px', overflow:'hidden' }}>
                     <div style={{ background: mainOverLimit ? '#dc2626' : t.accent, height:'100%', width:`${Math.min((mainWeight/weightLimit)*100,100).toFixed(1)}%`, borderRadius:'999px', transition:'width 0.4s' }} />
                   </div>
@@ -2366,6 +2381,11 @@ export default function PackPerfect() {
                         ))}
                       </div>
                       {pOver && <div style={{ fontSize:'12px', color:'#dc2626', padding:'8px 12px', background:'rgba(220,38,38,0.08)', borderRadius:'7px', marginBottom:'10px' }}>{selectedSuitcase ? `Contents exceed ${weightLimit.toFixed(1)} lbs — bag weight (${selectedSuitcase.weightLbs} lbs) plus items would exceed the 50 lb airline limit. Move items to carry-on.` : 'Main suitcase over 50 lbs — move some items to carry-on.'}</div>}
+                      {pBootW > 0 && (pMainW + pBootW) > weightLimit && (
+                        <div style={{ fontSize:'12px', color:'#f59e0b', padding:'8px 12px', background:'rgba(245,158,11,0.08)', borderRadius:'7px', marginBottom:'10px' }}>
+                          ⚠️ Your boot bag ({pBootW.toFixed(1)} lbs) + main suitcase ({pMainW.toFixed(1)} lbs) together exceed the 50 lb checked bag limit. Airlines typically count the boot bag as a separate checked bag — confirm with your airline, as it may incur overweight or extra bag fees.
+                        </div>
+                      )}
                       <div style={{ background:t.inputBg, borderRadius:'999px', height:'6px', overflow:'hidden' }}>
                         <div style={{ background: pOver ? '#dc2626' : '#ca8a04', height:'100%', width:`${Math.min((pMainW/weightLimit)*100,100).toFixed(1)}%`, borderRadius:'999px', transition:'width 0.4s' }} />
                       </div>
