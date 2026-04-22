@@ -223,6 +223,66 @@ const DESTINATIONS = [
   'Charlotte Amalie, US Virgin Islands','Frederiksted, US Virgin Islands',
   'Fort-de-France, Martinique','Pointe-a-Pitre, Guadeloupe','Castries, St Lucia',
   'Kingstown, St Vincent','Basseterre, St Kitts','Saint George, Grenada',
+  // Russia & Siberia
+  'Moscow, Russia','Saint Petersburg, Russia','Novosibirsk, Russia','Yekaterinburg, Russia',
+  'Kazan, Russia','Nizhny Novgorod, Russia','Chelyabinsk, Russia','Omsk, Russia',
+  'Samara, Russia','Rostov-on-Don, Russia','Ufa, Russia','Krasnoyarsk, Russia',
+  'Irkutsk, Russia','Vladivostok, Russia','Khabarovsk, Russia','Yakutsk, Russia',
+  'Norilsk, Russia','Tomsk, Russia','Kemerovo, Russia','Barnaul, Russia',
+  'Tyumen, Russia','Surgut, Russia','Nizhnevartovsk, Russia','Baikal, Russia',
+  'Murmansk, Russia','Arkhangelsk, Russia','Sochi, Russia','Kaliningrad, Russia',
+  'Perm, Russia','Saratov, Russia','Volgograd, Russia','Voronezh, Russia',
+  // Central Asia & Caucasus extras
+  'Ashgabat, Turkmenistan','Dushanbe, Tajikistan','Kabul, Afghanistan',
+  'Tbilisi, Georgia','Batumi, Georgia','Kutaisi, Georgia',
+  'Yerevan, Armenia','Gyumri, Armenia',
+  'Baku, Azerbaijan','Ganja, Azerbaijan','Sheki, Azerbaijan',
+  // More Europe
+  'Minsk, Belarus','Lviv, Ukraine','Kyiv, Ukraine','Odessa, Ukraine','Kharkiv, Ukraine',
+  'Chisinau, Moldova','Tiraspol, Moldova',
+  'Reykjavik, Iceland','Akureyri, Iceland',
+  'Torshavn, Faroe Islands','Longyearbyen, Svalbard',
+  'San Marino','Vaduz, Liechtenstein','Andorra la Vella, Andorra',
+  'Podgorica, Montenegro','Kotor, Montenegro','Budva, Montenegro',
+  'Ohrid, North Macedonia','Bitola, North Macedonia',
+  'Berat, Albania','Sarande, Albania','Shkoder, Albania',
+  'Mostar, Bosnia and Herzegovina','Banja Luka, Bosnia and Herzegovina',
+  // More Asia
+  'Kashgar, China','Lhasa, Tibet','Urumqi, China','Harbin, China','Dalian, China',
+  'Nanjing, China','Hangzhou, China','Chongqing, China','Kunming, China','Lijiang, China',
+  'Macau','Haikou, China','Sanya, China',
+  'Pyongyang, North Korea',
+  'Ulaanbaatar, Mongolia','Erdenet, Mongolia',
+  'Kathmandu, Nepal','Pokhara, Nepal','Lukla, Nepal',
+  'Thimphu, Bhutan','Paro, Bhutan',
+  'Male, Maldives','Addu Atoll, Maldives',
+  'Dili, East Timor','Honiara, Solomon Islands','Suva, Fiji','Apia, Samoa',
+  'Nuku\'alofa, Tonga','Port Moresby, Papua New Guinea',
+  // More Africa
+  'Tripoli, Libya','Benghazi, Libya',
+  'Khartoum, Sudan','Juba, South Sudan',
+  'Mogadishu, Somalia','Djibouti City, Djibouti','Asmara, Eritrea','Addis Ababa, Ethiopia',
+  'Antananarivo, Madagascar','Moroni, Comoros','Victoria, Seychelles',
+  'Windhoek, Namibia','Swakopmund, Namibia','Etosha, Namibia',
+  'Gaborone, Botswana','Maun, Botswana','Chobe, Botswana',
+  'Harare, Zimbabwe','Victoria Falls, Zimbabwe','Bulawayo, Zimbabwe',
+  'Lusaka, Zambia','Livingstone, Zambia',
+  'Lilongwe, Malawi','Blantyre, Malawi',
+  'Maputo, Mozambique','Beira, Mozambique','Pemba, Mozambique',
+  'Kampala, Uganda','Entebbe, Uganda','Jinja, Uganda',
+  'Kigali, Rwanda','Gisenyi, Rwanda',
+  'Bujumbura, Burundi',
+  'Libreville, Gabon','Yaounde, Cameroon','Douala, Cameroon',
+  'Kinshasa, DRC','Lubumbashi, DRC',
+  'Brazzaville, Republic of Congo',
+  'Bangui, Central African Republic',
+  'N\'Djamena, Chad',
+  'Niamey, Niger','Ouagadougou, Burkina Faso',
+  'Bamako, Mali','Timbuktu, Mali',
+  'Conakry, Guinea','Freetown, Sierra Leone','Monrovia, Liberia',
+  'Yamoussoukro, Ivory Coast',
+  'Lome, Togo','Porto-Novo, Benin',
+  'Malabo, Equatorial Guinea',
 ]
 
 const SUITCASES = [
@@ -341,7 +401,7 @@ const SUITCASE_BRANDS = [...new Set(SUITCASES.map(s => s.brand))]
 function classifyClimate(dest) {
   const d = dest.toLowerCase()
   if (/miami|bali|bangkok|phuket|cancun|maldives|hawaii|honolulu|koh samui|singapore|jamaica|barbados|bahamas|fiji|tahiti|bora bora|seychelles|mauritius|zanzibar|punta cana|tulum|playa|key west|da nang|hoi an|goa|cartagena|cairns|darwin|gold coast|panama|costa rica|cebu|colombo|rio|sao paulo|rio de janeiro|guatemala|antigua|lake atitlan|tikal|belize|roatan|manuel antonio|galapagos|mombasa|accra|lagos|dakar|florianopolis|salvador|fortaleza|okinawa|langkawi|lombok|boracay|palawan|luang prabang|vientiane|mandalay|krabi|koh|maui|lahaina|hilo|kauai|nadi|vanuatu|port vila|papeete|reunion|ho chi minh|hanoi|ha long|phnom penh|yangon/.test(d)) return 'tropical'
-  if (/aspen|vail|park city|jackson hole|whistler|queenstown|bozeman|banff|zurich|geneva|reykjavik|oslo|stockholm|helsinki|anchorage|montreal|tallinn|sapporo|patagonia|torres del paine|bariloche|ushuaia|fairbanks|juneau|sitka|glacier|yellowstone|lake tahoe|interlaken|innsbruck|salzburg|lucerne|bergen|tromso|kiruna|riga|vilnius|warsaw|krakow|gdansk|sofia|bucharest|sarajevo|minsk|ulaanbaatar|almaty/.test(d)) return 'cold'
+  if (/aspen|vail|park city|jackson hole|whistler|queenstown|bozeman|banff|zurich|geneva|reykjavik|oslo|stockholm|helsinki|anchorage|montreal|tallinn|sapporo|patagonia|torres del paine|bariloche|ushuaia|fairbanks|juneau|sitka|glacier|yellowstone|lake tahoe|interlaken|innsbruck|salzburg|lucerne|bergen|tromso|kiruna|riga|vilnius|warsaw|krakow|gdansk|sofia|bucharest|sarajevo|minsk|ulaanbaatar|almaty|moscow|saint petersburg|novosibirsk|yekaterinburg|kazan|chelyabinsk|omsk|krasnoyarsk|irkutsk|vladivostok|khabarovsk|yakutsk|norilsk|tomsk|kemerovo|barnaul|tyumen|surgut|murmansk|arkhangelsk|kaliningrad|perm|volgograd|russia|siberia|harbin|lhasa|tibet|longyearbyen|svalbard|akureyri|bishkek|dushanbe|nur-sultan|astana|thimphu|paro|bhutan|lukla|erdenet|minsk|kyiv|lviv|kharkiv/.test(d)) return 'cold'
   if (/dubai|abu dhabi|doha|riyadh|muscat|cairo|luxor|marrakech|casablanca|las vegas|phoenix|scottsdale|mesa|albuquerque|el paso|jaipur|agra|sedona|santa fe|jordan|amman|israel|tel aviv|jerusalem|hurghada|sharm|fes|tangier|tunis|petra|uyuni|eilat|palm springs|tucson|flagstaff/.test(d)) return 'desert'
   if (/barcelona|madrid|seville|valencia|ibiza|mallorca|lisbon|porto|algarve|athens|santorini|mykonos|rhodes|crete|rome|naples|venice|milan|florence|istanbul|cappadocia|antalya|bodrum|split|dubrovnik|hvar|zadar|nice|marseille|limassol|cyprus|malta|beirut|montego bay|san juan|havana|amalfi|los angeles|san diego|san francisco|napa|santa barbara|bilbao|bordeaux|lyon|valencia|montpelier|thessaloniki|la paz|mendoza|santiago|valparaiso|easter island|montevideo|punta del este|lima|cusco|arequipa|machu picchu|quito|cuenca|medellin|bogota|santa marta|cartagena|beirut|accra|cape town|durban|johannesburg|nairobi|johannesburg/.test(d)) return 'warm'
   return 'temperate'
