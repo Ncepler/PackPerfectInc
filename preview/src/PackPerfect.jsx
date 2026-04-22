@@ -144,7 +144,7 @@ const DESTINATIONS = [
   // Central America & Caribbean
   'Guatemala City, Guatemala','Antigua, Guatemala','Lake Atitlan, Guatemala','Tikal, Guatemala',
   'Havana, Cuba','Trinidad, Cuba','Punta Cana, Dominican Republic','Santo Domingo, Dominican Republic',
-  'Nassau, Bahamas','Bridgetown, Barbados','Montego Bay, Jamaica','Kingston, Jamaica',
+  'Nassau, Bahamas','Bridgetown, Barbados','Montego Bay, Jamaica','Kingston, Jamaica','Aruba',
   'San Jose, Costa Rica','Manuel Antonio, Costa Rica','Liberia, Costa Rica',
   'Panama City, Panama','Boquete, Panama',
   'Belize City, Belize','San Pedro, Belize',
@@ -609,7 +609,7 @@ function generateList(tripType, days, climate, liters = 69, gender = '', dest = 
     { name:'Portable Charger', qty:1, weight:0.8, packed:false, bag:'carry' },
   ]
   const documents = [
-    ...(!isUSDestination(dest) ? [{ name:'Passport', qty:1, weight:0.1, packed:false, bag:'carry' }] : []),
+    { name: isUSDestination(dest) ? 'Government-Issued ID' : 'Passport', qty:1, weight:0.1, packed:false, bag:'carry' },
     { name:'Travel Insurance', qty:1, weight:0.1, packed:false, bag:'carry' },
     { name:'Credit Cards', qty:2, weight:0.1, packed:false, bag:'carry' },
     { name:'Cash', qty:1, weight:0.1, packed:false, bag:'carry' },
@@ -2096,6 +2096,41 @@ export default function PackPerfect() {
                   </div>
                 )}
 
+                {/* Hotel / Accommodation Type */}
+                <div>
+                  <label style={labelStyle}>Where are you staying?</label>
+                  <div style={{ display:'flex', gap:'7px', flexWrap:'wrap' }}>
+                    {[
+                      { value:'',              label:'Not specified' },
+                      { value:'standard',      label:'🏨 Hotel' },
+                      { value:'resort',        label:'🏊 Resort (pool)' },
+                      { value:'all-inclusive', label:'🌴 All-Inclusive' },
+                      { value:'airbnb',        label:'🏠 Airbnb / Rental' },
+                      { value:'hostel',        label:'🛏️ Hostel' },
+                      { value:'boutique',      label:'✨ Boutique Hotel' },
+                    ].map(opt => (
+                      <button key={opt.value} className="btn-pill" onClick={() => {
+                        setHotelType(opt.value)
+                        try { localStorage.setItem('pp_hotel', opt.value) } catch(_) {}
+                      }} style={{
+                        ...t.pill(hotelType === opt.value),
+                        borderRadius:'999px', padding:'5px 14px', fontSize:'13px',
+                        fontWeight:'500', cursor:'pointer', fontFamily:"'Sora',sans-serif",
+                      }}>{opt.label}</button>
+                    ))}
+                  </div>
+                  {(hotelType === 'resort' || hotelType === 'all-inclusive') && (
+                    <div style={{ marginTop:'8px', padding:'8px 12px', background: dark ? 'rgba(5,150,105,0.1)' : 'rgba(5,150,105,0.06)', border:'1px solid rgba(5,150,105,0.25)', borderRadius:'8px', fontSize:'12px', color:'#059669' }}>
+                      🏊 Pool gear added — swimwear, sunscreen, pool slides & waterproof phone pouch.{hotelType === 'all-inclusive' ? ' Plus casual evening outfits.' : ''}
+                    </div>
+                  )}
+                  {hotelType === 'hostel' && (
+                    <div style={{ marginTop:'8px', padding:'8px 12px', background: dark ? 'rgba(37,99,235,0.1)' : 'rgba(37,99,235,0.06)', border:`1px solid rgba(37,99,235,0.25)`, borderRadius:'8px', fontSize:'12px', color:t.accent }}>
+                      🛏️ Hostel extras added — travel padlock, sleep liner & shower flip flops.
+                    </div>
+                  )}
+                </div>
+
                 <button className="btn-primary" onClick={handleGenerate} disabled={listLoading || (startDate && endDate && new Date(endDate) < new Date(startDate))} style={{ ...btnPrimary, marginTop:'4px', opacity: (listLoading || (startDate && endDate && new Date(endDate) < new Date(startDate))) ? 0.5 : 1, cursor: (startDate && endDate && new Date(endDate) < new Date(startDate)) ? 'not-allowed' : 'pointer' }}>
                   {listLoading ? 'Perfecting...' : listGenerated ? 'Regenerate List' : 'Generate Packing List'}
                 </button>
@@ -2799,44 +2834,6 @@ export default function PackPerfect() {
                   </div>
                 )}
               </div>
-            </div>
-
-            {/* Hotel / Accommodation Type */}
-            <div style={card}>
-              <div style={{ fontSize:'11px', fontWeight:'600', color:t.textMuted, textTransform:'uppercase', letterSpacing:'0.09em', marginBottom:'14px' }}>Accommodation Type</div>
-              <p style={{ fontSize:'12px', color:t.textMuted, marginBottom:'14px', lineHeight:'1.5' }}>Tell us where you're staying so we can tailor your list — resort guests get pool gear, hostel travelers get a padlock and sleep liner.</p>
-              <div style={{ display:'flex', flexWrap:'wrap', gap:'8px' }}>
-                {[
-                  { value:'',              label:'Not specified',        icon:'🏨' },
-                  { value:'standard',      label:'Hotel',                icon:'🏨' },
-                  { value:'resort',        label:'Resort (pool)',        icon:'🏊' },
-                  { value:'all-inclusive', label:'All-Inclusive Resort', icon:'🌴' },
-                  { value:'airbnb',        label:'Airbnb / Rental',      icon:'🏠' },
-                  { value:'hostel',        label:'Hostel',               icon:'🛏️' },
-                  { value:'boutique',      label:'Boutique Hotel',       icon:'✨' },
-                ].map(opt => (
-                  <button key={opt.value} className="btn-pill" onClick={() => {
-                    setHotelType(opt.value)
-                    try { localStorage.setItem('pp_hotel', opt.value) } catch(_) {}
-                  }} style={{
-                    ...t.pill(hotelType === opt.value),
-                    borderRadius:'999px', padding:'6px 15px', fontSize:'13px', fontWeight:'500',
-                    cursor:'pointer', fontFamily:"'Sora',sans-serif", display:'flex', alignItems:'center', gap:'5px',
-                  }}>
-                    <span>{opt.icon}</span>{opt.label}
-                  </button>
-                ))}
-              </div>
-              {(hotelType === 'resort' || hotelType === 'all-inclusive') && (
-                <div style={{ marginTop:'12px', padding:'10px 13px', background: dark ? 'rgba(5,150,105,0.1)' : 'rgba(5,150,105,0.06)', border:'1px solid rgba(5,150,105,0.25)', borderRadius:'8px', fontSize:'12px', color:'#059669', lineHeight:'1.5' }}>
-                  🏊 Pool items added to your list — swimwear, sunscreen, pool slides & waterproof phone pouch.{hotelType === 'all-inclusive' ? ' Plus casual evening outfits for resort dining.' : ''}
-                </div>
-              )}
-              {hotelType === 'hostel' && (
-                <div style={{ marginTop:'12px', padding:'10px 13px', background: dark ? 'rgba(37,99,235,0.1)' : 'rgba(37,99,235,0.06)', border:`1px solid rgba(37,99,235,0.25)`, borderRadius:'8px', fontSize:'12px', color:t.accent, lineHeight:'1.5' }}>
-                  🛏️ Hostel extras added — travel padlock, sleep sheet/liner & shower flip flops.
-                </div>
-              )}
             </div>
 
             <div style={card}>
