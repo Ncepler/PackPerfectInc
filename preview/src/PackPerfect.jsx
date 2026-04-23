@@ -7,6 +7,7 @@ const IMG_BIZ       = "/img-biz.jpg"
 const IMG_BIZ_BEACH = "/business-beach.jpg"
 const IMG_SKI_BEACH = "/ski-beach.jpg"
 const IMG_SKI       = "/ski-trip.jpg"
+const IMG_SPORTS    = "/sports-trip.jpg"
 
 const DESTINATIONS = [...new Set([
   // New York City & boroughs
@@ -548,6 +549,7 @@ function getVisualCategory(climate, tripType) {
 
 function getVisualImage(climate, tripType) {
   if (tripType === 'Skiing') return IMG_SKI
+  if (tripType === 'Sports Tournament') return IMG_SPORTS
   const cat = getVisualCategory(climate, tripType)
   if (cat === 'business') return IMG_BIZ
   if (cat === 'warm') return IMG_WARM
@@ -1384,6 +1386,7 @@ export default function PackPerfect() {
     const allTripTypes = resolvedLegs.map(l => l.tripType)
     const hasSki = allTripTypes.includes('Skiing')
     const hasBiz = allTripTypes.includes('Business')
+    const hasSports = allTripTypes.includes('Sports Tournament')
     const firstLegTripType = resolvedLegs[0]?.tripType || 'Leisure'
     if (validWeathers.length > 0) {
       const allTemps = validWeathers.flatMap(w => w.daily.temperature_2m_max || [])
@@ -1395,6 +1398,7 @@ export default function PackPerfect() {
         else if (hasSki && (isWarm || hasBeach)) setPremiumVisImage(IMG_SKI_BEACH)
         else if (hasBiz) setPremiumVisImage(IMG_BIZ)
         else if (hasSki) setPremiumVisImage(IMG_SKI)
+        else if (hasSports) setPremiumVisImage(IMG_SPORTS)
         else if (isWarm || hasBeach) setPremiumVisImage(IMG_WARM)
         else if (overallAvg < 50) setPremiumVisImage(IMG_COLD)
         else setPremiumVisImage(IMG_NORM)
@@ -1404,6 +1408,7 @@ export default function PackPerfect() {
         if (hasBiz && warmClimate) setPremiumVisImage(IMG_BIZ_BEACH)
         else if (hasSki && warmClimate) setPremiumVisImage(IMG_SKI_BEACH)
         else if (hasSki) setPremiumVisImage(IMG_SKI)
+        else if (hasSports) setPremiumVisImage(IMG_SPORTS)
         else setPremiumVisImage(getVisualImage(resolvedLegs[0].climate, firstLegTripType))
       }
     } else {
@@ -1412,6 +1417,7 @@ export default function PackPerfect() {
       if (hasBiz && warmClimate) setPremiumVisImage(IMG_BIZ_BEACH)
       else if (hasSki && warmClimate) setPremiumVisImage(IMG_SKI_BEACH)
       else if (hasSki) setPremiumVisImage(IMG_SKI)
+      else if (hasSports) setPremiumVisImage(IMG_SPORTS)
       else setPremiumVisImage(getVisualImage(resolvedLegs[0]?.climate || 'temperate', firstLegTripType))
     }
   }
