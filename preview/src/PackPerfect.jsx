@@ -7,7 +7,7 @@ const IMG_BIZ       = "/img-biz.jpg"
 const IMG_BIZ_BEACH = "/business-beach.jpg"
 const IMG_SKI_BEACH = "/ski-beach.jpg"
 
-const DESTINATIONS = [
+const DESTINATIONS = [...new Set([
   // New York City & boroughs
   'New York, NY','Manhattan, NY','Brooklyn, NY','Queens, NY','The Bronx, NY','Staten Island, NY',
   // Long Island
@@ -411,7 +411,7 @@ const DESTINATIONS = [
   'Dahab, Egypt','Siwa Oasis, Egypt','El Gouna, Egypt',
   // Central Asia extras
   'Khiva, Uzbekistan','Bukhara, Uzbekistan',
-]
+])]
 
 const SUITCASES = [
   // Away
@@ -1209,10 +1209,12 @@ export default function PackPerfect() {
   const carryItems = allItems.filter(i => i.bag === 'carry')
   const bootBagItems = allItems.filter(i => i.bag === 'boot bag')
   const mainWeight = mainItems.reduce((s, i) => s + i.weight * i.qty, 0)
+  const packedMainWeight = mainItems.filter(i => i.packed).reduce((s, i) => s + i.weight * i.qty, 0)
   const carryWeight = carryItems.reduce((s, i) => s + i.weight * i.qty, 0)
   const bootBagWeight = bootBagItems.reduce((s, i) => s + i.weight * i.qty, 0)
   const packedCount = allItems.filter(i => i.packed).length
   const mainOverLimit = mainWeight > weightLimit
+  const packedOverLimit = packedMainWeight > weightLimit
 
   const togglePacked = (cat, idx) => setItems(p => { const u = {...p}; u[cat] = [...u[cat]]; u[cat][idx] = {...u[cat][idx], packed: !u[cat][idx].packed}; return u })
   const toggleBag = (cat, idx) => setItems(p => { const u = {...p}; u[cat] = [...u[cat]]; const cur = u[cat][idx].bag; u[cat][idx] = {...u[cat][idx], bag: cur === 'main' ? 'carry' : cur === 'carry' ? (bootBagItems.length > 0 ? 'boot bag' : 'main') : cur === 'boot bag' ? 'main' : 'main'}; return u })
@@ -2255,18 +2257,24 @@ export default function PackPerfect() {
                     </div>
                   )}
                   <div className="pp-grid-2" style={{ display:'grid', gridTemplateColumns: bootBagWeight > 0 ? '1fr 1fr 1fr' : '1fr 1fr', gap:'10px', marginBottom:'12px' }}>
-                    {[{ label:'Contents in Main', val:mainWeight, limit:true }, { label:'Carry-On', val:carryWeight, limit:false }, ...(bootBagWeight > 0 ? [{ label:'Boot Bag', val:bootBagWeight, limit:false }] : [])].map(b => (
+                    {[{ label:'Packed in Main', val:packedMainWeight, total:mainWeight, limit:true }, { label:'Carry-On', val:carryWeight, limit:false }, ...(bootBagWeight > 0 ? [{ label:'Boot Bag', val:bootBagWeight, limit:false }] : [])].map(b => (
                       <div key={b.label} style={{ background:t.inputBg, borderRadius:'8px', padding:'12px', textAlign:'center', border:`1px solid ${b.limit && b.val > weightLimit ? '#dc2626' : t.border}` }}>
                         <div style={{ fontSize:'22px', fontWeight:'600', color: b.limit && b.val > weightLimit ? '#dc2626' : t.accent, fontFamily:"'JetBrains Mono',monospace" }}>{b.val.toFixed(1)}</div>
                         <div style={{ fontSize:'11px', color:t.textMuted, marginTop:'2px' }}>{b.label} lbs{b.limit ? ` / ${weightLimit.toFixed(1)} max` : ''}</div>
+                        {b.limit && b.total != null && <div style={{ fontSize:'10px', color:t.textDim, marginTop:'2px' }}>({b.total.toFixed(1)} lbs total list)</div>}
                       </div>
                     ))}
                   </div>
-                  {mainOverLimit && (
+                  {packedOverLimit && (
                     <div style={{ fontSize:'12px', color:'#dc2626', padding:'8px 12px', background:'rgba(220,38,38,0.08)', borderRadius:'7px', marginBottom:'10px' }}>
                       {selectedSuitcase
-                        ? `Contents exceed ${weightLimit.toFixed(1)} lbs — your ${selectedSuitcase.name} (${selectedSuitcase.weightLbs} lbs) plus your items would exceed the 50 lb airline limit. Move items to carry-on or leave them behind.`
-                        : 'Main suitcase over 50 lbs — most airlines will charge overweight fees. Move some items to carry-on or leave them behind.'}
+                        ? `Packed items exceed ${weightLimit.toFixed(1)} lbs — your ${selectedSuitcase.name} (${selectedSuitcase.weightLbs} lbs) plus packed items would exceed the 50 lb airline limit. Move items to carry-on or uncheck some.`
+                        : 'Packed items exceed 50 lbs — most airlines will charge overweight fees. Move some items to carry-on or uncheck them.'}
+                    </div>
+                  )}
+                  {!packedOverLimit && mainOverLimit && (
+                    <div style={{ fontSize:'12px', color:'#f59e0b', padding:'8px 12px', background:'rgba(245,158,11,0.08)', borderRadius:'7px', marginBottom:'10px' }}>
+                      ⚠️ Your full list totals {mainWeight.toFixed(1)} lbs — exceeds your {weightLimit.toFixed(1)} lb allowance. Pack selectively or move items to carry-on.
                     </div>
                   )}
                   {bootBagWeight > 0 && (mainWeight + bootBagWeight) > weightLimit && (
@@ -2275,12 +2283,12 @@ export default function PackPerfect() {
                     </div>
                   )}
                   <div style={{ background:t.inputBg, borderRadius:'999px', height:'6px', overflow:'hidden' }}>
-                    <div style={{ background: mainOverLimit ? '#dc2626' : t.accent, height:'100%', width:`${Math.min((mainWeight/weightLimit)*100,100).toFixed(1)}%`, borderRadius:'999px', transition:'width 0.4s' }} />
+                    <div style={{ background: packedOverLimit ? '#dc2626' : t.accent, height:'100%', width:`${Math.min((packedMainWeight/weightLimit)*100,100).toFixed(1)}%`, borderRadius:'999px', transition:'width 0.4s' }} />
                   </div>
                   <div style={{ display:'flex', justifyContent:'space-between', marginTop:'7px', fontSize:'12px', color:t.textMuted }}>
                     <span>{packedCount}/{allItems.length} packed</span>
-                    <span style={{ fontFamily:"'JetBrains Mono',monospace", color: mainOverLimit ? '#dc2626' : t.textMuted }}>
-                      Main: {mainWeight.toFixed(1)} / {weightLimit.toFixed(1)} lbs{mainOverLimit ? ' — OVER LIMIT' : ''}
+                    <span style={{ fontFamily:"'JetBrains Mono',monospace", color: packedOverLimit ? '#dc2626' : t.textMuted }}>
+                      Packed: {packedMainWeight.toFixed(1)} / {weightLimit.toFixed(1)} lbs{packedOverLimit ? ' — OVER LIMIT' : ''}
                     </span>
                   </div>
                 </div>
@@ -2618,8 +2626,8 @@ export default function PackPerfect() {
                 {(() => {
                   const pAllItems = Object.values(premiumItems).flat()
                   const pMain = pAllItems.filter(i => i.bag === 'main'); const pCarry = pAllItems.filter(i => i.bag === 'carry'); const pBoot = pAllItems.filter(i => i.bag === 'boot bag')
-                  const pMainW = pMain.reduce((s,i) => s + i.weight*i.qty, 0); const pCarryW = pCarry.reduce((s,i) => s + i.weight*i.qty, 0); const pBootW = pBoot.reduce((s,i) => s + i.weight*i.qty, 0)
-                  const pPacked = pAllItems.filter(i => i.packed).length; const pOver = pMainW > weightLimit
+                  const pMainW = pMain.reduce((s,i) => s + i.weight*i.qty, 0); const pPackedMainW = pMain.filter(i => i.packed).reduce((s,i) => s + i.weight*i.qty, 0); const pCarryW = pCarry.reduce((s,i) => s + i.weight*i.qty, 0); const pBootW = pBoot.reduce((s,i) => s + i.weight*i.qty, 0)
+                  const pPacked = pAllItems.filter(i => i.packed).length; const pOver = pMainW > weightLimit; const pPackedOver = pPackedMainW > weightLimit
                   return (
                     <div style={card}>
                       <div style={{ fontSize:'13px', fontWeight:'600', color:t.text, marginBottom:'14px' }}>Weight Tracker</div>
@@ -2629,25 +2637,27 @@ export default function PackPerfect() {
                         </div>
                       )}
                       <div className="pp-grid-2" style={{ display:'grid', gridTemplateColumns: pBootW > 0 ? '1fr 1fr 1fr' : '1fr 1fr', gap:'10px', marginBottom:'12px' }}>
-                        {[{ label:'Main Suitcase', val:pMainW, limit:true }, { label:'Carry-On', val:pCarryW, limit:false }, ...(pBootW > 0 ? [{ label:'Boot Bag', val:pBootW, limit:false }] : [])].map(b => (
+                        {[{ label:'Packed in Main', val:pPackedMainW, total:pMainW, limit:true }, { label:'Carry-On', val:pCarryW, limit:false }, ...(pBootW > 0 ? [{ label:'Boot Bag', val:pBootW, limit:false }] : [])].map(b => (
                           <div key={b.label} style={{ background:t.inputBg, borderRadius:'8px', padding:'12px', textAlign:'center', border:`1px solid ${b.limit && b.val > weightLimit ? '#dc2626' : t.border}` }}>
                             <div style={{ fontSize:'22px', fontWeight:'600', color: b.limit && b.val > weightLimit ? '#dc2626' : '#ca8a04', fontFamily:"'JetBrains Mono',monospace" }}>{b.val.toFixed(1)}</div>
                             <div style={{ fontSize:'11px', color:t.textMuted, marginTop:'2px' }}>{b.label} lbs{b.limit ? ` / ${weightLimit.toFixed(1)} max` : ''}</div>
+                            {b.limit && b.total != null && <div style={{ fontSize:'10px', color:t.textDim, marginTop:'2px' }}>({b.total.toFixed(1)} lbs total list)</div>}
                           </div>
                         ))}
                       </div>
-                      {pOver && <div style={{ fontSize:'12px', color:'#dc2626', padding:'8px 12px', background:'rgba(220,38,38,0.08)', borderRadius:'7px', marginBottom:'10px' }}>{selectedSuitcase ? `Contents exceed ${weightLimit.toFixed(1)} lbs — bag weight (${selectedSuitcase.weightLbs} lbs) plus items would exceed the 50 lb airline limit. Move items to carry-on.` : 'Main suitcase over 50 lbs — move some items to carry-on.'}</div>}
+                      {pPackedOver && <div style={{ fontSize:'12px', color:'#dc2626', padding:'8px 12px', background:'rgba(220,38,38,0.08)', borderRadius:'7px', marginBottom:'10px' }}>{selectedSuitcase ? `Packed items exceed ${weightLimit.toFixed(1)} lbs — bag weight (${selectedSuitcase.weightLbs} lbs) plus packed items would exceed the 50 lb airline limit. Move items to carry-on or uncheck some.` : 'Packed items exceed 50 lbs — move some to carry-on or uncheck them.'}</div>}
+                      {!pPackedOver && pOver && <div style={{ fontSize:'12px', color:'#f59e0b', padding:'8px 12px', background:'rgba(245,158,11,0.08)', borderRadius:'7px', marginBottom:'10px' }}>⚠️ Your full list totals {pMainW.toFixed(1)} lbs — exceeds your {weightLimit.toFixed(1)} lb allowance. Pack selectively or move items to carry-on.</div>}
                       {pBootW > 0 && (pMainW + pBootW) > weightLimit && (
                         <div style={{ fontSize:'12px', color:'#f59e0b', padding:'8px 12px', background:'rgba(245,158,11,0.08)', borderRadius:'7px', marginBottom:'10px' }}>
                           ⚠️ Your boot bag ({pBootW.toFixed(1)} lbs) + main suitcase ({pMainW.toFixed(1)} lbs) together exceed the 50 lb checked bag limit. Airlines typically count the boot bag as a separate checked bag — confirm with your airline, as it may incur overweight or extra bag fees.
                         </div>
                       )}
                       <div style={{ background:t.inputBg, borderRadius:'999px', height:'6px', overflow:'hidden' }}>
-                        <div style={{ background: pOver ? '#dc2626' : '#ca8a04', height:'100%', width:`${Math.min((pMainW/weightLimit)*100,100).toFixed(1)}%`, borderRadius:'999px', transition:'width 0.4s' }} />
+                        <div style={{ background: pPackedOver ? '#dc2626' : '#ca8a04', height:'100%', width:`${Math.min((pPackedMainW/weightLimit)*100,100).toFixed(1)}%`, borderRadius:'999px', transition:'width 0.4s' }} />
                       </div>
                       <div style={{ display:'flex', justifyContent:'space-between', marginTop:'7px', fontSize:'12px', color:t.textMuted }}>
                         <span>{pPacked}/{pAllItems.length} packed</span>
-                        <span style={{ fontFamily:"'JetBrains Mono',monospace", color: pOver ? '#dc2626' : t.textMuted }}>Main: {pMainW.toFixed(1)} / {weightLimit.toFixed(1)} lbs</span>
+                        <span style={{ fontFamily:"'JetBrains Mono',monospace", color: pPackedOver ? '#dc2626' : t.textMuted }}>Packed: {pPackedMainW.toFixed(1)} / {weightLimit.toFixed(1)} lbs{pPackedOver ? ' — OVER LIMIT' : ''}</span>
                       </div>
                     </div>
                   )
