@@ -576,18 +576,20 @@ function smartQty(base, cap) {
   return cap  // will add laundry note
 }
 
-function generateList(tripType, days, climate, liters = 69, gender = '', dest = '', hotelType = '') {
+function generateList(tripType, days, climate, liters = 69, gender = '', dest = '', hotelType = '', travelStyle = 'Average') {
   const needsLaundryNote = days > 10
 
   // Capacity factor: carry-on squeezes items, large bag allows more
   const capFactor = liters < 45 ? 0.7 : liters > 80 ? 1.2 : 1.0
+  // Pack factor: light packer brings less, heavy packer brings more
+  const packFactor = travelStyle === 'Light Packer' ? 0.8 : travelStyle === 'Heavy Packer' ? 1.2 : 1.0
 
   // Scale to ~7-day laundry cycle: 1.2x days-until-laundry, rounded
   const cycleLen = Math.min(days, 7)
-  const socks  = Math.max(1, Math.round(cycleLen * 1.2 * capFactor))
-  const undies = Math.max(1, Math.round(cycleLen * 1.2 * capFactor))
+  const socks  = Math.max(1, Math.round(cycleLen * 1.2 * capFactor * packFactor))
+  const undies = Math.max(1, Math.round(cycleLen * 1.2 * capFactor * packFactor))
 
-  const shirtCap = Math.max(3, Math.round(7 * capFactor)), pantCap = Math.max(2, Math.round(4 * capFactor))
+  const shirtCap = Math.max(3, Math.round(7 * capFactor * packFactor)), pantCap = Math.max(2, Math.round(4 * capFactor * packFactor))
   const shirts = smartQty(Math.min(days + 1, 12), shirtCap)
 
   // Swimsuits scale with trip length: 2 for <1wk, +1 per additional week, max 5
@@ -1053,11 +1055,10 @@ function mergePremiumItems(allItemSets) {
 export default function PackPerfect() {
   const [dark, setDark] = useState(false)
   const [judeFirst] = useState(() => Math.random() < 0.5)
-  const TABS = ['Packing List','Visual Aid','AI Assistant','Profile','About','Premium']
+  const TABS = ['Packing List','Visual Aid','AI Assistant','Profile','About']
   const [activeTab, setActiveTab] = useState('Packing List')
 
   const handleTabClick = (tab) => {
-    if (tab === 'Premium' && !premiumUnlocked) { setShowPremiumModal(true); return }
     setActiveTab(tab)
   }
   const [destInput, setDestInput] = useState('')
@@ -1116,6 +1117,13 @@ export default function PackPerfect() {
   const [selectedDayIdx, setSelectedDayIdx] = useState(null)
   const [premiumSelectedDay, setPremiumSelectedDay] = useState(null) // { legIdx, dayIdx }
   const [showFullscreenAd, setShowFullscreenAd] = useState(false)
+  const [weatherAdjustedList, setWeatherAdjustedList] = useState(false)
+  const [premiumMode, setPremiumMode] = useState(false)
+  const [customItemWeight, setCustomItemWeight] = useState('0.5')
+  const [customItemBag, setCustomItemBag] = useState('main')
+  const [premiumCustomItemWeight, setPremiumCustomItemWeight] = useState('0.5')
+  const [premiumCustomItemBag, setPremiumCustomItemBag] = useState('main')
+  const lastGenerateCtx = useRef(null)
   const listTimerRef = useRef(null)
   const [heroVisible, setHeroVisible] = useState(false)
   const [statCounts, setStatCounts] = useState({ trips: 0, destinations: 0, items: 0, time: 0 })
@@ -1225,9 +1233,11 @@ export default function PackPerfect() {
 
   const addCustomItem = () => {
     if (!customItem.trim()) return
-    setItems(p => ({ ...p, Clothing: [...(p.Clothing || []), { name: customItem, qty:1, weight:0.5, packed:false, bag:'main' }] }))
+    setItems(p => ({ ...p, Clothing: [...(p.Clothing || []), { name: customItem, qty:1, weight: parseFloat(customItemWeight) || 0.5, packed:false, bag: customItemBag }] }))
     setCustomItem('')
   }
+
+  const removeItem = (cat, idx) => setItems(p => { const u = {...p}; u[cat] = u[cat].filter((_,i) => i !== idx); return u })
 
   const saveList = () => {
     if (!destination) return
@@ -1235,7 +1245,10 @@ export default function PackPerfect() {
     const u = [n, ...savedLists.slice(0, 9)]
     setSavedLists(u)
     try { localStorage.setItem('pp_lists', JSON.stringify(u)) } catch(e) {}
-    alert('List saved!')
+    setSurveyStep(0)
+    setSurveyAnswers({ usedEverything:'', leftBehind:'', shouldHavePacked:'', otherFeedback:'' })
+    setSurveyDone(false)
+    setShowTripSurvey(true)
   }
 
   const fetchWeather = async (dest, start, end) => {
@@ -1266,6 +1279,23 @@ export default function PackPerfect() {
       if (!wd.daily?.time?.length) { setWeatherError('No forecast available for these dates.'); setWeatherLoading(false); return }
       setSelectedDayIdx(null)
       setWeather({ city: name, country, ...wd })
+
+      // Adjust packing list if actual weather differs from climate classification
+      const wTemps = wd.daily.temperature_2m_max || []
+      const wCodes = wd.daily.weather_code || []
+      if (wTemps.length > 0 && lastGenerateCtx.current) {
+        const avgH = wTemps.reduce((a, b) => a + b, 0) / wTemps.length
+        const snowDays = wCodes.filter(c => [71,73,75,77,85,86].includes(c)).length
+        const wClimate = (avgH < 45 || snowDays > 1) ? 'cold' : avgH < 58 ? 'temperate' : avgH < 76 ? 'warm' : 'tropical'
+        const ctx = lastGenerateCtx.current
+        if (wClimate !== ctx.baseClimate) {
+          const result = generateList(ctx.tripType, ctx.days, wClimate, ctx.liters, ctx.gender, ctx.dest, ctx.hotelType, ctx.travelStyle)
+          setItems(result.items)
+          setLaundryNote(result.laundryNote)
+          setClimate(wClimate)
+          setWeatherAdjustedList(true)
+        }
+      }
     } catch(e) {
       setWeatherError(`Weather unavailable: ${e.message}`)
     }
@@ -1275,7 +1305,7 @@ export default function PackPerfect() {
   // Premium helpers
   const handlePremiumUnlock = () => {
     if (premiumPasswordInput === 'Incubator') {
-      setPremiumUnlocked(true); setShowPremiumModal(false); setPremiumPasswordInput(''); setPremiumPasswordError(false); setActiveTab('Premium')
+      setPremiumUnlocked(true); setShowPremiumModal(false); setPremiumPasswordInput(''); setPremiumPasswordError(false); setPremiumSelectedPlan(null)
     } else {
       setPremiumPasswordError(true)
     }
@@ -1426,16 +1456,17 @@ export default function PackPerfect() {
   const togglePremiumBag = (cat, idx) => setPremiumItems(p => { const u={...p}; u[cat]=[...u[cat]]; const cur=u[cat][idx].bag; const hasBoot = Object.values(p).flat().some(i => i.bag === 'boot bag'); u[cat][idx]={...u[cat][idx], bag:cur==='main'?'carry':cur==='carry'?(hasBoot?'boot bag':'main'):cur==='boot bag'?'main':'main'}; return u })
   const addPremiumCustomItem = () => {
     if (!premiumCustomItem.trim()) return
-    setPremiumItems(p => ({ ...p, Clothing: [...(p.Clothing||[]), { name:premiumCustomItem, qty:1, weight:0.5, packed:false, bag:'main' }] }))
+    setPremiumItems(p => ({ ...p, Clothing: [...(p.Clothing||[]), { name:premiumCustomItem, qty:1, weight: parseFloat(premiumCustomItemWeight) || 0.5, packed:false, bag: premiumCustomItemBag }] }))
     setPremiumCustomItem('')
   }
+
+  const removePremiumItem = (cat, idx) => setPremiumItems(p => { const u = {...p}; u[cat] = u[cat].filter((_,i) => i !== idx); return u })
 
   const handleGenerate = async () => {
     const dest = destination || destInput
     if (!dest) return
     setDestination(dest)
     const c = classifyClimate(dest); setClimate(c)
-    // Auto-fill dates if empty: default to today → today+2 (3-day trip)
     let resolvedStart = startDate, resolvedEnd = endDate
     if (!startDate || !endDate) {
       const today = new Date()
@@ -1445,14 +1476,17 @@ export default function PackPerfect() {
       setStartDate(resolvedStart); setEndDate(resolvedEnd)
     }
     const days = Math.max(1, Math.round((new Date(resolvedEnd) - new Date(resolvedStart)) / 86400000) + 1)
-    const result = generateList(tripType, days, c, selectedSuitcase?.liters ?? 69, profile.gender, destination, hotelType)
+    const liters = selectedSuitcase?.liters ?? 69
+    const result = generateList(tripType, days, c, liters, profile.gender, dest, hotelType, profile.travelStyle)
     setItems(result.items)
     setLaundryNote(result.laundryNote)
+    setWeatherAdjustedList(false)
+    lastGenerateCtx.current = { tripType, days, liters, gender: profile.gender, hotelType, travelStyle: profile.travelStyle, baseClimate: c, dest }
     setListGenerated(false)
     setListLoading(true)
     setVisualAidReady(false)
     setShowFullscreenAd(true)
-    fetchWeather(dest, startDate, endDate)
+    fetchWeather(dest, resolvedStart, resolvedEnd)
     setTimeout(() => {
       setVisualAidReady(true)
     }, 6000)
@@ -1714,8 +1748,9 @@ export default function PackPerfect() {
               <>
                 <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'20px' }}>
                   <div>
-                    <div style={{ fontSize:'18px', fontWeight:'600', color:t.text }}>Trip Debrief</div>
-                    <div style={{ fontSize:'12px', color:t.textMuted, marginTop:'2px' }}>Question {surveyStep + 1} of 4</div>
+                    <div style={{ fontSize:'18px', fontWeight:'600', color:t.text }}>List Saved! ✓</div>
+                    <div style={{ fontSize:'12px', color:'#10b981', marginTop:'1px', marginBottom:'2px' }}>How did your last trip go?</div>
+                    <div style={{ fontSize:'12px', color:t.textMuted }}>Question {surveyStep + 1} of 4</div>
                   </div>
                   <button onClick={() => setShowTripSurvey(false)} style={{ background:'transparent', border:'none', fontSize:'18px', cursor:'pointer', color:t.textMuted }}>✕</button>
                 </div>
@@ -1805,24 +1840,31 @@ export default function PackPerfect() {
           <span style={{ fontSize:'16px', fontWeight:'600', color:t.accent }}>PackPerfect</span>
           {destination && listGenerated && <span style={{ fontSize:'12px', color:t.textMuted, background:t.accentDim, padding:'2px 10px', borderRadius:'999px' }}>{destination}</span>}
         </div>
-        <div className="pp-tabs" style={{ display:'flex', gap:'4px' }}>
+        <div className="pp-tabs" style={{ display:'flex', gap:'4px', alignItems:'center' }}>
           {TABS.map(tab => {
-            const isPremium = tab === 'Premium'
             const isActive = activeTab === tab
             return (
               <button key={tab} className="tab-btn" onClick={() => handleTabClick(tab)} style={{
-                padding:'6px 13px',
-                border: isPremium ? `1px solid ${isActive ? '#ca8a04' : 'rgba(202,138,4,0.35)'}` : 'none',
+                padding:'6px 13px', border:'none',
                 borderRadius:'6px', cursor:'pointer', fontSize:'13px', fontFamily:"'Sora',sans-serif",
-                background: isActive ? (isPremium ? 'rgba(202,138,4,0.12)' : t.accentDim) : 'transparent',
-                color: isPremium ? (isActive ? '#ca8a04' : 'rgba(202,138,4,0.75)') : (isActive ? t.accent : t.textMuted),
+                background: isActive ? t.accentDim : 'transparent',
+                color: isActive ? t.accent : t.textMuted,
                 fontWeight: isActive ? '500' : '400',
                 whiteSpace:'nowrap',
               }}>
-                {isPremium ? (premiumUnlocked ? '✦ Premium' : '🔒 Premium') : tab}
+                {tab}
               </button>
             )
           })}
+          {premiumUnlocked ? (
+            <span style={{ padding:'5px 12px', border:'1px solid rgba(202,138,4,0.5)', borderRadius:'6px', fontSize:'12px', background:'rgba(202,138,4,0.1)', color:'#ca8a04', fontWeight:'600', whiteSpace:'nowrap', letterSpacing:'0.02em' }}>✦ Premium</span>
+          ) : (
+            <button className="tab-btn" onClick={() => setShowPremiumModal(true)} style={{
+              padding:'6px 13px', border:'1px solid rgba(202,138,4,0.35)', borderRadius:'6px', cursor:'pointer',
+              fontSize:'13px', fontFamily:"'Sora',sans-serif", background:'transparent',
+              color:'rgba(202,138,4,0.8)', fontWeight:'400', whiteSpace:'nowrap',
+            }}>🔒 Premium</button>
+          )}
         </div>
       </div>
 
@@ -1832,8 +1874,24 @@ export default function PackPerfect() {
         {activeTab === 'Packing List' && (
           <div>
 
-            {/* ── HERO SECTION (shown before list is generated) ── */}
-            {!listGenerated && !listLoading && heroVisible && (
+            {/* ── PREMIUM MODE TOGGLE ── */}
+            {premiumUnlocked && (
+              <div style={{ display:'flex', gap:'6px', marginBottom:'12px', background:t.surface, border:`1px solid rgba(202,138,4,0.3)`, borderRadius:'10px', padding:'6px' }}>
+                <button className="btn-pill" onClick={() => setPremiumMode(false)} style={{
+                  flex:1, padding:'7px 12px', borderRadius:'7px', border:'none', cursor:'pointer', fontSize:'13px', fontWeight:'500',
+                  background: !premiumMode ? 'rgba(202,138,4,0.15)' : 'transparent',
+                  color: !premiumMode ? '#ca8a04' : t.textMuted, fontFamily:"'Sora',sans-serif",
+                }}>Single Trip</button>
+                <button className="btn-pill" onClick={() => setPremiumMode(true)} style={{
+                  flex:1, padding:'7px 12px', borderRadius:'7px', border:'none', cursor:'pointer', fontSize:'13px', fontWeight:'500',
+                  background: premiumMode ? 'rgba(202,138,4,0.15)' : 'transparent',
+                  color: premiumMode ? '#ca8a04' : t.textMuted, fontFamily:"'Sora',sans-serif",
+                }}>✦ Multi-Location</button>
+              </div>
+            )}
+
+            {/* ── HERO SECTION (shown before list is generated, single trip only) ── */}
+            {!premiumMode && !listGenerated && !listLoading && heroVisible && (
               <div ref={heroRef} style={{ marginBottom:'28px' }}>
 
                 {/* Main headline + floating orbs */}
@@ -2046,7 +2104,7 @@ export default function PackPerfect() {
               </div>
             )}
 
-            <div style={{ ...card, borderColor: listGenerated ? t.border : t.borderStrong }}>
+            {!premiumMode && <div style={{ ...card, borderColor: listGenerated ? t.border : t.borderStrong }}>
               <h2 style={{ fontSize:'18px', fontWeight:'600', color:t.text, marginBottom:'4px' }}>{listGenerated ? 'Edit Trip Details' : 'Plan Your Trip'}</h2>
               <p style={{ fontSize:'13px', color:t.textMuted, marginBottom:'18px' }}>Enter your destination and dates to generate a smart packing list</p>
               <div style={{ display:'grid', gap:'14px' }}>
@@ -2148,9 +2206,9 @@ export default function PackPerfect() {
                   {listLoading ? 'Perfecting...' : listGenerated ? 'Regenerate List' : 'Generate Packing List'}
                 </button>
               </div>
-            </div>
+            </div>}
 
-            {listLoading && (
+            {!premiumMode && listLoading && (
               <div style={{ ...card, textAlign:'center', padding:'36px 20px' }}>
                 <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:'14px', marginBottom:'14px' }}>
                   <div className="spinner" />
@@ -2162,13 +2220,20 @@ export default function PackPerfect() {
               </div>
             )}
 
-            {listGenerated && (
+            {!premiumMode && listGenerated && (
               <div>
                 {/* Laundry note for long trips */}
                 {laundryNote && (
                   <div style={{ ...card, borderColor:'#f59e0b', background: dark ? 'rgba(245,158,11,0.08)' : 'rgba(245,158,11,0.06)', padding:'14px 18px' }}>
                     <p style={{ fontSize:'13px', color:'#f59e0b', fontWeight:'500' }}>
                       Long trip detected — list capped at ~1 week of clothing. Plan on using a washing machine or laundromat. Hotels and Airbnbs almost always have laundry, and it beats hauling a month of clothes.
+                    </p>
+                  </div>
+                )}
+                {weatherAdjustedList && (
+                  <div style={{ ...card, borderColor:'#10b981', background: dark ? 'rgba(16,185,129,0.08)' : 'rgba(16,185,129,0.05)', padding:'12px 18px' }}>
+                    <p style={{ fontSize:'13px', color:'#10b981', fontWeight:'500' }}>
+                      🌡 List updated based on live weather — actual conditions differ from the typical climate for this destination.
                     </p>
                   </div>
                 )}
@@ -2332,6 +2397,9 @@ export default function PackPerfect() {
                             }}>
                               {item.bag === 'carry' ? 'Carry-On' : item.bag === 'boot bag' ? 'Boot Bag' : 'Main'}
                             </button>
+                            {premiumUnlocked && (
+                              <button onClick={() => removeItem(cat, i)} title="Remove item" style={{ background:'transparent', border:'none', color:t.textDim, cursor:'pointer', fontSize:'16px', padding:'0 2px', lineHeight:1, flexShrink:0 }}>×</button>
+                            )}
                           </div>
                         </div>
                       )
@@ -2342,10 +2410,25 @@ export default function PackPerfect() {
                 {/* Add item */}
                 <div style={card}>
                   <div style={{ fontSize:'11px', fontWeight:'600', color:t.textMuted, textTransform:'uppercase', letterSpacing:'0.09em', marginBottom:'12px' }}>Add Item</div>
-                  <div style={{ display:'flex', gap:'8px' }}>
+                  <div style={{ display:'grid', gap:'8px' }}>
                     <input value={customItem} onChange={e => setCustomItem(e.target.value)} placeholder="Item name..."
-                      onKeyDown={e => e.key === 'Enter' && addCustomItem()} style={{ ...inputStyle, flex:1 }} />
-                    <button className="btn-primary" onClick={addCustomItem} style={{ ...btnPrimary, width:'auto', padding:'10px 18px' }}>Add</button>
+                      onKeyDown={e => e.key === 'Enter' && addCustomItem()} style={inputStyle} />
+                    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px' }}>
+                      <div>
+                        <label style={labelStyle}>Weight (lbs)</label>
+                        <input type="number" value={customItemWeight} onChange={e => setCustomItemWeight(e.target.value)}
+                          step="0.1" min="0" style={inputStyle} />
+                      </div>
+                      <div>
+                        <label style={labelStyle}>Bag</label>
+                        <select value={customItemBag} onChange={e => setCustomItemBag(e.target.value)} style={{ ...inputStyle, cursor:'pointer' }}>
+                          <option value="main">Main Bag</option>
+                          <option value="carry">Carry-On</option>
+                          {bootBagItems.length > 0 && <option value="boot bag">Boot Bag</option>}
+                        </select>
+                      </div>
+                    </div>
+                    <button className="btn-primary" onClick={addCustomItem} style={{ ...btnPrimary }}>Add Item</button>
                   </div>
                 </div>
 
@@ -2371,8 +2454,8 @@ export default function PackPerfect() {
                   <div style={{ fontSize:'14px', fontWeight:'500', color:t.textMuted }}>Perfecting your visual aid…</div>
                   <div style={{ fontSize:'12px', color:t.textDim }}>Rendering the perfect scene for your trip</div>
                 </div>
-              ) : listGenerated ? (
-                <img src={visImage} alt="Packing visual guide" style={{ width:'100%', borderRadius:'12px', display:'block' }} />
+              ) : (listGenerated || premiumGenerated) ? (
+                <img src={premiumMode ? premiumVisImage : visImage} alt="Packing visual guide" style={{ width:'100%', borderRadius:'12px', display:'block' }} />
               ) : null}
             </div>
             <div style={card}>
@@ -2451,7 +2534,7 @@ export default function PackPerfect() {
         )}
 
         {/* ── PREMIUM ── */}
-        {activeTab === 'Premium' && (
+        {premiumMode && activeTab === 'Packing List' && (
           <div>
             {/* Header banner */}
             <div style={{ ...card, background: dark ? 'rgba(202,138,4,0.08)' : 'rgba(254,243,199,0.6)', borderColor:'rgba(202,138,4,0.35)', marginBottom:'16px' }}>
@@ -2702,6 +2785,7 @@ export default function PackPerfect() {
                             }}>
                               {item.bag === 'carry' ? 'Carry-On' : item.bag === 'boot bag' ? 'Boot Bag' : 'Main'}
                             </button>
+                            <button onClick={() => removePremiumItem(cat, i)} title="Remove item" style={{ background:'transparent', border:'none', color:t.textDim, cursor:'pointer', fontSize:'16px', padding:'0 2px', lineHeight:1, flexShrink:0 }}>×</button>
                           </div>
                         </div>
                       )
@@ -2712,11 +2796,26 @@ export default function PackPerfect() {
                 {/* Add custom item */}
                 <div style={card}>
                   <div style={{ fontSize:'11px', fontWeight:'600', color:'#ca8a04', textTransform:'uppercase', letterSpacing:'0.09em', marginBottom:'12px' }}>Add Item</div>
-                  <div style={{ display:'flex', gap:'8px' }}>
+                  <div style={{ display:'grid', gap:'8px' }}>
                     <input value={premiumCustomItem} onChange={e => setPremiumCustomItem(e.target.value)} placeholder="Item name..."
-                      onKeyDown={e => e.key === 'Enter' && addPremiumCustomItem()} style={{ ...inputStyle, flex:1 }} />
+                      onKeyDown={e => e.key === 'Enter' && addPremiumCustomItem()} style={inputStyle} />
+                    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px' }}>
+                      <div>
+                        <label style={labelStyle}>Weight (lbs)</label>
+                        <input type="number" value={premiumCustomItemWeight} onChange={e => setPremiumCustomItemWeight(e.target.value)}
+                          step="0.1" min="0" style={inputStyle} />
+                      </div>
+                      <div>
+                        <label style={labelStyle}>Bag</label>
+                        <select value={premiumCustomItemBag} onChange={e => setPremiumCustomItemBag(e.target.value)} style={{ ...inputStyle, cursor:'pointer' }}>
+                          <option value="main">Main Bag</option>
+                          <option value="carry">Carry-On</option>
+                          <option value="boot bag">Boot Bag</option>
+                        </select>
+                      </div>
+                    </div>
                     <button className="btn-primary" onClick={addPremiumCustomItem}
-                      style={{ ...btnPrimary, width:'auto', padding:'10px 18px', background:'#ca8a04' }}>Add</button>
+                      style={{ ...btnPrimary, background:'#ca8a04' }}>Add Item</button>
                   </div>
                 </div>
               </div>
@@ -2957,8 +3056,8 @@ export default function PackPerfect() {
         )}
       </div>
 
-      {/* BANNER AD — hidden on Premium tab */}
-      {activeTab !== 'Premium' && (
+      {/* BANNER AD */}
+      {(
         <div style={{ borderTop:`1px solid ${t.border}`, padding:'12px 20px', display:'flex', alignItems:'center', justifyContent:'center' }}>
           <div style={{ width:'100%', maxWidth:'860px', height:'72px', background: dark ? '#0a1523' : '#f0f3f8', border:`1px dashed ${t.border}`, borderRadius:'8px', display:'flex', alignItems:'center', justifyContent:'center', gap:'10px' }}>
             <span style={{ fontSize:'10px', fontWeight:'700', color:t.textDim, textTransform:'uppercase', letterSpacing:'0.15em' }}>Advertisement</span>
