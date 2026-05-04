@@ -1320,8 +1320,7 @@ export default function PackPerfect() {
       return
     }
     setIsPhase(1)
-    if (!isAudioRef.current) { isAudioRef.current = new Audio('/cornfield_chase.mp3'); isAudioRef.current.loop = true }
-    isAudioRef.current.play().catch(() => {})
+    if (!isAudioRef.current) { isAudioRef.current = new Audio('/cornfield.mp3'); isAudioRef.current.loop = true }
     const t1 = setTimeout(() => setIsPhase(2), 5500)
     const t2 = setTimeout(() => setIsPhase(3), 12000)
     const t3 = setTimeout(() => setIsPhase(4), 18500)
@@ -1891,7 +1890,7 @@ export default function PackPerfect() {
 
         {/* ── PHASE 1: STAY ── */}
         {isPhase === 1 && (
-          <div style={{ position:'fixed', inset:0, background:'#000', zIndex:200, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', animation:'isFadeIn 1.2s ease both' }}>
+          <div onClick={() => isAudioRef.current?.play().catch(() => {})} style={{ position:'fixed', inset:0, background:'#000', zIndex:200, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', animation:'isFadeIn 1.2s ease both', cursor:'pointer' }}>
             {/* Scanline effect */}
             <div style={{ position:'absolute', inset:0, background:'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 4px)', pointerEvents:'none', zIndex:1 }} />
             {/* Morse code */}
@@ -1910,7 +1909,11 @@ export default function PackPerfect() {
             {IS_DUST.map(d => (
               <div key={d.id} style={{ position:'absolute', left:`${d.x}%`, top:'8%', width:'2px', height:'2px', borderRadius:'50%', background:'rgba(255,195,130,0.65)', pointerEvents:'none', zIndex:3, animationName:'isDustDrift', animationDuration:`${d.dur}s`, animationDelay:`${d.delay}s`, animationIterationCount:'infinite', animationTimingFunction:'linear', '--is-dx':`${d.dx}px` }} />
             ))}
-            <button onClick={() => setIsPhase(4)} style={{ position:'absolute', bottom:22, right:22, background:'transparent', border:'1px solid rgba(255,255,255,0.15)', borderRadius:6, color:'rgba(255,255,255,0.3)', fontSize:11, padding:'5px 13px', cursor:'pointer', letterSpacing:'0.12em', zIndex:4 }}>skip →</button>
+            {/* Click to begin */}
+            <div style={{ marginTop:52, fontSize:10, color:'rgba(255,255,255,0.2)', letterSpacing:'0.4em', textTransform:'uppercase', animationName:'isMorseFlicker', animationDuration:'2.5s', animationIterationCount:'infinite', zIndex:2 }}>
+              click anywhere to begin
+            </div>
+            <button onClick={e => { e.stopPropagation(); setIsPhase(4) }} style={{ position:'absolute', bottom:22, right:22, background:'transparent', border:'1px solid rgba(255,255,255,0.15)', borderRadius:6, color:'rgba(255,255,255,0.3)', fontSize:11, padding:'5px 13px', cursor:'pointer', letterSpacing:'0.12em', zIndex:4 }}>skip →</button>
           </div>
         )}
 
