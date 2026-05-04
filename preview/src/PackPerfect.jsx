@@ -36,6 +36,25 @@ const IS_BOOKS = Array.from({length:27}, (_, i) => ({
   pushDelay:(i*0.29)%2.5, pushDur:0.7+(i*0.13)%0.8,
 }))
 
+const BORAT_QUOTES = [
+  '"Very nice! How much?" — Borat',
+  '"Wawaweewa!" — Borat',
+  '"Kazakhstan is the greatest country in the world." — Borat',
+  '"Is nice!" — Borat',
+  '"High five!" — Borat',
+  '"Chenquieh!" — Borat',
+  '"Jagshemash!" — Borat',
+  '"NOT!" — Borat',
+  '"I support your war of terror!" — Borat at the rodeo',
+  '"My country send me to America to make benefit glorious nation." — Borat',
+]
+const BORAT_TICKER = '▸ #4 EXPORTER OF POTASSIUM  ▸  GDP: $3  ▸  NUMBER OF DENTISTS: 0  ▸  NATIONAL DRINK: FERMENTED HORSE MILK  ▸  RUNNING OF THE NATION: POSTPONED  ▸  WIFE STRENGTH: SUPERIOR  ▸  INTERNET: COMING SOON  ▸  TOURISM SLOGAN: "COME BEFORE IT GETS WORSE"  ▸  ALL CRIMINALS EXECUTED  ▸  GREAT SUCCESS  ▸  '
+const BORAT_CONFETTI = Array.from({length:24}, (_, i) => ({
+  id:i, left:(i*4.4+1.8)%100, delay:(i*0.37)%5, dur:3+(i*0.43)%3,
+  emoji:['🏆','✊','⭐','🌾','💛','🔵','🎉','👊','🥇','🌟','🎊','🇰🇿'][i%12],
+  size:20+(i*3)%16,
+}))
+
 const MINIONS_QUOTES = [
   '"LIGHTBULB." — Gru',
   '"It\'s so fluffy I\'m gonna DIE!" — Agnes',
@@ -490,6 +509,7 @@ const DESTINATIONS = [...new Set([
   // Easter eggs
   'Miller\'s Planet',
   'Gru\'s Lair, Antarctica',
+  'Kuzcek, Kazakhstan',
 ])]
 
 const SUITCASES = [
@@ -639,6 +659,7 @@ function suggestTripTypes(climate, dest = '') {
   if (/minsk.*belarus/i.test(dest)) base.push('Dance')
   if (/miller.{0,5}planet/i.test(dest)) base.push('Space Exploration')
   if (/gru.{0,5}lair/i.test(dest)) base.push('Villain Getaway')
+  if (/kuzcek.*kazakhstan/i.test(dest)) base.push('Cultural Learnings')
   return base
 }
 
@@ -1228,6 +1249,12 @@ export default function PackPerfect() {
   const minionsAudioRef = useRef(null)
   const [minionsQuoteIdx, setMinionsQuoteIdx] = useState(0)
   const [minionsDepth, setMinionsDepth] = useState(0)
+  const [boratPhase, setBoratPhase] = useState(0)
+  const [boratQuoteIdx, setBoratQuoteIdx] = useState(0)
+  const boratAnthemRef = useRef(null)
+  const boratVanillaRef = useRef(null)
+  const boratMyWifeRef = useRef(null)
+  const boratMyWifePlaying = useRef(false)
 
   const handleStatClick = (idx) => {
     if (statTransitionRef.current) clearTimeout(statTransitionRef.current)
@@ -1388,6 +1415,70 @@ export default function PackPerfect() {
     const iv = setInterval(() => setMinionsQuoteIdx(i => (i + 1) % MINIONS_QUOTES.length), 5000)
     return () => clearInterval(iv)
   }, [minionsPhase])
+
+  const boratMode = /kuzcek.*kazakhstan/i.test(destination)
+
+  useEffect(() => {
+    if (!boratMode) {
+      setBoratPhase(0); setBoratQuoteIdx(0); boratMyWifePlaying.current = false
+      if (boratAnthemRef.current) { boratAnthemRef.current.pause(); boratAnthemRef.current.currentTime = 0 }
+      if (boratVanillaRef.current) { boratVanillaRef.current.pause(); boratVanillaRef.current.currentTime = 0 }
+      if (boratMyWifeRef.current) { boratMyWifeRef.current.pause(); boratMyWifeRef.current.currentTime = 0 }
+      return
+    }
+    // Anthem starts immediately
+    if (!boratAnthemRef.current) { boratAnthemRef.current = new Audio('/kazakhstan.mp3'); boratAnthemRef.current.loop = true; boratAnthemRef.current.volume = 1 }
+    boratAnthemRef.current.play().catch(() => {})
+    // Vanilla overlay starts 3s after anthem
+    const tVanilla = setTimeout(() => {
+      if (!boratVanillaRef.current) { boratVanillaRef.current = new Audio('/vanilla.mp3'); boratVanillaRef.current.loop = true; boratVanillaRef.current.volume = 0.85 }
+      boratVanillaRef.current.play().catch(() => {})
+    }, 3000)
+    // Phase sequence
+    setBoratPhase(1)
+    const t1 = setTimeout(() => setBoratPhase(2), 5500)
+    const t2 = setTimeout(() => setBoratPhase(3), 12000)
+    const t3 = setTimeout(() => setBoratPhase(4), 18500)
+    return () => { clearTimeout(tVanilla); clearTimeout(t1); clearTimeout(t2); clearTimeout(t3) }
+  }, [boratMode])
+
+  // my_wife.mp3 trigger — fires once when entering Phase 2
+  useEffect(() => {
+    if (boratPhase !== 2) return
+    const t = setTimeout(() => {
+      if (boratMyWifePlaying.current) return
+      boratMyWifePlaying.current = true
+      // Duck vanilla
+      if (boratVanillaRef.current) {
+        const duck = setInterval(() => {
+          if (!boratVanillaRef.current) { clearInterval(duck); return }
+          boratVanillaRef.current.volume = Math.max(0.05, boratVanillaRef.current.volume - 0.12)
+          if (boratVanillaRef.current.volume <= 0.05) clearInterval(duck)
+        }, 60)
+      }
+      if (!boratMyWifeRef.current) { boratMyWifeRef.current = new Audio('/my_wife.mp3') }
+      boratMyWifeRef.current.currentTime = 0
+      boratMyWifeRef.current.play().catch(() => {})
+      boratMyWifeRef.current.onended = () => {
+        boratMyWifePlaying.current = false
+        // Restore vanilla volume
+        if (boratVanillaRef.current) {
+          const restore = setInterval(() => {
+            if (!boratVanillaRef.current) { clearInterval(restore); return }
+            boratVanillaRef.current.volume = Math.min(0.85, boratVanillaRef.current.volume + 0.08)
+            if (boratVanillaRef.current.volume >= 0.85) clearInterval(restore)
+          }, 80)
+        }
+      }
+    }, 2000)
+    return () => clearTimeout(t)
+  }, [boratPhase])
+
+  useEffect(() => {
+    if (boratPhase !== 4) return
+    const iv = setInterval(() => setBoratQuoteIdx(i => (i + 1) % BORAT_QUOTES.length), 5000)
+    return () => clearInterval(iv)
+  }, [boratPhase])
 
   const toggleDark = () => { const v = !dark; setDark(v); try{ localStorage.setItem('pp_dark', v ? '1' : '0') }catch(e){} }
   const saveProfile = (updates) => { const u = { ...profile, ...updates }; setProfile(u); try{ localStorage.setItem('pp_profile', JSON.stringify(u)) }catch(e){} }
@@ -1903,6 +1994,30 @@ export default function PackPerfect() {
       .pp-header { border-bottom: 2px solid #a855f7 !important; }
       body { background: #1a0533 !important; }
     ` : ''}
+    @keyframes brLetterSlam { 0%{opacity:0;transform:scale(3.2) translateY(-30px) skewX(-8deg)} 55%{transform:scale(0.91) translateY(4px) skewX(2deg)} 80%{transform:scale(1.04) translateY(-2px) skewX(0)} 100%{opacity:1;transform:scale(1) translateY(0) skewX(0)} }
+    @keyframes brScanline { 0%{transform:translateY(-100%)} 100%{transform:translateY(100vh)} }
+    @keyframes brTicker { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+    @keyframes brFlash { 0%{opacity:0} 15%{opacity:0.6} 30%{opacity:0.1} 45%{opacity:0.5} 60%{opacity:0} 100%{opacity:0} }
+    @keyframes brShake { 0%,100%{transform:translate(0,0) rotate(0)} 15%{transform:translate(-3px,2px) rotate(-0.5deg)} 30%{transform:translate(3px,-2px) rotate(0.5deg)} 45%{transform:translate(-2px,3px) rotate(-0.3deg)} 60%{transform:translate(2px,-1px) rotate(0.3deg)} 75%{transform:translate(-1px,2px) rotate(-0.2deg)} }
+    @keyframes brFadeIn { from{opacity:0} to{opacity:1} }
+    @keyframes brSlideUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes brConfettiFall { 0%{transform:translateY(-30px) rotate(0deg) scale(1);opacity:1} 100%{transform:translateY(110vh) rotate(720deg) scale(0.7);opacity:0.4} }
+    @keyframes brBannerIn { from{transform:translateY(-130%);opacity:0} to{transform:translateY(0);opacity:1} }
+    @keyframes brQuoteIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes brVhsGlitch { 0%,92%,100%{transform:none;opacity:1} 94%{transform:translateX(3px) skewX(1deg);opacity:0.85} 96%{transform:translateX(-3px) skewX(-1deg);opacity:0.9} 98%{transform:translateX(2px);opacity:0.95} }
+    @keyframes brCrtFlicker { 0%,100%{opacity:1} 48%{opacity:0.97} 50%{opacity:0.91} 52%{opacity:0.97} }
+    @keyframes brGreatSuccess { 0%{opacity:0;transform:scale(0.1) rotate(-12deg)} 40%{transform:scale(1.18) rotate(3deg)} 65%{transform:scale(0.93) rotate(-1deg)} 82%{transform:scale(1.06) rotate(1deg)} 100%{opacity:1;transform:scale(1) rotate(0)} }
+    @keyframes brNewsIn { from{opacity:0;transform:translateX(-40px)} to{opacity:1;transform:translateX(0)} }
+    @keyframes brBoratBob { 0%,100%{transform:translateY(0) rotate(-1deg)} 50%{transform:translateY(-8px) rotate(1deg)} }
+    .br-letter-slam { animation:brLetterSlam 0.7s cubic-bezier(0.22,1,0.36,1) both; }
+    .br-scanline { animation:brScanline 5s linear infinite; }
+    .br-vhs { animation:brVhsGlitch 6s ease-in-out infinite; }
+    .br-crt { animation:brCrtFlicker 0.15s ease-in-out infinite; }
+    .br-borat-bob { animation:brBoratBob 2.8s ease-in-out infinite; }
+    ${boratMode ? `
+      .pp-header { border-bottom: 2px solid #d4a017 !important; }
+      body { background: #1a1400 !important; }
+    ` : ''}
     @media (prefers-reduced-motion:reduce) { *, *::before, *::after { transition-duration:0.01ms !important; animation-duration:0.01ms !important } }
     @media (max-width:640px) {
       .pp-header { flex-wrap:wrap; height:auto !important; padding:10px 14px !important; gap:6px; }
@@ -1917,7 +2032,7 @@ export default function PackPerfect() {
   `
 
   return (
-    <div style={{ fontFamily:"'Sora',sans-serif", minHeight:'100vh', background: kingJulienMode ? 'linear-gradient(135deg,#1a0533 0%,#0a2010 50%,#2d1000 100%)' : interstellarMode ? '#000510' : minionsMode ? '#0d1a2e' : t.bg, color: kingJulienMode ? '#fef9e7' : interstellarMode ? '#c8d8e8' : minionsMode ? '#e8f0fe' : t.text }}>
+    <div style={{ fontFamily:"'Sora',sans-serif", minHeight:'100vh', background: kingJulienMode ? 'linear-gradient(135deg,#1a0533 0%,#0a2010 50%,#2d1000 100%)' : interstellarMode ? '#000510' : minionsMode ? '#0d1a2e' : boratMode ? '#1a1400' : t.bg, color: kingJulienMode ? '#fef9e7' : interstellarMode ? '#c8d8e8' : minionsMode ? '#e8f0fe' : boratMode ? '#f5e8c0' : t.text }}>
       <style>{CSS}</style>
 
       {/* KING JULIEN EASTER EGG */}
@@ -2262,6 +2377,187 @@ export default function PackPerfect() {
               MINIONS ON DUTY: 10,400<br/>
               BANANAS CONSUMED: ∞<br/>
               VILLAIN RATING: DESPICABLE
+            </div>
+          </div>
+        </>)}
+
+      </>)}
+
+      {/* ── BORAT EASTER EGG ── */}
+      {boratMode && boratPhase > 0 && (<>
+
+        {/* VHS scanline — always on */}
+        <div className="br-scanline" style={{ position:'fixed', inset:0, zIndex:195, pointerEvents:'none', background:'linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.025) 50%)', backgroundSize:'100% 4px' }} />
+        <div className="br-crt" style={{ position:'fixed', inset:0, zIndex:194, pointerEvents:'none', background:'radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.45) 100%)' }} />
+
+        {/* ── PHASE 1: JAGSHEMASH ── */}
+        {boratPhase === 1 && (
+          <div className="br-vhs" style={{ position:'fixed', inset:0, background:'#0c0900', zIndex:200, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', overflow:'hidden' }}>
+            {/* Static noise overlay */}
+            <div style={{ position:'absolute', inset:0, opacity:0.04, backgroundImage:'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\'/%3E%3C/svg%3E")', backgroundSize:'200px 200px', zIndex:1 }} />
+            {/* VHS timestamp */}
+            <div style={{ position:'absolute', top:14, left:18, fontFamily:'monospace', fontSize:11, color:'rgba(255,220,80,0.7)', letterSpacing:'0.12em', zIndex:3, animationName:'brFadeIn', animationDuration:'0.5s', animationFillMode:'both' }}>
+              KTZ-TV  ●REC  {new Date().toLocaleDateString('en-US',{month:'2-digit',day:'2-digit',year:'2-digit'})} 00:00:01
+            </div>
+            {/* Channel bug */}
+            <div style={{ position:'absolute', top:12, right:18, fontFamily:'monospace', fontSize:10, color:'rgba(255,220,80,0.55)', letterSpacing:'0.08em', zIndex:3, animationName:'brFadeIn', animationDuration:'0.5s', animationFillMode:'both' }}>
+              CH 4  KAZAKHSTAN STATE TV
+            </div>
+            {/* JAGSHEMASH letters */}
+            <div style={{ display:'flex', gap:'clamp(4px,1.5vw,16px)', zIndex:4, marginBottom:20 }}>
+              {'JAGSHEMASH'.split('').map((ch, i) => (
+                <div key={i} className="br-letter-slam" style={{ fontSize:'clamp(24px,6vw,72px)', fontWeight:900, color: i%3===0 ? '#ffd700' : i%3===1 ? '#3b82f6' : '#ef4444', fontFamily:"'Sora',sans-serif", textShadow:'0 0 24px currentColor, 0 4px 8px rgba(0,0,0,0.9)', animationDelay:`${i*0.07}s` }}>
+                  {ch}
+                </div>
+              ))}
+            </div>
+            {/* Borat image */}
+            <div style={{ zIndex:4, animationName:'brSlideUp', animationDuration:'0.9s', animationDelay:'0.8s', animationFillMode:'both' }}>
+              <img src="/borat.jpg" alt="Borat" className="br-borat-bob" style={{ width:'clamp(120px,22vw,200px)', borderRadius:'8px', border:'3px solid #d4a017', boxShadow:'0 0 40px rgba(212,160,23,0.5), 0 8px 32px rgba(0,0,0,0.8)', objectFit:'cover' }} />
+            </div>
+            {/* Tagline */}
+            <div style={{ marginTop:22, fontSize:'clamp(11px,2vw,15px)', color:'rgba(255,220,80,0.75)', letterSpacing:'0.25em', textTransform:'uppercase', fontWeight:600, textAlign:'center', zIndex:4, animationName:'brFadeIn', animationDuration:'1s', animationDelay:'1.4s', animationFillMode:'both', padding:'0 20px' }}>
+              Welcome to the glorious nation of Kazakhstan
+            </div>
+            <button onClick={() => setBoratPhase(4)} style={{ position:'absolute', bottom:22, right:22, background:'transparent', border:'1px solid rgba(212,160,23,0.3)', borderRadius:6, color:'rgba(212,160,23,0.45)', fontSize:11, padding:'5px 13px', cursor:'pointer', letterSpacing:'0.12em', zIndex:5 }}>skip →</button>
+          </div>
+        )}
+
+        {/* ── PHASE 2: NEWS BROADCAST ── */}
+        {boratPhase === 2 && (
+          <div className="br-vhs" style={{ position:'fixed', inset:0, background:'#08070a', zIndex:200, display:'flex', flexDirection:'column', overflow:'hidden' }}>
+            {/* Network branding bar */}
+            <div style={{ background:'linear-gradient(90deg,#1a0e00,#3d2a00,#1a0e00)', borderBottom:'3px solid #d4a017', padding:'8px 18px', display:'flex', alignItems:'center', justifyContent:'space-between', zIndex:3, flexShrink:0, animationName:'brFadeIn', animationDuration:'0.4s', animationFillMode:'both' }}>
+              <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+                <div style={{ fontFamily:'monospace', fontWeight:900, fontSize:'clamp(13px,2.5vw,18px)', color:'#ffd700', letterSpacing:'0.12em', textShadow:'0 0 12px rgba(255,215,0,0.6)' }}>
+                  ◉ KTZ-TV LIVE
+                </div>
+                <div style={{ fontSize:10, color:'rgba(255,215,0,0.55)', letterSpacing:'0.1em' }}>CHANNEL 4 NEWS</div>
+              </div>
+              <div style={{ fontFamily:'monospace', fontSize:10, color:'rgba(255,215,0,0.6)', letterSpacing:'0.1em' }}>
+                {new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}
+              </div>
+            </div>
+            {/* Main content area */}
+            <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', position:'relative', gap:'clamp(12px,3vw,40px)', padding:'clamp(12px,3vw,32px)', zIndex:2 }}>
+              {/* Borat reporter panel */}
+              <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:10, flexShrink:0, animationName:'brNewsIn', animationDuration:'0.8s', animationFillMode:'both' }}>
+                <img src="/borat.jpg" alt="Borat" className="br-borat-bob" style={{ width:'clamp(90px,18vw,160px)', borderRadius:'6px', border:'2px solid #d4a017', boxShadow:'0 0 30px rgba(212,160,23,0.45)' }} />
+                <div style={{ background:'rgba(212,160,23,0.15)', border:'1px solid rgba(212,160,23,0.5)', borderRadius:4, padding:'4px 12px', textAlign:'center' }}>
+                  <div style={{ fontFamily:'monospace', fontSize:9, color:'#d4a017', letterSpacing:'0.14em', textTransform:'uppercase' }}>FIELD REPORTER</div>
+                  <div style={{ fontFamily:'monospace', fontSize:'clamp(9px,1.5vw,11px)', color:'#f5e8c0', fontWeight:700, letterSpacing:'0.08em' }}>BORAT SAGDIYEV</div>
+                  <div style={{ fontFamily:'monospace', fontSize:8, color:'rgba(212,160,23,0.6)', letterSpacing:'0.08em' }}>KUZCEK BUREAU</div>
+                </div>
+              </div>
+              {/* Story text panel */}
+              <div style={{ flex:1, maxWidth:400, animationName:'brSlideUp', animationDuration:'0.9s', animationDelay:'0.2s', animationFillMode:'both' }}>
+                <div style={{ fontSize:'clamp(8px,1.2vw,11px)', color:'rgba(212,160,23,0.7)', letterSpacing:'0.22em', textTransform:'uppercase', fontFamily:'monospace', marginBottom:10 }}>BREAKING NEWS</div>
+                <div style={{ fontSize:'clamp(15px,3vw,28px)', fontWeight:700, color:'#f5e8c0', lineHeight:1.3, marginBottom:14, textShadow:'0 2px 8px rgba(0,0,0,0.7)' }}>
+                  LOCAL MAN TRAVELS ABROAD TO MAKE BENEFIT GLORIOUS NATION
+                </div>
+                <div style={{ fontSize:'clamp(10px,1.6vw,13px)', color:'rgba(245,232,192,0.7)', lineHeight:1.7, marginBottom:16 }}>
+                  Sources confirm packing list has been generated for upcoming cultural exchange mission. Kazakhstan ranks #1 in potassium production. Very nice!
+                </div>
+                <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
+                  {['WAWAWEEWA','IS NICE','HIGH FIVE','GREAT SUCCESS'].map((tag,i) => (
+                    <div key={i} style={{ background:'rgba(212,160,23,0.2)', border:'1px solid rgba(212,160,23,0.5)', borderRadius:3, padding:'3px 8px', fontSize:9, fontFamily:'monospace', color:'#d4a017', letterSpacing:'0.1em' }}>{tag}</div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            {/* Chyron */}
+            <div style={{ background:'linear-gradient(90deg,#1a0e00,#3b2900)', borderTop:'2px solid #d4a017', padding:'5px 14px', display:'flex', alignItems:'center', gap:14, zIndex:3, flexShrink:0, animationName:'brFadeIn', animationDuration:'0.5s', animationFillMode:'both' }}>
+              <div style={{ fontFamily:'monospace', fontSize:'clamp(8px,1.2vw,11px)', fontWeight:700, color:'#ffd700', letterSpacing:'0.15em', whiteSpace:'nowrap', flexShrink:0 }}>📺 KTZ-TV</div>
+              <div style={{ fontSize:'clamp(8px,1.2vw,11px)', color:'#f5e8c0', fontFamily:'monospace', letterSpacing:'0.06em', whiteSpace:'nowrap', overflow:'hidden' }}>
+                BORAT SAGDIYEV CONFIRMS: "MY WIFE" IS VERY STRONG &nbsp;◉&nbsp; KAZAKHSTAN ECONOMY GROWING (+$1 GDP)
+              </div>
+            </div>
+            {/* Ticker */}
+            <div style={{ background:'#d4a017', overflow:'hidden', flexShrink:0, zIndex:3, animationName:'brFadeIn', animationDuration:'0.5s', animationFillMode:'both' }}>
+              <div style={{ whiteSpace:'nowrap', animationName:'brTicker', animationDuration:'18s', animationTimingFunction:'linear', animationIterationCount:'infinite', display:'inline-block', padding:'4px 0' }}>
+                <span style={{ fontSize:'clamp(9px,1.4vw,11px)', fontFamily:'monospace', fontWeight:700, color:'#1a0e00', letterSpacing:'0.05em' }}>{BORAT_TICKER}{BORAT_TICKER}</span>
+              </div>
+            </div>
+            <button onClick={() => setBoratPhase(4)} style={{ position:'absolute', bottom:60, right:16, background:'transparent', border:'1px solid rgba(212,160,23,0.3)', borderRadius:6, color:'rgba(212,160,23,0.45)', fontSize:11, padding:'5px 13px', cursor:'pointer', letterSpacing:'0.12em', zIndex:5 }}>skip →</button>
+          </div>
+        )}
+
+        {/* ── PHASE 3: GREAT SUCCESS ── */}
+        {boratPhase === 3 && (
+          <div style={{ position:'fixed', inset:0, background:'#080600', zIndex:200, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', overflow:'hidden', animationName:'brShake', animationDuration:'0.6s', animationDelay:'0.1s', animationFillMode:'both' }}>
+            {/* Flash burst */}
+            <div style={{ position:'absolute', inset:0, background:'rgba(255,215,0,0.15)', animationName:'brFlash', animationDuration:'1.2s', animationFillMode:'both', zIndex:1, pointerEvents:'none' }} />
+            {/* Confetti */}
+            {BORAT_CONFETTI.map(c => (
+              <div key={c.id} style={{ position:'fixed', top:0, left:`${c.left}%`, fontSize:`${c.size}px`, zIndex:3, pointerEvents:'none', animationName:'brConfettiFall', animationDuration:`${c.dur}s`, animationDelay:`${c.delay}s`, animationIterationCount:'infinite', animationTimingFunction:'linear' }}>
+                {c.emoji}
+              </div>
+            ))}
+            {/* GREAT SUCCESS! */}
+            <div style={{ zIndex:4, textAlign:'center', animationName:'brGreatSuccess', animationDuration:'1.1s', animationFillMode:'both' }}>
+              <div style={{ fontSize:'clamp(36px,10vw,96px)', fontWeight:900, color:'#ffd700', fontFamily:"'Sora',sans-serif", textShadow:'0 0 40px rgba(255,215,0,0.9), 0 0 80px rgba(255,215,0,0.5), 0 6px 24px rgba(0,0,0,0.9)', lineHeight:1.1 }}>
+                GREAT
+              </div>
+              <div style={{ fontSize:'clamp(36px,10vw,96px)', fontWeight:900, color:'#3b82f6', fontFamily:"'Sora',sans-serif", textShadow:'0 0 40px rgba(59,130,246,0.9), 0 0 80px rgba(59,130,246,0.5), 0 6px 24px rgba(0,0,0,0.9)', lineHeight:1.1 }}>
+                SUCCESS!
+              </div>
+            </div>
+            {/* Big borat */}
+            <div style={{ zIndex:4, marginTop:24, animationName:'brSlideUp', animationDuration:'0.8s', animationDelay:'0.5s', animationFillMode:'both' }}>
+              <img src="/borat.jpg" alt="Borat" style={{ width:'clamp(100px,20vw,180px)', borderRadius:10, border:'4px solid #ffd700', boxShadow:'0 0 60px rgba(255,215,0,0.7), 0 12px 40px rgba(0,0,0,0.9)' }} />
+            </div>
+            {/* Chaos quotes */}
+            <div style={{ zIndex:4, marginTop:20, textAlign:'center', display:'flex', flexDirection:'column', gap:6, animationName:'brFadeIn', animationDuration:'1.2s', animationDelay:'0.7s', animationFillMode:'both' }}>
+              <div style={{ fontSize:'clamp(13px,2.2vw,18px)', fontWeight:700, color:'#f5e8c0', letterSpacing:'0.08em' }}>"Very nice! How much?" 🤝</div>
+              <div style={{ fontSize:'clamp(11px,1.8vw,15px)', color:'rgba(245,232,192,0.7)', fontStyle:'italic' }}>Your packing list is now the most glorious document in all of Kazakhstan</div>
+            </div>
+            <button onClick={() => setBoratPhase(4)} style={{ position:'absolute', bottom:22, right:22, background:'transparent', border:'1px solid rgba(212,160,23,0.3)', borderRadius:6, color:'rgba(212,160,23,0.45)', fontSize:11, padding:'5px 13px', cursor:'pointer', letterSpacing:'0.12em', zIndex:5 }}>skip →</button>
+          </div>
+        )}
+
+        {/* ── PHASE 4: STEADY STATE ── */}
+        {boratPhase === 4 && (<>
+          {/* Faded Borat bg */}
+          <div style={{ position:'fixed', inset:0, backgroundImage:"url('/borat.jpg')", backgroundSize:'cover', backgroundPosition:'center top', opacity:0.07, zIndex:6, pointerEvents:'none', animationName:'brFadeIn', animationDuration:'2s', animationFillMode:'both' }} />
+          {/* Scanlines on top */}
+          <div style={{ position:'fixed', inset:0, background:'repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.06) 3px,rgba(0,0,0,0.06) 4px)', zIndex:7, pointerEvents:'none' }} />
+          {/* Confetti (gentle) */}
+          {BORAT_CONFETTI.filter((_,i) => i%3===0).map(c => (
+            <div key={c.id} style={{ position:'fixed', top:0, left:`${c.left}%`, fontSize:`${c.size-6}px`, zIndex:8, pointerEvents:'none', animationName:'brConfettiFall', animationDuration:`${c.dur+2}s`, animationDelay:`${c.delay}s`, animationIterationCount:'infinite', animationTimingFunction:'linear', opacity:0.45 }}>
+              {c.emoji}
+            </div>
+          ))}
+          {/* Top mission banner */}
+          <div style={{ position:'fixed', top:0, left:0, right:0, zIndex:1010, pointerEvents:'none', animationName:'brBannerIn', animationDuration:'0.8s', animationFillMode:'both' }}>
+            <div style={{ background:'linear-gradient(90deg,#1a0e00,#4a3200,#1a0e00)', borderBottom:'2.5px solid #d4a017', padding:'6px 16px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
+              <div style={{ fontFamily:'monospace', fontSize:'clamp(9px,1.4vw,12px)', fontWeight:700, color:'#ffd700', letterSpacing:'0.12em', whiteSpace:'nowrap' }}>
+                🇰🇿 KAZAKHSTAN STATE PACKING AUTHORITY
+              </div>
+              <div style={{ overflow:'hidden', flex:1, mx:8 }}>
+                <div style={{ whiteSpace:'nowrap', animationName:'brTicker', animationDuration:'22s', animationTimingFunction:'linear', animationIterationCount:'infinite', display:'inline-block' }}>
+                  <span style={{ fontSize:'clamp(8px,1.2vw,10px)', fontFamily:'monospace', color:'rgba(212,160,23,0.85)', letterSpacing:'0.04em' }}>{BORAT_TICKER}{BORAT_TICKER}</span>
+                </div>
+              </div>
+              <div style={{ fontFamily:'monospace', fontSize:'clamp(8px,1.2vw,10px)', color:'rgba(212,160,23,0.6)', whiteSpace:'nowrap' }}>
+                ●REC {new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}
+              </div>
+            </div>
+          </div>
+          {/* Quote carousel */}
+          <div key={boratQuoteIdx} style={{ position:'fixed', bottom:65, left:'50%', transform:'translateX(-50%)', zIndex:1010, pointerEvents:'none', animationName:'brQuoteIn', animationDuration:'0.7s', animationFillMode:'both', maxWidth:'min(520px,88vw)', textAlign:'center' }}>
+            <div style={{ background:'rgba(26,14,0,0.88)', border:'1px solid rgba(212,160,23,0.5)', borderRadius:8, padding:'12px 20px', backdropFilter:'blur(6px)' }}>
+              <div style={{ fontSize:'clamp(11px,2vw,14px)', color:'#f5e8c0', fontStyle:'italic', lineHeight:1.65, letterSpacing:'0.03em' }}>
+                {BORAT_QUOTES[boratQuoteIdx]}
+              </div>
+            </div>
+          </div>
+          {/* Corner watermark */}
+          <div style={{ position:'fixed', bottom:18, right:18, zIndex:1010, pointerEvents:'none', animationName:'brFadeIn', animationDuration:'2s', animationFillMode:'both' }}>
+            <div style={{ fontFamily:'monospace', fontSize:9, color:'rgba(212,160,23,0.4)', letterSpacing:'0.14em', textAlign:'right', lineHeight:2 }}>
+              POTASSIUM EXPORTS: #1<br/>
+              GDP: $3<br/>
+              DENTISTS: 0<br/>
+              GREAT SUCCESS ✊
             </div>
           </div>
         </>)}
