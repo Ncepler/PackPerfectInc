@@ -2724,10 +2724,10 @@ export default function PackPerfect() {
           <div style={{ position:'fixed', inset:0, background:'linear-gradient(180deg,rgba(10,22,40,0.4) 0%,transparent 40%,rgba(5,15,28,0.3) 100%)', zIndex:6, pointerEvents:'none' }} />
 
           {/* Scrat chasing acorn */}
-          <div className="ia-acorn-glow" style={{ position:'fixed', left:scratState.ax, top:scratState.ay, width:50, height:50, zIndex:75, pointerEvents:'none', transform:`scaleX(${scratState.flip ? -1 : 1})`, willChange:'transform' }}>
+          <div className="ia-acorn-glow" style={{ position:'fixed', left:scratState.ax, top:scratState.ay, width:180, height:180, zIndex:75, pointerEvents:'none', transform:`scaleX(${scratState.flip ? -1 : 1})`, willChange:'transform' }}>
             <img src="/acorn.png" alt="acorn" style={{ width:'100%', height:'100%', objectFit:'contain' }} onError={e => { e.currentTarget.style.display='none'; e.currentTarget.parentElement.innerHTML='🌰' }} />
           </div>
-          <div className="ia-scrat" style={{ position:'fixed', left:scratState.sx - 10, top:scratState.sy - 10, width:80, height:80, zIndex:74, pointerEvents:'none', transform:`scaleX(${scratState.ax < scratState.sx ? -1 : 1})`, willChange:'transform' }}>
+          <div className="ia-scrat" style={{ position:'fixed', left:scratState.sx - 30, top:scratState.sy - 30, width:260, height:260, zIndex:74, pointerEvents:'none', transform:`scaleX(${scratState.ax < scratState.sx ? -1 : 1})`, willChange:'transform' }}>
             <img src="/scrat.png" alt="Scrat" style={{ width:'100%', height:'100%', objectFit:'contain' }} onError={e => { e.currentTarget.style.display='none'; e.currentTarget.parentElement.innerHTML='🐿️' }} />
           </div>
 
