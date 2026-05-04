@@ -1254,7 +1254,6 @@ export default function PackPerfect() {
   const boratAnthemRef = useRef(null)
   const boratVanillaRef = useRef(null)
   const boratMyWifeRef = useRef(null)
-  const boratMyWifePlaying = useRef(false)
 
   const handleStatClick = (idx) => {
     if (statTransitionRef.current) clearTimeout(statTransitionRef.current)
@@ -1420,59 +1419,35 @@ export default function PackPerfect() {
 
   useEffect(() => {
     if (!boratMode) {
-      setBoratPhase(0); setBoratQuoteIdx(0); boratMyWifePlaying.current = false
+      setBoratPhase(0); setBoratQuoteIdx(0)
       if (boratAnthemRef.current) { boratAnthemRef.current.pause(); boratAnthemRef.current.currentTime = 0 }
       if (boratVanillaRef.current) { boratVanillaRef.current.pause(); boratVanillaRef.current.currentTime = 0 }
       if (boratMyWifeRef.current) { boratMyWifeRef.current.pause(); boratMyWifeRef.current.currentTime = 0 }
       return
     }
-    // Anthem starts immediately
-    if (!boratAnthemRef.current) { boratAnthemRef.current = new Audio('/kazakhstan.mp3'); boratAnthemRef.current.loop = true; boratAnthemRef.current.volume = 1 }
+    // Anthem plays immediately, loud
+    if (!boratAnthemRef.current) { boratAnthemRef.current = new Audio('/kazakhstan.mp3'); boratAnthemRef.current.loop = true }
+    boratAnthemRef.current.volume = 1.0
     boratAnthemRef.current.play().catch(() => {})
-    // Vanilla overlay starts 3s after anthem
-    const tVanilla = setTimeout(() => {
-      if (!boratVanillaRef.current) { boratVanillaRef.current = new Audio('/vanilla.mp3'); boratVanillaRef.current.loop = true; boratVanillaRef.current.volume = 0.85 }
-      boratVanillaRef.current.play().catch(() => {})
-    }, 3000)
+    // 2s in: my_wife plays, then vanilla starts after it ends
+    const tMyWife = setTimeout(() => {
+      if (!boratMyWifeRef.current) { boratMyWifeRef.current = new Audio('/my_wife.mp3') }
+      boratMyWifeRef.current.volume = 1.0
+      boratMyWifeRef.current.currentTime = 0
+      boratMyWifeRef.current.play().catch(() => {})
+      boratMyWifeRef.current.onended = () => {
+        if (!boratVanillaRef.current) { boratVanillaRef.current = new Audio('/vanilla.mp3'); boratVanillaRef.current.loop = true }
+        boratVanillaRef.current.volume = 0.85
+        boratVanillaRef.current.play().catch(() => {})
+      }
+    }, 2000)
     // Phase sequence
     setBoratPhase(1)
     const t1 = setTimeout(() => setBoratPhase(2), 5500)
     const t2 = setTimeout(() => setBoratPhase(3), 12000)
     const t3 = setTimeout(() => setBoratPhase(4), 18500)
-    return () => { clearTimeout(tVanilla); clearTimeout(t1); clearTimeout(t2); clearTimeout(t3) }
+    return () => { clearTimeout(tMyWife); clearTimeout(t1); clearTimeout(t2); clearTimeout(t3) }
   }, [boratMode])
-
-  // my_wife.mp3 trigger — fires once when entering Phase 2
-  useEffect(() => {
-    if (boratPhase !== 2) return
-    const t = setTimeout(() => {
-      if (boratMyWifePlaying.current) return
-      boratMyWifePlaying.current = true
-      // Duck vanilla
-      if (boratVanillaRef.current) {
-        const duck = setInterval(() => {
-          if (!boratVanillaRef.current) { clearInterval(duck); return }
-          boratVanillaRef.current.volume = Math.max(0.05, boratVanillaRef.current.volume - 0.12)
-          if (boratVanillaRef.current.volume <= 0.05) clearInterval(duck)
-        }, 60)
-      }
-      if (!boratMyWifeRef.current) { boratMyWifeRef.current = new Audio('/my_wife.mp3') }
-      boratMyWifeRef.current.currentTime = 0
-      boratMyWifeRef.current.play().catch(() => {})
-      boratMyWifeRef.current.onended = () => {
-        boratMyWifePlaying.current = false
-        // Restore vanilla volume
-        if (boratVanillaRef.current) {
-          const restore = setInterval(() => {
-            if (!boratVanillaRef.current) { clearInterval(restore); return }
-            boratVanillaRef.current.volume = Math.min(0.85, boratVanillaRef.current.volume + 0.08)
-            if (boratVanillaRef.current.volume >= 0.85) clearInterval(restore)
-          }, 80)
-        }
-      }
-    }, 2000)
-    return () => clearTimeout(t)
-  }, [boratPhase])
 
   useEffect(() => {
     if (boratPhase !== 4) return
