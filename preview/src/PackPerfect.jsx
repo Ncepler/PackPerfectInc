@@ -1160,6 +1160,7 @@ export default function PackPerfect() {
   const kjVelRef = useRef({ vx: 4.5, vy: 3.2 })
   const kjRotRef = useRef(0)
   const kjAnimRef = useRef(null)
+  const kjAudioRef = useRef(null)
   const [kjState, setKjState] = useState({ x: 200, y: 200, rot: 0, flip: false, sx: 1, sy: 1 })
   const [kjQuoteIdx, setKjQuoteIdx] = useState(0)
 
@@ -1261,6 +1262,21 @@ export default function PackPerfect() {
     if (!kingJulienMode) return
     const iv = setInterval(() => setKjQuoteIdx(i => (i + 1) % KJ_QUOTES.length), 4000)
     return () => clearInterval(iv)
+  }, [kingJulienMode])
+
+  useEffect(() => {
+    if (kingJulienMode) {
+      if (!kjAudioRef.current) {
+        kjAudioRef.current = new Audio('/move_it.mp3')
+        kjAudioRef.current.loop = true
+      }
+      kjAudioRef.current.play().catch(() => {})
+    } else {
+      if (kjAudioRef.current) {
+        kjAudioRef.current.pause()
+        kjAudioRef.current.currentTime = 0
+      }
+    }
   }, [kingJulienMode])
 
   const toggleDark = () => { const v = !dark; setDark(v); try{ localStorage.setItem('pp_dark', v ? '1' : '0') }catch(e){} }
