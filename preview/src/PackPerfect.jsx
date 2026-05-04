@@ -1370,31 +1370,18 @@ export default function PackPerfect() {
 
   useEffect(() => {
     if (!minionsMode) {
-      setMinionsPhase(0); setMinionsQuoteIdx(0); setMinionsDepth(0)
+      setMinionsPhase(0); setMinionsQuoteIdx(0)
       if (minionsAudioRef.current) { minionsAudioRef.current.pause(); minionsAudioRef.current.currentTime = 0 }
       return
     }
+    if (!minionsAudioRef.current) { minionsAudioRef.current = new Audio('/ymca.mp3'); minionsAudioRef.current.loop = true }
+    minionsAudioRef.current.play().catch(() => {})
     setMinionsPhase(1)
     const t1 = setTimeout(() => setMinionsPhase(2), 5500)
-    const t2 = setTimeout(() => setMinionsPhase(3), 11500)
-    const t3 = setTimeout(() => {
-      setMinionsPhase(4)
-      if (!minionsAudioRef.current) { minionsAudioRef.current = new Audio('/ymca.mp3'); minionsAudioRef.current.loop = true }
-      minionsAudioRef.current.play().catch(() => {})
-    }, 18500)
+    const t2 = setTimeout(() => setMinionsPhase(3), 12000)
+    const t3 = setTimeout(() => setMinionsPhase(4), 18500)
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3) }
   }, [minionsMode])
-
-  useEffect(() => {
-    if (minionsPhase !== 1) { setMinionsDepth(0); return }
-    let d = 0
-    const iv = setInterval(() => {
-      d += Math.floor(Math.random() * 180 + 60)
-      if (d >= 3000) { d = 3000; clearInterval(iv) }
-      setMinionsDepth(d)
-    }, 75)
-    return () => clearInterval(iv)
-  }, [minionsPhase])
 
   useEffect(() => {
     if (minionsPhase !== 4) return
@@ -1883,25 +1870,22 @@ export default function PackPerfect() {
     @keyframes isOverlayOut { from{opacity:1} to{opacity:0;pointer-events:none} }
     @keyframes isScanline { 0%{transform:translateY(-100%)} 100%{transform:translateY(100vh)} }
     @keyframes isCenterPulse { 0%,100%{transform:scale(1);opacity:0.6} 50%{transform:scale(1.5);opacity:1} }
-    @keyframes mnDescendBg { 0%{background-position:center 0%} 100%{background-position:center 40%} }
-    @keyframes mnShake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-4px)} 40%{transform:translateX(3px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(2px)} }
-    @keyframes mnStalactiteDrop { from{transform:translateY(-120px);opacity:0} to{transform:translateY(0);opacity:1} }
-    @keyframes mnDepthFlicker { 0%,100%{opacity:0.6} 50%{opacity:1} }
-    @keyframes mnLairZoom { from{transform:scale(1.05);opacity:0} to{transform:scale(1.14);opacity:1} }
-    @keyframes mnSearchlight { 0%{transform:rotate(-30deg)} 50%{transform:rotate(30deg)} 100%{transform:rotate(-30deg)} }
-    @keyframes mnSlamIn { 0%{opacity:0;transform:scale(2.5)} 60%{opacity:1;transform:scale(0.95)} 100%{transform:scale(1)} }
-    @keyframes mnBluePulse { 0%,100%{background:rgba(30,80,255,0.08)} 50%{background:rgba(30,80,255,0.22)} }
-    @keyframes mnSlideUp { from{transform:translateY(180px);opacity:0} to{transform:translateY(0);opacity:1} }
-    @keyframes mnSlideLeft { from{transform:translateX(-160px) rotate(-8deg);opacity:0} to{transform:translateX(0) rotate(0deg);opacity:1} }
-    @keyframes mnSlideRight { from{transform:translateX(160px) rotate(8deg);opacity:0} to{transform:translateX(0) rotate(0deg);opacity:1} }
-    @keyframes mnPop { from{transform:translateY(90px) scale(0.5);opacity:0} to{transform:translateY(0) scale(1);opacity:1} }
-    @keyframes mnBounce { 0%,100%{transform:translateY(0) rotate(-2deg)} 50%{transform:translateY(-14px) rotate(2deg)} }
+    @keyframes mnLetterSlam { 0%{opacity:0;transform:scale(2.8) translateY(-24px) rotate(-12deg)} 65%{transform:scale(0.93) translateY(3px) rotate(1deg)} 100%{opacity:1;transform:scale(1) translateY(0) rotate(0deg)} }
+    @keyframes mnBananaFloat { 0%{transform:translateX(-50%) translateY(-5vh) rotate(0deg);opacity:1} 100%{transform:translateX(-50%) translateY(65vh) rotate(200deg);opacity:0.5} }
+    @keyframes mnGibberish { 0%,100%{opacity:0.18} 50%{opacity:0.75} }
+    @keyframes mnMinionRise { from{transform:translateY(110%) scale(0.82);opacity:0} to{transform:translateY(0) scale(1);opacity:1} }
+    @keyframes mnNameCard { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes mnSpeechPop { from{opacity:0;transform:scale(0.35) translateY(12px)} to{opacity:1;transform:scale(1) translateY(0)} }
+    @keyframes mnCrowdRise { from{transform:translateY(130px) scale(0.88);opacity:0} to{transform:translateY(0) scale(1);opacity:1} }
+    @keyframes mnLairZoom { from{transform:scale(1);opacity:0} to{transform:scale(1.1);opacity:1} }
+    @keyframes mnGruSlide { from{transform:translateX(-130px) scale(0.88);opacity:0} to{transform:translateX(0) scale(1);opacity:1} }
+    @keyframes mnSlamIn { 0%{opacity:0;transform:scale(2.6)} 60%{opacity:1;transform:scale(0.94)} 100%{transform:scale(1)} }
     @keyframes mnBananFall { 0%{transform:translateY(-20px) rotate(0deg);opacity:1} 100%{transform:translateY(110vh) rotate(540deg);opacity:0.5} }
-    @keyframes mnSpeechPop { from{opacity:0;transform:scale(0.4) translateY(10px)} to{opacity:1;transform:scale(1) translateY(0)} }
-    @keyframes mnPeek { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+    @keyframes mnPeek { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+    @keyframes mnWiggle { 0%,100%{transform:rotate(-3deg) scale(1)} 50%{transform:rotate(3deg) scale(1.05)} }
     @keyframes mnBannerIn { from{transform:translateY(-110%);opacity:0} to{transform:translateY(0);opacity:1} }
     @keyframes mnQuoteIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
-    @keyframes mnYellow { 0%,100%{background:rgba(255,220,0,0.07)} 50%{background:rgba(255,220,0,0.16)} }
+    @keyframes mnYellowPulse { 0%,100%{background:rgba(255,220,0,0.04)} 50%{background:rgba(255,220,0,0.12)} }
     @keyframes mnFadeIn { from{opacity:0} to{opacity:1} }
     @keyframes kjConfettiFall { 0%{transform:translateY(-30px) rotate(0deg) scale(1);opacity:1} 100%{transform:translateY(110vh) rotate(900deg) scale(0.75);opacity:0.5} }
     @keyframes kjBanner { from{transform:translateY(-110%);opacity:0} to{transform:translateY(0);opacity:1} }
@@ -2116,137 +2100,165 @@ export default function PackPerfect() {
       {/* ── MINIONS EASTER EGG ── */}
       {minionsMode && minionsPhase > 0 && (<>
 
-        {/* ── PHASE 1: DESCENT ── */}
+        {/* ── PHASE 1: B·A·N·A·N·A ── */}
         {minionsPhase === 1 && (
-          <div style={{ position:'fixed', inset:0, zIndex:200, overflow:'hidden', background:'linear-gradient(180deg,#0a0a0a 0%,#1a1008 40%,#2a1a04 100%)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', animationName:'mnShake', animationDuration:'0.4s', animationIterationCount:5, animationDelay:'1.5s' }}>
-            {/* Stalactites */}
-            {MINIONS_STALACTITES.map(s => (
-              <div key={s.id} style={{ position:'absolute', top:0, left:`${s.left}%`, width:0, height:0, borderLeft:`${s.w/2}px solid transparent`, borderRight:`${s.w/2}px solid transparent`, borderTop:`${s.h}px solid #1a120a`, animationName:'mnStalactiteDrop', animationDuration:'0.8s', animationDelay:`${s.id*0.12}s`, animationFillMode:'both', animationTimingFunction:'cubic-bezier(0.22,1,0.36,1)', filter:'drop-shadow(0 4px 8px rgba(0,0,0,0.8))' }} />
-            ))}
-            {/* Vertical shaft light */}
-            <div style={{ position:'absolute', top:0, left:'50%', transform:'translateX(-50%)', width:120, height:'100%', background:'linear-gradient(180deg, rgba(255,200,80,0.12) 0%, transparent 60%)', pointerEvents:'none' }} />
-            {/* Industrial floor line */}
-            <div style={{ position:'absolute', bottom:0, left:0, right:0, height:6, background:'#3d2a10', boxShadow:'0 -4px 20px rgba(255,160,0,0.15)' }} />
-            {/* Depth counter */}
-            <div style={{ textAlign:'center', zIndex:2 }}>
-              <div style={{ fontSize:11, color:'rgba(255,200,80,0.5)', letterSpacing:'0.4em', textTransform:'uppercase', marginBottom:14, animationName:'mnFadeIn', animationDuration:'0.5s', animationFillMode:'both' }}>Entering secret lair</div>
-              <div style={{ fontFamily:'monospace', fontSize:'clamp(32px,7vw,72px)', fontWeight:700, color:'#ffdc00', letterSpacing:'0.05em', animationName:'mnDepthFlicker', animationDuration:'0.15s', animationIterationCount:'infinite' }}>
-                −{minionsDepth.toLocaleString()}m
-              </div>
-              <div style={{ marginTop:10, fontSize:11, color:'rgba(255,200,80,0.35)', letterSpacing:'0.25em' }}>DEPTH</div>
+          <div style={{ position:'fixed', inset:0, zIndex:200, background:'#000', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', animation:'mnFadeIn 0.5s ease both', overflow:'hidden' }}>
+            {/* Yellow pulse bg */}
+            <div style={{ position:'absolute', inset:0, animationName:'mnYellowPulse', animationDuration:'2s', animationIterationCount:'infinite', pointerEvents:'none' }} />
+            {/* Gibberish line */}
+            <div style={{ fontSize:12, color:'rgba(255,220,0,0.3)', letterSpacing:'0.3em', marginBottom:44, animationName:'mnGibberish', animationDuration:'1.3s', animationIterationCount:'infinite', zIndex:2 }}>
+              bello &nbsp;·&nbsp; tulaliloo &nbsp;·&nbsp; papoy &nbsp;·&nbsp; poopaye
             </div>
-            {/* Warning stripes bottom */}
-            <div style={{ position:'absolute', bottom:6, left:0, right:0, height:18, background:'repeating-linear-gradient(45deg, rgba(255,200,0,0.18) 0px, rgba(255,200,0,0.18) 10px, transparent 10px, transparent 20px)', pointerEvents:'none' }} />
-            <button onClick={() => setMinionsPhase(4)} style={{ position:'absolute', bottom:22, right:22, background:'transparent', border:'1px solid rgba(255,200,80,0.2)', borderRadius:6, color:'rgba(255,200,80,0.35)', fontSize:11, padding:'5px 13px', cursor:'pointer', letterSpacing:'0.1em' }}>skip →</button>
+            {/* B·A·N·A·N·A letters */}
+            <div style={{ display:'flex', gap:'clamp(2px,1.2vw,14px)', alignItems:'center', zIndex:2 }}>
+              {['B','A','N','A','N','A','!'].map((l, i) => (
+                <span key={i} style={{ fontSize:'clamp(46px,10vw,108px)', fontWeight:900, color: i===6 ? '#fff' : '#ffdc00', display:'inline-block', fontFamily:"'Sora',sans-serif", animationName:'mnLetterSlam', animationDuration:'0.55s', animationDelay:`${i*0.16}s`, animationFillMode:'both', animationTimingFunction:'cubic-bezier(0.22,1,0.36,1)', textShadow:'0 0 28px rgba(255,220,0,0.55), 0 4px 0 rgba(0,0,0,0.65)' }}>{l}</span>
+              ))}
+            </div>
+            {/* Subtitle */}
+            <div style={{ marginTop:26, fontSize:13, color:'rgba(255,255,255,0.38)', letterSpacing:'0.14em', fontWeight:300, animationName:'mnFadeIn', animationDuration:'1s', animationDelay:'1.6s', animationFillMode:'both', textAlign:'center', maxWidth:380, padding:'0 24px', zIndex:2, lineHeight:1.6 }}>
+              They speak very little English.<br/>But they understand banana.
+            </div>
+            {/* Single banana drifting */}
+            <div style={{ position:'absolute', left:'50%', top:'-5vh', fontSize:38, animationName:'mnBananaFloat', animationDuration:'4.5s', animationDelay:'0.3s', animationFillMode:'both', animationTimingFunction:'linear', pointerEvents:'none', zIndex:2 }}>🍌</div>
+            <button onClick={() => setMinionsPhase(4)} style={{ position:'absolute', bottom:22, right:22, background:'transparent', border:'1px solid rgba(255,220,0,0.18)', borderRadius:6, color:'rgba(255,220,0,0.32)', fontSize:11, padding:'5px 13px', cursor:'pointer', letterSpacing:'0.1em', zIndex:4 }}>skip →</button>
           </div>
         )}
 
-        {/* ── PHASE 2: LAIR REVEAL ── */}
+        {/* ── PHASE 2: MEET THE CREW ── */}
         {minionsPhase === 2 && (
-          <div style={{ position:'fixed', inset:0, zIndex:200, overflow:'hidden', background:'#050e1c', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', animationName:'mnFadeIn', animationDuration:'0.8s' }}>
-            {/* Lair background image with zoom */}
-            <div style={{ position:'absolute', inset:0, backgroundImage:`url('/minions_lair.jpg')`, backgroundSize:'cover', backgroundPosition:'center', animationName:'mnLairZoom', animationDuration:'6s', animationFillMode:'both', animationTimingFunction:'ease-out' }} />
-            {/* Blue ambient overlay */}
-            <div style={{ position:'absolute', inset:0, background:'linear-gradient(180deg,rgba(5,14,28,0.55) 0%,rgba(10,30,80,0.35) 50%,rgba(5,14,28,0.7) 100%)', animationName:'mnBluePulse', animationDuration:'2s', animationIterationCount:'infinite' }} />
-            {/* Searchlights */}
-            {[15, 50, 85].map((x, i) => (
-              <div key={i} style={{ position:'absolute', bottom:0, left:`${x}%`, width:3, height:'60%', background:'linear-gradient(to top, rgba(255,240,180,0.25), transparent)', transformOrigin:'bottom center', animationName:'mnSearchlight', animationDuration:`${2.2 + i*0.7}s`, animationIterationCount:'infinite', animationTimingFunction:'ease-in-out', animationDelay:`${i*0.4}s` }} />
-            ))}
-            {/* SECRET LAIR slam text */}
-            <div style={{ position:'relative', zIndex:2, textAlign:'center' }}>
-              <div style={{ fontSize:'clamp(36px,8vw,96px)', fontWeight:900, color:'#ffdc00', letterSpacing:'0.08em', textTransform:'uppercase', animationName:'mnSlamIn', animationDuration:'0.7s', animationDelay:'0.6s', animationFillMode:'both', textShadow:'0 0 30px rgba(255,220,0,0.6), 0 4px 0 rgba(0,0,0,0.8)' }}>
-                SECRET LAIR
-              </div>
-              <div style={{ marginTop:12, fontSize:13, color:'rgba(255,220,0,0.55)', letterSpacing:'0.4em', animationName:'mnFadeIn', animationDuration:'0.8s', animationDelay:'1.4s', animationFillMode:'both' }}>
-                UNAUTHORIZED ACCESS PROHIBITED
-              </div>
-            </div>
-            {/* Bottom machinery silhouette */}
-            <div style={{ position:'absolute', bottom:0, left:0, right:0, height:80, background:'linear-gradient(to top, #050e1c, transparent)', pointerEvents:'none' }} />
-            <button onClick={() => setMinionsPhase(4)} style={{ position:'absolute', bottom:22, right:22, background:'transparent', border:'1px solid rgba(255,220,0,0.2)', borderRadius:6, color:'rgba(255,220,0,0.35)', fontSize:11, padding:'5px 13px', cursor:'pointer', letterSpacing:'0.1em' }}>skip →</button>
-          </div>
-        )}
-
-        {/* ── PHASE 3: MINIONS PARTY ── */}
-        {minionsPhase === 3 && (
-          <div style={{ position:'fixed', inset:0, zIndex:200, overflow:'hidden', background:'linear-gradient(180deg,#0a1628 0%,#0d2040 60%,#0a1628 100%)', display:'flex', flexDirection:'column', alignItems:'flex-end', justifyContent:'flex-end', animationName:'mnFadeIn', animationDuration:'0.7s' }}>
-            {/* Yellow ambient pulse */}
-            <div style={{ position:'absolute', inset:0, animationName:'mnYellow', animationDuration:'1.5s', animationIterationCount:'infinite', pointerEvents:'none' }} />
-            {/* Raining bananas */}
+          <div style={{ position:'fixed', inset:0, zIndex:200, background:'linear-gradient(180deg,#080e1e 0%,#0c1830 100%)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'flex-end', animation:'mnFadeIn 0.8s ease both', overflow:'hidden' }}>
+            {/* Banana rain */}
             {MINIONS_BANANAS.map(b => (
               <div key={b.id} style={{ position:'absolute', top:0, left:`${b.left}%`, fontSize:`${b.size}px`, pointerEvents:'none', animationName:'mnBananFall', animationDuration:`${b.dur}s`, animationDelay:`${b.delay}s`, animationIterationCount:'infinite', animationTimingFunction:'linear' }}>🍌</div>
             ))}
-            {/* Crowd center */}
-            <div style={{ position:'absolute', bottom:0, left:'50%', transform:'translateX(-50%)', width:'min(360px,70vw)', animationName:'mnSlideUp', animationDuration:'0.9s', animationDelay:'0.2s', animationFillMode:'both', animationTimingFunction:'cubic-bezier(0.22,1,0.36,1)' }}>
-              <img src="/minions_crowd.png" alt="Minions" style={{ width:'100%', objectFit:'contain', display:'block' }} />
+            {/* Header */}
+            <div style={{ position:'absolute', top:36, left:0, right:0, textAlign:'center', zIndex:2, animationName:'mnFadeIn', animationDuration:'0.6s', animationFillMode:'both' }}>
+              <div style={{ fontSize:11, color:'rgba(255,220,0,0.5)', letterSpacing:'0.4em', textTransform:'uppercase' }}>Meet the most important members of the team</div>
             </div>
-            {/* Kevin — left */}
-            <div style={{ position:'absolute', bottom:0, left:'4%', width:'min(140px,22vw)', animationName:'mnSlideLeft', animationDuration:'0.8s', animationDelay:'0.7s', animationFillMode:'both', animationTimingFunction:'cubic-bezier(0.22,1,0.36,1)' }}>
-              <img src="/kevin.png" alt="Kevin" style={{ width:'100%', objectFit:'contain', display:'block' }} />
-            </div>
-            {/* Bob — center-left */}
-            <div style={{ position:'absolute', bottom:0, left:'22%', width:'min(110px,18vw)', animationName:'mnPop', animationDuration:'0.6s', animationDelay:'1.0s', animationFillMode:'both', animationTimingFunction:'cubic-bezier(0.22,1,0.36,1)' }}>
-              <img src="/bob.png" alt="Bob" style={{ width:'100%', objectFit:'contain', display:'block' }} />
-            </div>
-            {/* Stuart — right */}
-            <div style={{ position:'absolute', bottom:0, right:'4%', width:'min(130px,20vw)', animationName:'mnSlideRight', animationDuration:'0.8s', animationDelay:'0.85s', animationFillMode:'both', animationTimingFunction:'cubic-bezier(0.22,1,0.36,1)' }}>
-              <img src="/stuart.png" alt="Stuart" style={{ width:'100%', objectFit:'contain', display:'block' }} />
-            </div>
-            {/* Speech bubbles */}
-            {MINIONS_SPEECH.map((s, i) => (
-              <div key={i} style={{ position:'absolute', bottom:`${32 + i*12}%`, left: i%2===0 ? `${8+i*6}%` : undefined, right: i%2!==0 ? `${8+i*4}%` : undefined, animationName:'mnSpeechPop', animationDuration:'0.4s', animationDelay:`${s.delay + 0.8}s`, animationFillMode:'both', zIndex:3 }}>
-                <div style={{ background:'rgba(255,255,255,0.96)', border:'2px solid #ffdc00', borderRadius:12, padding:'6px 11px', fontSize:13, fontWeight:700, color:'#3d2a00', whiteSpace:'nowrap', boxShadow:'0 3px 12px rgba(0,0,0,0.3)' }}>
-                  {s.text}
+            {/* Three minions */}
+            <div style={{ display:'flex', alignItems:'flex-end', justifyContent:'center', width:'100%', gap:'clamp(6px,2.5vw,28px)', padding:'0 clamp(6px,3vw,32px) 0', zIndex:2 }}>
+              {/* Kevin */}
+              <div style={{ flex:1, maxWidth:210, display:'flex', flexDirection:'column', alignItems:'center', animationName:'mnMinionRise', animationDuration:'0.85s', animationDelay:'0.1s', animationFillMode:'both', animationTimingFunction:'cubic-bezier(0.22,1,0.36,1)' }}>
+                <div style={{ position:'relative', width:'100%' }}>
+                  <div style={{ position:'absolute', top:-8, right:-8, background:'#fffde7', border:'2.5px solid #ffdc00', borderRadius:10, padding:'5px 10px', fontSize:12, fontWeight:700, color:'#3d2a00', whiteSpace:'nowrap', zIndex:3, animationName:'mnSpeechPop', animationDuration:'0.4s', animationDelay:'1.3s', animationFillMode:'both', boxShadow:'0 3px 10px rgba(0,0,0,0.35)' }}>Bello! 👋</div>
+                  <img src="/kevin.png" alt="Kevin" style={{ width:'100%', objectFit:'contain', display:'block' }} />
+                </div>
+                <div style={{ marginTop:10, textAlign:'center', animationName:'mnNameCard', animationDuration:'0.5s', animationDelay:'0.7s', animationFillMode:'both' }}>
+                  <div style={{ fontSize:'clamp(15px,2.8vw,22px)', fontWeight:900, color:'#ffdc00', letterSpacing:'0.14em' }}>KEVIN</div>
+                  <div style={{ fontSize:10, color:'rgba(255,220,0,0.5)', letterSpacing:'0.22em', marginTop:3 }}>THE TALL ONE</div>
                 </div>
               </div>
+              {/* Bob */}
+              <div style={{ flex:'0 0 auto', width:'clamp(90px,18vw,180px)', display:'flex', flexDirection:'column', alignItems:'center', animationName:'mnMinionRise', animationDuration:'0.85s', animationDelay:'0.28s', animationFillMode:'both', animationTimingFunction:'cubic-bezier(0.22,1,0.36,1)' }}>
+                <div style={{ position:'relative', width:'100%' }}>
+                  <div style={{ position:'absolute', top:-8, left:-16, background:'#fffde7', border:'2.5px solid #ffdc00', borderRadius:10, padding:'5px 10px', fontSize:12, fontWeight:700, color:'#3d2a00', whiteSpace:'nowrap', zIndex:3, animationName:'mnSpeechPop', animationDuration:'0.4s', animationDelay:'1.6s', animationFillMode:'both', boxShadow:'0 3px 10px rgba(0,0,0,0.35)' }}>BANANA! 🍌</div>
+                  <img src="/bob.png" alt="Bob" style={{ width:'100%', objectFit:'contain', display:'block' }} />
+                </div>
+                <div style={{ marginTop:10, textAlign:'center', animationName:'mnNameCard', animationDuration:'0.5s', animationDelay:'0.8s', animationFillMode:'both' }}>
+                  <div style={{ fontSize:'clamp(15px,2.8vw,22px)', fontWeight:900, color:'#ffdc00', letterSpacing:'0.14em' }}>BOB</div>
+                  <div style={{ fontSize:10, color:'rgba(255,220,0,0.5)', letterSpacing:'0.22em', marginTop:3 }}>THE BRAVE ONE</div>
+                </div>
+              </div>
+              {/* Stuart */}
+              <div style={{ flex:1, maxWidth:210, display:'flex', flexDirection:'column', alignItems:'center', animationName:'mnMinionRise', animationDuration:'0.85s', animationDelay:'0.45s', animationFillMode:'both', animationTimingFunction:'cubic-bezier(0.22,1,0.36,1)' }}>
+                <div style={{ position:'relative', width:'100%' }}>
+                  <div style={{ position:'absolute', top:-8, left:-16, background:'#fffde7', border:'2.5px solid #ffdc00', borderRadius:10, padding:'5px 10px', fontSize:12, fontWeight:700, color:'#3d2a00', whiteSpace:'nowrap', zIndex:3, animationName:'mnSpeechPop', animationDuration:'0.4s', animationDelay:'1.9s', animationFillMode:'both', boxShadow:'0 3px 10px rgba(0,0,0,0.35)' }}>Tulaliloo! 💛</div>
+                  <img src="/stuart.png" alt="Stuart" style={{ width:'100%', objectFit:'contain', display:'block' }} />
+                </div>
+                <div style={{ marginTop:10, textAlign:'center', animationName:'mnNameCard', animationDuration:'0.5s', animationDelay:'0.9s', animationFillMode:'both' }}>
+                  <div style={{ fontSize:'clamp(15px,2.8vw,22px)', fontWeight:900, color:'#ffdc00', letterSpacing:'0.14em' }}>STUART</div>
+                  <div style={{ fontSize:10, color:'rgba(255,220,0,0.5)', letterSpacing:'0.22em', marginTop:3 }}>THE COOL ONE</div>
+                </div>
+              </div>
+            </div>
+            {/* Crowd rises over them */}
+            <div style={{ position:'absolute', bottom:0, left:'50%', transform:'translateX(-50%)', width:'min(400px,72vw)', zIndex:3, animationName:'mnCrowdRise', animationDuration:'1s', animationDelay:'2.4s', animationFillMode:'both', animationTimingFunction:'cubic-bezier(0.22,1,0.36,1)' }}>
+              <img src="/minions_crowd.png" alt="The Crew" style={{ width:'100%', objectFit:'contain', display:'block' }} />
+            </div>
+            <button onClick={() => setMinionsPhase(4)} style={{ position:'absolute', bottom:22, right:22, background:'transparent', border:'1px solid rgba(255,220,0,0.18)', borderRadius:6, color:'rgba(255,220,0,0.32)', fontSize:11, padding:'5px 13px', cursor:'pointer', letterSpacing:'0.1em', zIndex:10 }}>skip →</button>
+          </div>
+        )}
+
+        {/* ── PHASE 3: THE LAIR ── */}
+        {minionsPhase === 3 && (
+          <div style={{ position:'fixed', inset:0, zIndex:200, background:'#050e1c', display:'flex', alignItems:'center', justifyContent:'center', animation:'mnFadeIn 0.8s ease both', overflow:'hidden' }}>
+            {/* Lair background zoom */}
+            <div style={{ position:'absolute', inset:0, backgroundImage:`url('/minions_lair.jpg')`, backgroundSize:'cover', backgroundPosition:'center', opacity:0.5, animationName:'mnLairZoom', animationDuration:'6s', animationFillMode:'both', animationTimingFunction:'ease-out' }} />
+            {/* Dark gradient */}
+            <div style={{ position:'absolute', inset:0, background:'linear-gradient(90deg,rgba(5,14,28,0.35) 0%,transparent 45%,rgba(5,14,28,0.6) 100%)' }} />
+            {/* Banana rain */}
+            {MINIONS_BANANAS.map(b => (
+              <div key={b.id} style={{ position:'absolute', top:0, left:`${b.left}%`, fontSize:`${b.size}px`, pointerEvents:'none', animationName:'mnBananFall', animationDuration:`${b.dur}s`, animationDelay:`${b.delay}s`, animationIterationCount:'infinite', animationTimingFunction:'linear' }}>🍌</div>
             ))}
-            <button onClick={() => { setMinionsPhase(4); if (!minionsAudioRef.current) { minionsAudioRef.current = new Audio('/ymca.mp3'); minionsAudioRef.current.loop = true } minionsAudioRef.current.play().catch(()=>{}) }} style={{ position:'absolute', bottom:22, right:22, background:'transparent', border:'1px solid rgba(255,220,0,0.2)', borderRadius:6, color:'rgba(255,220,0,0.35)', fontSize:11, padding:'5px 13px', cursor:'pointer', letterSpacing:'0.1em', zIndex:10 }}>skip →</button>
+            {/* Gru — left, large and proud */}
+            <div style={{ position:'absolute', bottom:0, left:'clamp(-10px,1vw,16px)', width:'clamp(150px,26vw,300px)', zIndex:3, animationName:'mnGruSlide', animationDuration:'1s', animationDelay:'0.4s', animationFillMode:'both', animationTimingFunction:'cubic-bezier(0.22,1,0.36,1)' }}>
+              <img src="/minions_gru.png" alt="Gru" style={{ width:'100%', objectFit:'contain', display:'block' }} />
+            </div>
+            {/* Text right side */}
+            <div style={{ position:'relative', zIndex:3, textAlign:'center', marginLeft:'28%', padding:'0 24px' }}>
+              <div style={{ fontSize:'clamp(34px,7.5vw,88px)', fontWeight:900, color:'#ffdc00', letterSpacing:'0.06em', animationName:'mnSlamIn', animationDuration:'0.65s', animationDelay:'0.9s', animationFillMode:'both', textShadow:'0 0 28px rgba(255,220,0,0.55), 0 4px 0 rgba(0,0,0,0.8)' }}>
+                LIGHTBULB.
+              </div>
+              <div style={{ marginTop:12, fontSize:15, color:'rgba(255,255,255,0.55)', letterSpacing:'0.18em', fontWeight:300, animationName:'mnFadeIn', animationDuration:'0.8s', animationDelay:'1.7s', animationFillMode:'both' }}>
+                "Tonight... the moon!"
+              </div>
+              {/* Crowd group — bottom of text block */}
+              <div style={{ marginTop:22, display:'flex', justifyContent:'center', animationName:'mnFadeIn', animationDuration:'0.9s', animationDelay:'2.2s', animationFillMode:'both' }}>
+                <img src="/minions_crowd.png" alt="Minions" style={{ width:'clamp(120px,20vw,220px)', objectFit:'contain' }} />
+              </div>
+            </div>
+            <button onClick={() => setMinionsPhase(4)} style={{ position:'absolute', bottom:22, right:22, background:'transparent', border:'1px solid rgba(255,220,0,0.18)', borderRadius:6, color:'rgba(255,220,0,0.32)', fontSize:11, padding:'5px 13px', cursor:'pointer', letterSpacing:'0.1em', zIndex:10 }}>skip →</button>
           </div>
         )}
 
         {/* ── PHASE 4: STEADY STATE ── */}
         {minionsPhase === 4 && (<>
-          {/* Gru background */}
-          <div style={{ position:'fixed', inset:0, backgroundImage:`url('/minions_gru.png')`, backgroundSize:'cover', backgroundPosition:'center top', opacity:0.18, zIndex:6, pointerEvents:'none' }} />
+          {/* Gru background — like Gargantua */}
+          <div style={{ position:'fixed', inset:0, backgroundImage:`url('/minions_gru.png')`, backgroundSize:'cover', backgroundPosition:'center top', opacity:0.2, zIndex:6, pointerEvents:'none' }} />
           {/* Vignette */}
-          <div style={{ position:'fixed', inset:0, background:'radial-gradient(ellipse at 50% 80%, transparent 30%, rgba(5,14,28,0.82) 100%)', zIndex:7, pointerEvents:'none' }} />
-          {/* Stray bananas */}
+          <div style={{ position:'fixed', inset:0, background:'radial-gradient(ellipse at 50% 70%, transparent 22%, rgba(5,12,22,0.86) 100%)', zIndex:7, pointerEvents:'none' }} />
+          {/* Sparse banana rain */}
           {MINIONS_BANANAS.filter((_,i) => i%3===0).map(b => (
-            <div key={b.id} style={{ position:'fixed', top:0, left:`${b.left}%`, fontSize:`${b.size}px`, zIndex:8, pointerEvents:'none', animationName:'mnBananFall', animationDuration:`${b.dur*1.4}s`, animationDelay:`${b.delay}s`, animationIterationCount:'infinite', animationTimingFunction:'linear' }}>🍌</div>
+            <div key={b.id} style={{ position:'fixed', top:0, left:`${b.left}%`, fontSize:`${b.size}px`, zIndex:8, pointerEvents:'none', animationName:'mnBananFall', animationDuration:`${b.dur*1.5}s`, animationDelay:`${b.delay}s`, animationIterationCount:'infinite', animationTimingFunction:'linear' }}>🍌</div>
           ))}
-          {/* Peeking Kevin left */}
-          <div style={{ position:'fixed', bottom:0, left:'2%', width:'min(110px,16vw)', zIndex:70, pointerEvents:'none', animationName:'mnPeek', animationDuration:'2.2s', animationIterationCount:'infinite', animationTimingFunction:'ease-in-out' }}>
+          {/* Kevin peeks left */}
+          <div style={{ position:'fixed', bottom:0, left:'1%', width:'min(108px,15vw)', zIndex:70, pointerEvents:'none', animationName:'mnPeek', animationDuration:'2.3s', animationIterationCount:'infinite', animationTimingFunction:'ease-in-out' }}>
             <img src="/kevin.png" alt="Kevin" style={{ width:'100%', objectFit:'contain', display:'block' }} />
           </div>
-          {/* Peeking Bob center */}
-          <div style={{ position:'fixed', bottom:0, left:'50%', transform:'translateX(-50%)', width:'min(90px,13vw)', zIndex:70, pointerEvents:'none', animationName:'mnPeek', animationDuration:'1.8s', animationDelay:'0.5s', animationIterationCount:'infinite', animationTimingFunction:'ease-in-out' }}>
+          {/* Bob peeks center */}
+          <div style={{ position:'fixed', bottom:0, left:'50%', transform:'translateX(-50%)', width:'min(84px,11vw)', zIndex:70, pointerEvents:'none', animationName:'mnPeek', animationDuration:'1.85s', animationDelay:'0.55s', animationIterationCount:'infinite', animationTimingFunction:'ease-in-out' }}>
             <img src="/bob.png" alt="Bob" style={{ width:'100%', objectFit:'contain', display:'block' }} />
           </div>
-          {/* Peeking Stuart right */}
-          <div style={{ position:'fixed', bottom:0, right:'2%', width:'min(100px,14vw)', zIndex:70, pointerEvents:'none', animationName:'mnPeek', animationDuration:'2s', animationDelay:'0.9s', animationIterationCount:'infinite', animationTimingFunction:'ease-in-out' }}>
+          {/* Stuart peeks right */}
+          <div style={{ position:'fixed', bottom:0, right:'1%', width:'min(96px,13vw)', zIndex:70, pointerEvents:'none', animationName:'mnPeek', animationDuration:'2.05s', animationDelay:'1.05s', animationIterationCount:'infinite', animationTimingFunction:'ease-in-out' }}>
             <img src="/stuart.png" alt="Stuart" style={{ width:'100%', objectFit:'contain', display:'block' }} />
           </div>
-          {/* Mission banner */}
+          {/* Crowd group photo — bottom corner */}
+          <div style={{ position:'fixed', bottom:78, right:12, width:'min(128px,17vw)', zIndex:69, pointerEvents:'none', opacity:0.88, animationName:'mnWiggle', animationDuration:'3.2s', animationIterationCount:'infinite', animationTimingFunction:'ease-in-out' }}>
+            <img src="/minions_crowd.png" alt="The Crew" style={{ width:'100%', objectFit:'contain', display:'block' }} />
+          </div>
+          {/* Banner */}
           <div style={{ position:'fixed', top:0, left:0, right:0, zIndex:1003, pointerEvents:'none', animationName:'mnBannerIn', animationDuration:'0.9s', animationFillMode:'both' }}>
-            <div style={{ background:'linear-gradient(90deg,rgba(10,20,50,0.97),rgba(15,30,70,0.97))', borderBottom:'2px solid rgba(255,220,0,0.3)', padding:'7px 20px', display:'flex', alignItems:'center', justifyContent:'center', flexWrap:'wrap', gap:'10px 16px' }}>
-              <span style={{ fontSize:10, fontWeight:700, color:'#ffdc00', letterSpacing:'0.28em' }}>🦅 GRU'S SECRET LAIR</span>
-              <span style={{ fontSize:10, color:'rgba(255,220,0,0.3)' }}>│</span>
+            <div style={{ background:'linear-gradient(90deg,rgba(8,14,28,0.97),rgba(12,20,45,0.97))', borderBottom:'2px solid rgba(255,220,0,0.32)', padding:'7px 20px', display:'flex', alignItems:'center', justifyContent:'center', flexWrap:'wrap', gap:'10px 16px' }}>
+              <span style={{ fontSize:10, fontWeight:700, color:'#ffdc00', letterSpacing:'0.28em' }}>🍌 GRU'S SECRET LAIR</span>
+              <span style={{ fontSize:10, color:'rgba(255,220,0,0.28)' }}>│</span>
               <span style={{ fontSize:10, color:'rgba(255,220,0,0.7)', letterSpacing:'0.14em' }}>DEPTH: 3,000m</span>
-              <span style={{ fontSize:10, color:'rgba(255,220,0,0.3)' }}>│</span>
+              <span style={{ fontSize:10, color:'rgba(255,220,0,0.28)' }}>│</span>
               <span style={{ fontSize:10, color:'rgba(255,220,0,0.85)', letterSpacing:'0.14em' }}>VECTOR IS NOT A THREAT</span>
-              <span style={{ fontSize:10, color:'rgba(255,220,0,0.3)' }}>│</span>
+              <span style={{ fontSize:10, color:'rgba(255,220,0,0.28)' }}>│</span>
               <span style={{ fontSize:10, color:'rgba(255,220,0,0.6)', letterSpacing:'0.1em' }}>ANTARCTICA BASE: ACTIVE</span>
             </div>
           </div>
           {/* Quote carousel */}
           <div key={minionsQuoteIdx} style={{ position:'fixed', bottom:65, left:'50%', transform:'translateX(-50%)', zIndex:1003, pointerEvents:'none', animationName:'mnQuoteIn', animationDuration:'0.7s', animationFillMode:'both', maxWidth:'min(480px,86vw)', textAlign:'center' }}>
-            <div style={{ fontSize:13, color:'rgba(255,230,80,0.8)', fontStyle:'italic', letterSpacing:'0.04em', lineHeight:1.6 }}>
+            <div style={{ fontSize:13, color:'rgba(255,230,80,0.8)', fontStyle:'italic', letterSpacing:'0.04em', lineHeight:1.65 }}>
               {MINIONS_QUOTES[minionsQuoteIdx]}
             </div>
           </div>
-          {/* Minion count */}
+          {/* Stats */}
           <div style={{ position:'fixed', bottom:20, right:18, zIndex:1003, pointerEvents:'none', animationName:'mnFadeIn', animationDuration:'2s', animationFillMode:'both' }}>
-            <div style={{ fontSize:9, color:'rgba(255,220,0,0.4)', fontFamily:'monospace', letterSpacing:'0.16em', textAlign:'right', lineHeight:2 }}>
+            <div style={{ fontSize:9, color:'rgba(255,220,0,0.38)', fontFamily:'monospace', letterSpacing:'0.16em', textAlign:'right', lineHeight:2 }}>
               MINIONS ON DUTY: 10,400<br/>
               BANANAS CONSUMED: ∞<br/>
               VILLAIN RATING: DESPICABLE
