@@ -9,6 +9,33 @@ const IMG_SKI_BEACH = "/ski-beach.jpg"
 const IMG_SKI       = "/ski-trip.jpg"
 const IMG_SPORTS    = "/sports-trip.jpg"
 
+const IS_QUOTES = [
+  '"Do not go gentle into that good night." — Dylan Thomas',
+  '"Love is the one thing that transcends time and space." — Brand',
+  '"We used to look up at the sky and wonder at our place in the stars."',
+  '"Mankind was born on Earth. It was never meant to die here."',
+  'TARS: Humor setting 75%. Confirmed.',
+  '"Every hour on Miller\'s Planet = 7 years on Earth." — TARS',
+  '"We\'re not meant to save the world. We\'re meant to leave it."',
+  '"Cooper... they\'re not beings, they\'re us." — Brand',
+  '"Gravity is the only thing that transcends dimensions."',
+  '"Time to make some memories, Murph." — Pack Perfect',
+]
+const IS_STARS = Array.from({length:130}, (_, i) => ({
+  id:i, x:(i*7.3+2.1)%100, y:(i*5.9+1.7)%100,
+  size:i%6===0?2.5:i%3===0?1.5:1, opacity:0.25+(i%7)*0.08,
+  dur:1.5+(i*0.27)%3.5, delay:(i*0.19)%5,
+}))
+const IS_DUST = Array.from({length:20}, (_, i) => ({
+  id:i, x:15+(i*8.3)%70, delay:(i*0.41)%4, dur:2.5+(i*0.31)%2.5, dx:-20+(i*6)%40,
+}))
+const IS_BOOKS = Array.from({length:27}, (_, i) => ({
+  id:i, w:20+(i*7)%16, h:100+(i*13)%70,
+  color:['#8B4513','#A0522D','#6B3A2A','#5C4033','#4A3728','#7B5E3A','#9C6644','#3D2B1F','#6E4C30','#B8860B','#8B6914','#5F4020','#A67C52','#7D5A3C','#C19A6B'][i%15],
+  shelf:Math.floor(i/9), pushed:[1,4,7,9,12,15,18,21,24].includes(i),
+  pushDelay:(i*0.29)%2.5, pushDur:0.7+(i*0.13)%0.8,
+}))
+
 const KJ_QUOTES = [
   "I like to move it, move it! 🕺",
   "I AM the king! Everyone bow down! 👑",
@@ -434,6 +461,8 @@ const DESTINATIONS = [...new Set([
   'Dahab, Egypt','Siwa Oasis, Egypt','El Gouna, Egypt',
   // Central Asia extras
   'Khiva, Uzbekistan','Bukhara, Uzbekistan',
+  // Easter eggs
+  'Miller\'s Planet',
 ])]
 
 const SUITCASES = [
@@ -581,6 +610,7 @@ function getVisualImage(climate, tripType) {
 function suggestTripTypes(climate, dest = '') {
   const base = ['Leisure','Business','Beach','Adventure','Family','Backpacking','Skiing','Sports Tournament']
   if (/minsk.*belarus/i.test(dest)) base.push('Dance')
+  if (/miller.{0,5}planet/i.test(dest)) base.push('Space Exploration')
   return base
 }
 
@@ -1163,6 +1193,9 @@ export default function PackPerfect() {
   const kjAudioRef = useRef(null)
   const [kjState, setKjState] = useState({ x: 200, y: 200, rot: 0, flip: false, sx: 1, sy: 1 })
   const [kjQuoteIdx, setKjQuoteIdx] = useState(0)
+  const [isPhase, setIsPhase] = useState(0)
+  const isAudioRef = useRef(null)
+  const [isQuoteIdx, setIsQuoteIdx] = useState(0)
 
   const handleStatClick = (idx) => {
     if (statTransitionRef.current) clearTimeout(statTransitionRef.current)
@@ -1224,6 +1257,7 @@ export default function PackPerfect() {
   }, [heroVisible])
 
   const kingJulienMode = /king julien.*madagascar/i.test(destination)
+  const interstellarMode = /miller.{0,5}planet/i.test(destination)
 
   useEffect(() => {
     if (!kingJulienMode) {
@@ -1278,6 +1312,27 @@ export default function PackPerfect() {
       }
     }
   }, [kingJulienMode])
+
+  useEffect(() => {
+    if (!interstellarMode) {
+      setIsPhase(0); setIsQuoteIdx(0)
+      if (isAudioRef.current) { isAudioRef.current.pause(); isAudioRef.current.currentTime = 0 }
+      return
+    }
+    setIsPhase(1)
+    if (!isAudioRef.current) { isAudioRef.current = new Audio('/cornfield_chase.mp3'); isAudioRef.current.loop = true }
+    isAudioRef.current.play().catch(() => {})
+    const t1 = setTimeout(() => setIsPhase(2), 5500)
+    const t2 = setTimeout(() => setIsPhase(3), 12000)
+    const t3 = setTimeout(() => setIsPhase(4), 18500)
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3) }
+  }, [interstellarMode])
+
+  useEffect(() => {
+    if (isPhase !== 4) return
+    const iv = setInterval(() => setIsQuoteIdx(i => (i + 1) % IS_QUOTES.length), 6000)
+    return () => clearInterval(iv)
+  }, [isPhase])
 
   const toggleDark = () => { const v = !dark; setDark(v); try{ localStorage.setItem('pp_dark', v ? '1' : '0') }catch(e){} }
   const saveProfile = (updates) => { const u = { ...profile, ...updates }; setProfile(u); try{ localStorage.setItem('pp_profile', JSON.stringify(u)) }catch(e){} }
@@ -1744,6 +1799,22 @@ export default function PackPerfect() {
     .dot-pulse span:nth-child(1){animation:pulse-dot 1.2s ease-in-out 0s infinite}
     .dot-pulse span:nth-child(2){animation:pulse-dot 1.2s ease-in-out 0.2s infinite}
     .dot-pulse span:nth-child(3){animation:pulse-dot 1.2s ease-in-out 0.4s infinite}
+    @keyframes isStarTwinkle { 0%,100%{opacity:0.2;transform:scale(1)} 50%{opacity:1;transform:scale(1.8)} }
+    @keyframes isStayIn { 0%{opacity:0;letter-spacing:1.5em;filter:blur(12px)} 100%{opacity:1;letter-spacing:0.35em;filter:blur(0)} }
+    @keyframes isMorseFlicker { 0%,100%{opacity:0.15} 48%{opacity:1} 52%{opacity:1} }
+    @keyframes isDustDrift { 0%{transform:translateY(0) translateX(0);opacity:0.8} 100%{transform:translateY(220px) translateX(var(--is-dx,0px));opacity:0} }
+    @keyframes isBookPush { 0%,100%{transform:translateZ(0) translateY(0)} 35%,65%{transform:translateZ(50px) translateY(-6px)} }
+    @keyframes isCubeOuter { from{transform:rotateX(22deg) rotateY(0deg)} to{transform:rotateX(22deg) rotateY(360deg)} }
+    @keyframes isCubeInner { from{transform:rotateX(-18deg) rotateY(0deg)} to{transform:rotateX(-18deg) rotateY(-360deg)} }
+    @keyframes isGlow { 0%,100%{text-shadow:0 0 18px rgba(120,200,255,0.6),0 0 36px rgba(120,200,255,0.2)} 50%{text-shadow:0 0 36px rgba(120,200,255,1),0 0 72px rgba(120,200,255,0.55),0 0 120px rgba(120,200,255,0.2)} }
+    @keyframes isOrbGlow { 0%,100%{box-shadow:0 0 40px 20px rgba(255,165,30,0.22),0 0 80px 40px rgba(255,165,30,0.10)} 50%{box-shadow:0 0 70px 35px rgba(255,165,30,0.42),0 0 130px 65px rgba(255,165,30,0.20)} }
+    @keyframes isBannerSlide { from{transform:translateY(-110%);opacity:0} to{transform:translateY(0);opacity:1} }
+    @keyframes isFadeIn { from{opacity:0} to{opacity:1} }
+    @keyframes isQuoteIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes isTimerTick { 0%,100%{color:rgba(120,200,255,0.75)} 50%{color:rgba(255,210,80,0.95)} }
+    @keyframes isOverlayOut { from{opacity:1} to{opacity:0;pointer-events:none} }
+    @keyframes isScanline { 0%{transform:translateY(-100%)} 100%{transform:translateY(100vh)} }
+    @keyframes isCenterPulse { 0%,100%{transform:scale(1);opacity:0.6} 50%{transform:scale(1.5);opacity:1} }
     @keyframes kjConfettiFall { 0%{transform:translateY(-30px) rotate(0deg) scale(1);opacity:1} 100%{transform:translateY(110vh) rotate(900deg) scale(0.75);opacity:0.5} }
     @keyframes kjBanner { from{transform:translateY(-110%);opacity:0} to{transform:translateY(0);opacity:1} }
     @keyframes kjBgPulse { 0%,100%{background:rgba(126,34,206,0.10)} 33%{background:rgba(21,128,61,0.08)} 66%{background:rgba(180,83,9,0.09)} }
@@ -1774,7 +1845,7 @@ export default function PackPerfect() {
   `
 
   return (
-    <div style={{ fontFamily:"'Sora',sans-serif", minHeight:'100vh', background: kingJulienMode ? 'linear-gradient(135deg,#1a0533 0%,#0a2010 50%,#2d1000 100%)' : t.bg, color: kingJulienMode ? '#fef9e7' : t.text }}>
+    <div style={{ fontFamily:"'Sora',sans-serif", minHeight:'100vh', background: kingJulienMode ? 'linear-gradient(135deg,#1a0533 0%,#0a2010 50%,#2d1000 100%)' : interstellarMode ? '#000510' : t.bg, color: kingJulienMode ? '#fef9e7' : interstellarMode ? '#c8d8e8' : t.text }}>
       <style>{CSS}</style>
 
       {/* KING JULIEN EASTER EGG */}
@@ -1808,6 +1879,150 @@ export default function PackPerfect() {
             👑&nbsp; Welcome to MY kingdom! I like to MOVE IT MOVE IT! 🕺🎶&nbsp; 👑
           </div>
         </div>
+      </>)}
+
+      {/* ── INTERSTELLAR EASTER EGG ── */}
+      {interstellarMode && isPhase > 0 && (<>
+
+        {/* Stars — always visible */}
+        {IS_STARS.map(s => (
+          <div key={s.id} style={{ position:'fixed', left:`${s.x}%`, top:`${s.y}%`, width:`${s.size}px`, height:`${s.size}px`, borderRadius:'50%', background:'#fff', zIndex:7, pointerEvents:'none', animationName:'isStarTwinkle', animationDuration:`${s.dur}s`, animationDelay:`${s.delay}s`, animationIterationCount:'infinite', animationTimingFunction:'ease-in-out' }} />
+        ))}
+
+        {/* ── PHASE 1: STAY ── */}
+        {isPhase === 1 && (
+          <div style={{ position:'fixed', inset:0, background:'#000', zIndex:200, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', animation:'isFadeIn 1.2s ease both' }}>
+            {/* Scanline effect */}
+            <div style={{ position:'absolute', inset:0, background:'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 4px)', pointerEvents:'none', zIndex:1 }} />
+            {/* Morse code */}
+            <div style={{ fontFamily:'monospace', fontSize:12, color:'rgba(255,255,255,0.3)', letterSpacing:'0.35em', marginBottom:48, animationName:'isMorseFlicker', animationDuration:'0.9s', animationIterationCount:'infinite', zIndex:2 }}>
+              &bull;&nbsp;&bull;&nbsp;&bull;&nbsp;&nbsp;&nbsp;—&nbsp;&nbsp;&nbsp;&bull;&nbsp;—&nbsp;&nbsp;&nbsp;—&nbsp;&bull;&nbsp;—&nbsp;—
+            </div>
+            {/* STAY */}
+            <div style={{ fontSize:'clamp(64px,12vw,128px)', fontWeight:200, color:'#fff', fontFamily:"'Sora',sans-serif", letterSpacing:'0.35em', animationName:'isStayIn', animationDuration:'2.2s', animationDelay:'0.4s', animationFillMode:'both', animationTimingFunction:'cubic-bezier(0.22,1,0.36,1)', zIndex:2 }}>
+              STAY
+            </div>
+            {/* Subtitle */}
+            <div style={{ marginTop:28, fontSize:14, color:'rgba(255,255,255,0.4)', fontWeight:300, letterSpacing:'0.2em', animationName:'isFadeIn', animationDuration:'1.5s', animationDelay:'2.2s', animationFillMode:'both', zIndex:2 }}>
+              Don't let me leave, Murph.
+            </div>
+            {/* Dust motes */}
+            {IS_DUST.map(d => (
+              <div key={d.id} style={{ position:'absolute', left:`${d.x}%`, top:'8%', width:'2px', height:'2px', borderRadius:'50%', background:'rgba(255,195,130,0.65)', pointerEvents:'none', zIndex:3, animationName:'isDustDrift', animationDuration:`${d.dur}s`, animationDelay:`${d.delay}s`, animationIterationCount:'infinite', animationTimingFunction:'linear', '--is-dx':`${d.dx}px` }} />
+            ))}
+            <button onClick={() => setIsPhase(4)} style={{ position:'absolute', bottom:22, right:22, background:'transparent', border:'1px solid rgba(255,255,255,0.15)', borderRadius:6, color:'rgba(255,255,255,0.3)', fontSize:11, padding:'5px 13px', cursor:'pointer', letterSpacing:'0.12em', zIndex:4 }}>skip →</button>
+          </div>
+        )}
+
+        {/* ── PHASE 2: BOOKSHELF ── */}
+        {isPhase === 2 && (
+          <div style={{ position:'fixed', inset:0, background:'#0c0800', zIndex:200, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', animation:'isFadeIn 1s ease both', overflow:'hidden' }}>
+            {/* Gargantua faint bg */}
+            <div style={{ position:'absolute', inset:0, backgroundImage:`url('/interstellar.png')`, backgroundSize:'cover', backgroundPosition:'center', opacity:0.06, zIndex:0 }} />
+            {/* Ambient floor gradient */}
+            <div style={{ position:'absolute', bottom:0, left:0, right:0, height:'40%', background:'linear-gradient(to top,#1c0f04,transparent)', zIndex:1 }} />
+            {/* Label */}
+            <div style={{ fontSize:10, color:'rgba(255,195,100,0.45)', letterSpacing:'0.35em', textTransform:'uppercase', marginBottom:18, zIndex:2, animationName:'isFadeIn', animationDuration:'1s', animationFillMode:'both' }}>
+              The books are a message. Read them.
+            </div>
+            {/* 3 shelves */}
+            <div style={{ position:'relative', zIndex:2, width:'min(720px,92vw)', perspective:'500px', perspectiveOrigin:'50% 200%' }}>
+              {[0,1,2].map(shelf => (
+                <div key={shelf} style={{ display:'flex', alignItems:'flex-end', justifyContent:'center', gap:3, marginBottom:6, borderBottom:`3px solid #3d2610`, paddingBottom:3 }}>
+                  {IS_BOOKS.filter(b => b.shelf === shelf).map(book => (
+                    <div key={book.id} style={{ width:book.w, height:book.h, background:book.color, borderRadius:'1px 3px 3px 1px', transformStyle:'preserve-3d', animationName:book.pushed?'isBookPush':'none', animationDuration:`${book.pushDur}s`, animationDelay:`${book.pushDelay + shelf * 0.9}s`, animationIterationCount:'infinite', animationTimingFunction:'ease-in-out', boxShadow:'inset -3px 0 6px rgba(0,0,0,0.3),2px 0 5px rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                      {book.pushed && <div style={{ width:2, height:'55%', background:'rgba(255,195,80,0.35)', borderRadius:1 }} />}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+            {/* STAY in dust */}
+            <div style={{ marginTop:22, fontSize:26, fontWeight:200, letterSpacing:'0.7em', color:'rgba(255,195,80,0.5)', animationName:'isMorseFlicker', animationDuration:'3.5s', animationIterationCount:'infinite', zIndex:2 }}>
+              S T A Y
+            </div>
+            {/* Dust */}
+            {IS_DUST.map(d => (
+              <div key={d.id} style={{ position:'absolute', left:`${d.x}%`, top:'5%', width:'1.5px', height:'1.5px', borderRadius:'50%', background:'rgba(255,195,120,0.45)', pointerEvents:'none', zIndex:3, animationName:'isDustDrift', animationDuration:`${d.dur*1.6}s`, animationDelay:`${d.delay}s`, animationIterationCount:'infinite', animationTimingFunction:'linear', '--is-dx':`${d.dx}px` }} />
+            ))}
+            <button onClick={() => setIsPhase(4)} style={{ position:'absolute', bottom:22, right:22, background:'transparent', border:'1px solid rgba(255,195,80,0.15)', borderRadius:6, color:'rgba(255,195,80,0.35)', fontSize:11, padding:'5px 13px', cursor:'pointer', letterSpacing:'0.12em', zIndex:4 }}>skip →</button>
+          </div>
+        )}
+
+        {/* ── PHASE 3: TESSERACT ── */}
+        {isPhase === 3 && (
+          <div style={{ position:'fixed', inset:0, background:'#00001c', zIndex:200, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', animation:'isFadeIn 1s ease both', overflow:'hidden' }}>
+            {/* Radiating spokes from center */}
+            {Array.from({length:16}, (_, i) => (
+              <div key={i} style={{ position:'absolute', left:'50%', top:'50%', width:'55vmax', height:'1px', background:`linear-gradient(to right, rgba(100,200,255,${i%2===0?0.35:0.18}), transparent)`, transformOrigin:'0 50%', transform:`rotate(${i*22.5}deg)`, pointerEvents:'none' }} />
+            ))}
+            {/* interstellar.png faint in bg */}
+            <div style={{ position:'absolute', inset:0, backgroundImage:`url('/interstellar.png')`, backgroundSize:'cover', backgroundPosition:'center', opacity:0.12, zIndex:0 }} />
+            {/* Tesseract */}
+            <div style={{ perspective:'700px', zIndex:2 }}>
+              <div style={{ width:200, height:200, position:'relative', transformStyle:'preserve-3d', animationName:'isCubeOuter', animationDuration:'14s', animationTimingFunction:'linear', animationIterationCount:'infinite' }}>
+                {/* Outer cube faces */}
+                {['translateZ(100px)','rotateY(180deg) translateZ(100px)','rotateY(90deg) translateZ(100px)','rotateY(-90deg) translateZ(100px)','rotateX(90deg) translateZ(100px)','rotateX(-90deg) translateZ(100px)'].map((tf,i) => (
+                  <div key={`o${i}`} style={{ position:'absolute', width:200, height:200, border:`1.5px solid rgba(${i<2?'100,200,255':'160,130,255'},0.45)`, background:'rgba(0,10,40,0.04)', transform:tf }} />
+                ))}
+                {/* Inner cube */}
+                <div style={{ position:'absolute', width:100, height:100, top:50, left:50, transformStyle:'preserve-3d', animationName:'isCubeInner', animationDuration:'9s', animationTimingFunction:'linear', animationIterationCount:'infinite' }}>
+                  {['translateZ(50px)','rotateY(180deg) translateZ(50px)','rotateY(90deg) translateZ(50px)','rotateY(-90deg) translateZ(50px)','rotateX(90deg) translateZ(50px)','rotateX(-90deg) translateZ(50px)'].map((tf,i) => (
+                    <div key={`n${i}`} style={{ position:'absolute', width:100, height:100, border:`1.5px solid rgba(200,150,255,0.55)`, background:'rgba(20,0,50,0.04)', transform:tf }} />
+                  ))}
+                  {/* Center point */}
+                  <div style={{ position:'absolute', width:14, height:14, top:43, left:43, borderRadius:'50%', background:'rgba(180,140,255,0.9)', boxShadow:'0 0 20px rgba(180,140,255,1), 0 0 50px rgba(100,200,255,0.6)', animationName:'isCenterPulse', animationDuration:'2s', animationIterationCount:'infinite' }} />
+                </div>
+              </div>
+            </div>
+            {/* Quote */}
+            <div style={{ marginTop:44, fontSize:13, color:'rgba(120,200,255,0.85)', letterSpacing:'0.18em', textAlign:'center', maxWidth:380, lineHeight:1.75, animationName:'isGlow', animationDuration:'3s', animationIterationCount:'infinite', zIndex:2, padding:'0 20px' }}>
+              LOVE IS THE ONE THING THAT TRANSCENDS TIME AND SPACE
+            </div>
+            {/* Gravity equation */}
+            <div style={{ marginTop:14, fontFamily:'monospace', fontSize:11, color:'rgba(120,200,255,0.35)', letterSpacing:'0.08em', zIndex:2 }}>
+              G&#x03BC;&#x03BD; + &#x039B;g&#x03BC;&#x03BD; = 8&#x03C0;G/c&#x2074; T&#x03BC;&#x03BD;
+            </div>
+            <button onClick={() => setIsPhase(4)} style={{ position:'absolute', bottom:22, right:22, background:'transparent', border:'1px solid rgba(100,200,255,0.15)', borderRadius:6, color:'rgba(100,200,255,0.35)', fontSize:11, padding:'5px 13px', cursor:'pointer', letterSpacing:'0.12em', zIndex:4 }}>skip →</button>
+          </div>
+        )}
+
+        {/* ── PHASE 4: STEADY STATE ── */}
+        {isPhase === 4 && (<>
+          {/* Gargantua background */}
+          <div style={{ position:'fixed', inset:0, backgroundImage:`url('/interstellar.png')`, backgroundSize:'cover', backgroundPosition:'center', opacity:0.2, zIndex:6, pointerEvents:'none' }} />
+          {/* Vignette */}
+          <div style={{ position:'fixed', inset:0, background:'radial-gradient(ellipse at 60% 50%, transparent 25%, rgba(0,1,8,0.78) 100%)', zIndex:8, pointerEvents:'none' }} />
+          {/* Mission banner */}
+          <div style={{ position:'fixed', top:0, left:0, right:0, zIndex:1003, pointerEvents:'none', animationName:'isBannerSlide', animationDuration:'1s', animationFillMode:'both' }}>
+            <div style={{ background:'linear-gradient(90deg,rgba(0,5,20,0.97),rgba(0,10,35,0.97))', borderBottom:'1px solid rgba(100,200,255,0.2)', padding:'7px 20px', display:'flex', alignItems:'center', justifyContent:'center', flexWrap:'wrap', gap:'10px 16px' }}>
+              <span style={{ fontSize:10, fontWeight:700, color:'rgba(100,200,255,0.95)', letterSpacing:'0.28em' }}>🌌 MILLER'S PLANET</span>
+              <span style={{ fontSize:10, color:'rgba(100,200,255,0.3)' }}>│</span>
+              <span style={{ fontSize:10, color:'rgba(100,200,255,0.7)', letterSpacing:'0.14em' }}>GARGANTUA SYSTEM</span>
+              <span style={{ fontSize:10, color:'rgba(100,200,255,0.3)' }}>│</span>
+              <span style={{ fontSize:10, color:'rgba(255,210,70,0.85)', letterSpacing:'0.14em', animationName:'isTimerTick', animationDuration:'3s', animationIterationCount:'infinite' }}>Δt: 1 HR ≈ 7 EARTH YEARS</span>
+              <span style={{ fontSize:10, color:'rgba(100,200,255,0.3)' }}>│</span>
+              <span style={{ fontSize:10, color:'rgba(100,200,255,0.55)', letterSpacing:'0.1em' }}>ENDURANCE MISSION: ACTIVE</span>
+            </div>
+          </div>
+          {/* Quote carousel */}
+          <div key={isQuoteIdx} style={{ position:'fixed', bottom:65, left:'50%', transform:'translateX(-50%)', zIndex:1003, pointerEvents:'none', animationName:'isQuoteIn', animationDuration:'0.9s', animationFillMode:'both', maxWidth:'min(520px,88vw)', textAlign:'center' }}>
+            <div style={{ fontSize:13, color:'rgba(150,215,255,0.72)', fontStyle:'italic', letterSpacing:'0.04em', lineHeight:1.65 }}>
+              {IS_QUOTES[isQuoteIdx]}
+            </div>
+          </div>
+          {/* TARS status */}
+          <div style={{ position:'fixed', bottom:18, right:18, zIndex:1003, pointerEvents:'none', animationName:'isFadeIn', animationDuration:'2s', animationFillMode:'both' }}>
+            <div style={{ fontSize:9, color:'rgba(100,200,255,0.45)', fontFamily:'monospace', letterSpacing:'0.16em', textAlign:'right', lineHeight:2 }}>
+              TARS: OPERATIONAL<br/>
+              HONESTY: 90%&nbsp;│&nbsp;HUMOR: 75%<br/>
+              PACK ASSIST: ACTIVE
+            </div>
+          </div>
+          {/* Wormhole ring - decorative corner */}
+          <div style={{ position:'fixed', bottom:'-60px', left:'-60px', width:220, height:220, borderRadius:'50%', border:'2px solid rgba(100,200,255,0.12)', boxShadow:'0 0 40px rgba(100,200,255,0.08)', zIndex:6, pointerEvents:'none', animationName:'isOrbGlow', animationDuration:'5s', animationIterationCount:'infinite' }} />
+        </>)}
+
       </>)}
 
       {/* FULLSCREEN AD */}
