@@ -1156,7 +1156,7 @@ function mergePremiumItems(allItemSets) {
 
 export default function PackPerfect() {
   const [dark, setDark] = useState(false)
-  const [judeFirst] = useState(() => Math.random() < 0.5)
+
   const TABS = ['Packing List','Visual Aid','AI Assistant','Profile','About']
   const [activeTab, setActiveTab] = useState('Packing List')
 
@@ -3895,15 +3895,8 @@ export default function PackPerfect() {
                     { name: 'Hannah Friedmann', role: 'CEO', desc: 'Vision, product strategy, and leadership' },
                     { name: 'Noah Cepler', role: 'CFO', desc: 'Financial planning and business strategy' },
                     { name: 'Alana Borkon', role: 'COO', desc: 'Operations and team management' },
-                    ...(judeFirst
-                      ? [
-                          { name: 'Jude Rock', role: 'CTO', desc: 'Designing, presentations, and innovation' },
-                          { name: 'Ben Zarkin', role: 'CMO', desc: 'Marketing, branding, and user growth' },
-                        ]
-                      : [
-                          { name: 'Ben Zarkin', role: 'CMO', desc: 'Marketing, branding, and user growth' },
-                          { name: 'Jude Rock', role: 'CTO', desc: 'Designing, presentations, and innovation' },
-                        ]),
+                    { name: 'Jude Rock', role: 'CTO', desc: 'Designing, presentations, and innovation' },
+                    { name: 'Ben Zarkin', role: 'CMO', desc: 'Marketing, branding, and user growth' },
                   ].map(({ name, role, desc }) => (
                     <div key={name} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
                       <span style={{ minWidth: '44px', fontSize: '11px', fontWeight: '700', color: t.accent, background: dark ? 'rgba(99,102,241,0.15)' : 'rgba(99,102,241,0.1)', borderRadius: '6px', padding: '3px 6px', textAlign: 'center', marginTop: '1px' }}>{role}</span>
