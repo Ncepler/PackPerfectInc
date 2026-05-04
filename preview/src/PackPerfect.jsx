@@ -2725,10 +2725,10 @@ export default function PackPerfect() {
 
           {/* Scrat chasing acorn */}
           <div className="ia-acorn-glow" style={{ position:'fixed', left:scratState.ax, top:scratState.ay, width:180, height:180, zIndex:75, pointerEvents:'none', transform:`scaleX(${scratState.flip ? -1 : 1})`, willChange:'transform' }}>
-            <img src="/acorn.png" alt="acorn" style={{ width:'100%', height:'100%', objectFit:'contain' }} onError={e => { e.currentTarget.style.display='none'; e.currentTarget.parentElement.innerHTML='🌰' }} />
+            <img src="/acorn.jpg" alt="acorn" style={{ width:'100%', height:'100%', objectFit:'contain' }} />
           </div>
           <div className="ia-scrat" style={{ position:'fixed', left:scratState.sx - 30, top:scratState.sy - 30, width:260, height:260, zIndex:74, pointerEvents:'none', transform:`scaleX(${scratState.ax < scratState.sx ? -1 : 1})`, willChange:'transform' }}>
-            <img src="/scrat.png" alt="Scrat" style={{ width:'100%', height:'100%', objectFit:'contain' }} onError={e => { e.currentTarget.style.display='none'; e.currentTarget.parentElement.innerHTML='🐿️' }} />
+            <img src="/scrat.jpg" alt="Scrat" style={{ width:'100%', height:'100%', objectFit:'contain' }} />
           </div>
 
           {/* Ice age banner at top */}
