@@ -36,6 +36,30 @@ const IS_BOOKS = Array.from({length:27}, (_, i) => ({
   pushDelay:(i*0.29)%2.5, pushDur:0.7+(i*0.13)%0.8,
 }))
 
+const ICE_AGE_QUOTES = [
+  '"MY ACORN!" — Scrat',
+  '"Why am I always the one who gets left behind?!" — Sid',
+  '"We\'re a herd. That\'s what herds do." — Manny',
+  '"Actually... I think we can do this." — Diego',
+  '"For the acorn!!!" — Scrat',
+  '"You know what? Keep it. I don\'t want it anyway." — Sid (lying)',
+  '"Nobody touches the fur. NOBODY." — Manny',
+  '"How do you always find something to eat in the middle of an ice age?" — Diego',
+  '"Ice Age packing tip: thermal layers. All of them. Every single one." — Pack Perfect',
+  '"THWACK!" — Acorn hitting Scrat',
+]
+const ICE_SNOWFLAKES = Array.from({length:45}, (_, i) => ({
+  id:i, left:(i*2.27+1.1)%100, delay:(i*0.33)%7, dur:5+(i*0.51)%6,
+  size:8+(i*3)%18, opacity:0.35+(i%6)*0.1, drift:(i%2===0?1:-1)*(5+(i*2.3)%15),
+}))
+const ICE_CRACKS = Array.from({length:6}, (_, i) => ({
+  id:i, x:47+(i*1.2-3), angle:-25+(i*12), len:60+(i*18)%80, w:1+(i%3)*0.7,
+}))
+const ICE_CHUNKS = Array.from({length:12}, (_, i) => ({
+  id:i, x:(i*8.4+2)%96, y:(i*7.1+5)%60, size:30+(i*11)%60,
+  angle:(i*31)%360, opacity:0.15+(i%4)*0.07,
+}))
+
 const BORAT_QUOTES = [
   '"Very nice! How much?" — Borat',
   '"Wawaweewa!" — Borat',
@@ -510,6 +534,10 @@ const DESTINATIONS = [...new Set([
   'Miller\'s Planet',
   'Gru\'s Lair, Antarctica',
   'Kuzcek, Kazakhstan',
+  'Antarctica',
+  'South Pole, Antarctica',
+  'McMurdo Station, Antarctica',
+  'Ice Age, Antarctica',
 ])]
 
 const SUITCASES = [
@@ -628,7 +656,7 @@ const SUITCASE_BRANDS = [...new Set(SUITCASES.map(s => s.brand))]
 function classifyClimate(dest) {
   const d = dest.toLowerCase()
   if (/miami|bali|bangkok|phuket|cancun|maldives|hawaii|honolulu|koh samui|singapore|jamaica|barbados|bahamas|fiji|tahiti|bora bora|seychelles|mauritius|zanzibar|punta cana|tulum|playa|key west|da nang|hoi an|goa|cartagena|cairns|darwin|gold coast|panama|costa rica|cebu|colombo|rio|sao paulo|rio de janeiro|guatemala|antigua|lake atitlan|tikal|belize|roatan|manuel antonio|galapagos|mombasa|accra|lagos|dakar|florianopolis|salvador|fortaleza|okinawa|langkawi|lombok|boracay|palawan|luang prabang|vientiane|mandalay|krabi|koh|maui|lahaina|hilo|kauai|nadi|vanuatu|port vila|papeete|reunion|ho chi minh|hanoi|ha long|phnom penh|yangon|guangzhou|shenzhen|xiamen|haikou|sanya|manila|jakarta|kuala lumpur|penang|yangon|colombo|mumbai|chennai|kochi|pondicherry|male|addu|dili|honiara|suva|apia|port moresby|kinshasa|libreville|douala|kampala|entebbe|kigali|nairobi|mombasa|dar es salaam|addis ababa|accra|kumasi|abidjan|dakar|conakry|freetown|monrovia|abuja|lagos|kano|ibadan|lome|cotonou|port-au-prince|havana|varadero|caracas|maracaibo|belem|manaus|fortaleza|recife|natal|maceio/.test(d)) return 'tropical'
-  if (/aspen|vail|park city|jackson hole|whistler|queenstown|bozeman|banff|zurich|geneva|reykjavik|oslo|stockholm|helsinki|anchorage|montreal|tallinn|sapporo|patagonia|torres del paine|bariloche|ushuaia|fairbanks|juneau|sitka|glacier|yellowstone|lake tahoe|interlaken|innsbruck|salzburg|lucerne|bergen|tromso|kiruna|riga|vilnius|warsaw|krakow|gdansk|sofia|bucharest|sarajevo|minsk|ulaanbaatar|almaty|moscow|saint petersburg|novosibirsk|yekaterinburg|kazan|chelyabinsk|omsk|krasnoyarsk|irkutsk|vladivostok|khabarovsk|yakutsk|norilsk|tomsk|kemerovo|barnaul|tyumen|surgut|murmansk|arkhangelsk|kaliningrad|perm|volgograd|russia|siberia|greenland|nuuk|ilulissat|sisimiut|kangerlussuaq|harbin|lhasa|tibet|longyearbyen|svalbard|akureyri|bishkek|dushanbe|nur-sultan|astana|thimphu|paro|bhutan|lukla|erdenet|minsk|kyiv|lviv|kharkiv|leh|darjeeling|shimla|manali|srinagar|chandigarh/.test(d)) return 'cold'
+  if (/antarctica|south pole|mcmurdo|ice age|aspen|vail|park city|jackson hole|whistler|queenstown|bozeman|banff|zurich|geneva|reykjavik|oslo|stockholm|helsinki|anchorage|montreal|tallinn|sapporo|patagonia|torres del paine|bariloche|ushuaia|fairbanks|juneau|sitka|glacier|yellowstone|lake tahoe|interlaken|innsbruck|salzburg|lucerne|bergen|tromso|kiruna|riga|vilnius|warsaw|krakow|gdansk|sofia|bucharest|sarajevo|minsk|ulaanbaatar|almaty|moscow|saint petersburg|novosibirsk|yekaterinburg|kazan|chelyabinsk|omsk|krasnoyarsk|irkutsk|vladivostok|khabarovsk|yakutsk|norilsk|tomsk|kemerovo|barnaul|tyumen|surgut|murmansk|arkhangelsk|kaliningrad|perm|volgograd|russia|siberia|greenland|nuuk|ilulissat|sisimiut|kangerlussuaq|harbin|lhasa|tibet|longyearbyen|svalbard|akureyri|bishkek|dushanbe|nur-sultan|astana|thimphu|paro|bhutan|lukla|erdenet|minsk|kyiv|lviv|kharkiv|leh|darjeeling|shimla|manali|srinagar|chandigarh/.test(d)) return 'cold'
   if (/dubai|abu dhabi|doha|riyadh|jeddah|mecca|medina|muscat|cairo|luxor|marrakech|casablanca|las vegas|phoenix|scottsdale|mesa|albuquerque|el paso|jaipur|agra|sedona|santa fe|jordan|amman|israel|tel aviv|jerusalem|hurghada|sharm|fes|tangier|tunis|petra|uyuni|eilat|palm springs|tucson|flagstaff|tehran|isfahan|shiraz|mashhad|tabriz|baghdad|erbil|basra|damascus|aleppo|sanaa|aden|kuwait city|manama|riyadh|algiers|oran|constantine|tripoli|khartoum|niamey|bamako|timbuktu|ouagadougou|n'djamena|bangui|jaisalmer|jodhpur|ahmedabad|kashgar|urumqi|aswan|luxor|hurghada/.test(d)) return 'desert'
   if (/barcelona|madrid|seville|valencia|ibiza|mallorca|lisbon|porto|algarve|athens|santorini|mykonos|rhodes|crete|rome|naples|venice|milan|florence|istanbul|cappadocia|antalya|bodrum|split|dubrovnik|hvar|zadar|nice|marseille|limassol|cyprus|malta|beirut|montego bay|san juan|havana|amalfi|los angeles|san diego|san francisco|napa|santa barbara|bilbao|bordeaux|lyon|valencia|montpelier|thessaloniki|la paz|mendoza|santiago|valparaiso|easter island|montevideo|punta del este|lima|cusco|arequipa|machu picchu|quito|cuenca|medellin|bogota|santa marta|cartagena|beirut|accra|cape town|durban|johannesburg|nairobi|johannesburg/.test(d)) return 'warm'
   return 'temperate'
@@ -660,6 +688,7 @@ function suggestTripTypes(climate, dest = '') {
   if (/miller.{0,5}planet/i.test(dest)) base.push('Space Exploration')
   if (/gru.{0,5}lair/i.test(dest)) base.push('Villain Getaway')
   if (/kuzcek.*kazakhstan/i.test(dest)) base.push('Cultural Learnings')
+  if (/antarctica/i.test(dest)) base.push('Ice Age Survival')
   return base
 }
 
@@ -1254,6 +1283,13 @@ export default function PackPerfect() {
   const boratAnthemRef = useRef(null)
   const boratVanillaRef = useRef(null)
   const boratMyWifeRef = useRef(null)
+  const [iceAgePhase, setIceAgePhase] = useState(0)
+  const [iceAgeQuoteIdx, setIceAgeQuoteIdx] = useState(0)
+  const scratPosRef = useRef({ x: -200, y: 80 })
+  const acornPosRef = useRef({ x: 120, y: 80 })
+  const scratAnimRef = useRef(null)
+  const [scratState, setScratState] = useState({ sx: -200, sy: 80, ax: 120, ay: 80, flip: false })
+  const [iaSplit, setIaSplit] = useState(false)
 
   const handleStatClick = (idx) => {
     if (statTransitionRef.current) clearTimeout(statTransitionRef.current)
@@ -1454,6 +1490,55 @@ export default function PackPerfect() {
     const iv = setInterval(() => setBoratQuoteIdx(i => (i + 1) % BORAT_QUOTES.length), 5000)
     return () => clearInterval(iv)
   }, [boratPhase])
+
+  const iceAgeMode = /antarctica/i.test(destination)
+
+  useEffect(() => {
+    if (!iceAgeMode) {
+      setIceAgePhase(0); setIceAgeQuoteIdx(0); setIaSplit(false)
+      if (scratAnimRef.current) cancelAnimationFrame(scratAnimRef.current)
+      return
+    }
+    setIceAgePhase(1)
+    const t1 = setTimeout(() => { setIceAgePhase(2); setIaSplit(true) }, 4000)
+    const t2 = setTimeout(() => { setIaSplit(false); setIceAgePhase(3) }, 7200)
+    const t3 = setTimeout(() => setIceAgePhase(4), 10500)
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3) }
+  }, [iceAgeMode])
+
+  useEffect(() => {
+    if (iceAgePhase !== 4) {
+      if (scratAnimRef.current) cancelAnimationFrame(scratAnimRef.current)
+      return
+    }
+    const W = window.innerWidth
+    const H = window.innerHeight
+    let ax = W * 0.75, ay = H * 0.15
+    let avx = -(2.8 + Math.random() * 1.5)
+    let avy = (Math.random() - 0.5) * 1.2
+    let sx = ax + 180, sy = ay
+    const loop = () => {
+      ax += avx; ay += avy
+      if (ax < -80) { ax = W + 50; ay = H * (0.1 + Math.random() * 0.5); avx = -(2.5 + Math.random() * 2); avy = (Math.random() - 0.5) * 1.5 }
+      if (ay < 40) { ay = 40; avy = Math.abs(avy) }
+      if (ay > H - 100) { ay = H - 100; avy = -Math.abs(avy) }
+      const dx = ax - sx, dy = ay - sy
+      const dist = Math.sqrt(dx*dx + dy*dy)
+      if (dist > 5) { const spd = Math.min(dist * 0.07, 6); sx += dx/dist*spd; sy += dy/dist*spd }
+      setScratState({ sx, sy, ax, ay, flip: avx > 0 })
+      acornPosRef.current = { x: ax, y: ay }
+      scratPosRef.current = { x: sx, y: sy }
+      scratAnimRef.current = requestAnimationFrame(loop)
+    }
+    scratAnimRef.current = requestAnimationFrame(loop)
+    return () => { if (scratAnimRef.current) cancelAnimationFrame(scratAnimRef.current) }
+  }, [iceAgePhase])
+
+  useEffect(() => {
+    if (iceAgePhase !== 4) return
+    const iv = setInterval(() => setIceAgeQuoteIdx(i => (i + 1) % ICE_AGE_QUOTES.length), 5500)
+    return () => clearInterval(iv)
+  }, [iceAgePhase])
 
   const toggleDark = () => { const v = !dark; setDark(v); try{ localStorage.setItem('pp_dark', v ? '1' : '0') }catch(e){} }
   const saveProfile = (updates) => { const u = { ...profile, ...updates }; setProfile(u); try{ localStorage.setItem('pp_profile', JSON.stringify(u)) }catch(e){} }
@@ -1993,6 +2078,25 @@ export default function PackPerfect() {
       .pp-header { border-bottom: 2px solid #d4a017 !important; }
       body { background: #1a1400 !important; }
     ` : ''}
+    @keyframes iaSnowfall { 0%{transform:translateY(-20px) translateX(0) rotate(0deg);opacity:0} 5%{opacity:1} 90%{opacity:0.7} 100%{transform:translateY(110vh) translateX(var(--drift,20px)) rotate(360deg);opacity:0} }
+    @keyframes iaFreezeIn { 0%{opacity:0;filter:blur(8px)} 100%{opacity:1;filter:blur(0)} }
+    @keyframes iaIcePulse { 0%,100%{opacity:0.5;transform:scale(1)} 50%{opacity:0.8;transform:scale(1.02)} }
+    @keyframes iaTitleSlam { 0%{opacity:0;transform:scale(0.2) rotate(-8deg);filter:blur(12px)} 60%{transform:scale(1.08) rotate(2deg)} 80%{transform:scale(0.96) rotate(-0.5deg)} 100%{opacity:1;transform:scale(1) rotate(0);filter:blur(0)} }
+    @keyframes iaSplitLeft { 0%{transform:translateX(0)} 100%{transform:translateX(-52vw)} }
+    @keyframes iaSplitRight { 0%{transform:translateX(0)} 100%{transform:translateX(52vw)} }
+    @keyframes iaCrackGrow { 0%{opacity:0;scaleY:0} 50%{opacity:1} 100%{opacity:0.7;scaleY:1} }
+    @keyframes iaSlideIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes iaQuoteIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes iaScratBob { 0%,100%{transform:translateY(0) rotate(-3deg)} 50%{transform:translateY(-6px) rotate(3deg)} }
+    @keyframes iaBannerShimmer { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+    @keyframes iaIceGlow { 0%,100%{filter:drop-shadow(0 0 8px rgba(147,210,255,0.7))} 50%{filter:drop-shadow(0 0 20px rgba(147,210,255,1)) drop-shadow(0 0 40px rgba(200,240,255,0.5))} }
+    @keyframes iaCrackFlash { 0%{opacity:0} 20%{opacity:1} 60%{opacity:0.6} 100%{opacity:0} }
+    .ia-scrat { animation:iaScratBob 0.6s ease-in-out infinite; }
+    .ia-acorn-glow { animation:iaIceGlow 1.8s ease-in-out infinite; }
+    ${iceAgeMode ? `
+      .pp-header { border-bottom: 2px solid #7dd3fc !important; }
+      body { background: #0a1628 !important; }
+    ` : ''}
     @media (prefers-reduced-motion:reduce) { *, *::before, *::after { transition-duration:0.01ms !important; animation-duration:0.01ms !important } }
     @media (max-width:640px) {
       .pp-header { flex-wrap:wrap; height:auto !important; padding:10px 14px !important; gap:6px; }
@@ -2007,7 +2111,7 @@ export default function PackPerfect() {
   `
 
   return (
-    <div style={{ fontFamily:"'Sora',sans-serif", minHeight:'100vh', background: kingJulienMode ? 'linear-gradient(135deg,#1a0533 0%,#0a2010 50%,#2d1000 100%)' : interstellarMode ? '#000510' : minionsMode ? '#0d1a2e' : boratMode ? '#1a1400' : t.bg, color: kingJulienMode ? '#fef9e7' : interstellarMode ? '#c8d8e8' : minionsMode ? '#e8f0fe' : boratMode ? '#f5e8c0' : t.text }}>
+    <div style={{ fontFamily:"'Sora',sans-serif", minHeight:'100vh', background: iceAgeMode ? 'linear-gradient(180deg,#0a1628 0%,#0d2040 40%,#0a2535 100%)' : kingJulienMode ? 'linear-gradient(135deg,#1a0533 0%,#0a2010 50%,#2d1000 100%)' : interstellarMode ? '#000510' : minionsMode ? '#0d1a2e' : boratMode ? '#1a1400' : t.bg, color: iceAgeMode ? '#e0f4ff' : kingJulienMode ? '#fef9e7' : interstellarMode ? '#c8d8e8' : minionsMode ? '#e8f0fe' : boratMode ? '#f5e8c0' : t.text }}>
       <style>{CSS}</style>
 
       {/* KING JULIEN EASTER EGG */}
@@ -2533,6 +2637,121 @@ export default function PackPerfect() {
               GDP: $3<br/>
               DENTISTS: 0<br/>
               GREAT SUCCESS ✊
+            </div>
+          </div>
+        </>)}
+
+      </>)}
+
+      {/* ── ICE AGE EASTER EGG ── */}
+      {iceAgeMode && iceAgePhase > 0 && (<>
+
+        {/* Always: falling snowflakes */}
+        {ICE_SNOWFLAKES.map(s => (
+          <div key={s.id} style={{ position:'fixed', top:0, left:`${s.left}%`, fontSize:`${s.size}px`, zIndex:8, pointerEvents:'none', opacity:s.opacity, animationName:'iaSnowfall', animationDuration:`${s.dur}s`, animationDelay:`${s.delay}s`, animationIterationCount:'infinite', animationTimingFunction:'linear', '--drift':`${s.drift}px`, willChange:'transform' }}>❄</div>
+        ))}
+
+        {/* PHASE 1: Frozen intro */}
+        {iceAgePhase === 1 && (
+          <div style={{ position:'fixed', inset:0, background:'linear-gradient(180deg,#0a1a35 0%,#071528 60%,#030e1e 100%)', zIndex:300, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', animation:'iaFreezeIn 0.8s ease both' }}>
+            <div style={{ position:'absolute', inset:0, background:'radial-gradient(ellipse 80% 50% at 50% 40%, rgba(100,180,255,0.08) 0%, transparent 70%)', pointerEvents:'none' }} />
+            {/* Ice chunks decoration */}
+            {ICE_CHUNKS.map(c => (
+              <div key={c.id} style={{ position:'absolute', left:`${c.x}%`, top:`${c.y}%`, width:c.size, height:c.size*0.6, background:'linear-gradient(135deg,rgba(147,210,255,0.15),rgba(200,240,255,0.05))', border:'1px solid rgba(147,210,255,0.2)', borderRadius:'4px 12px 8px 6px', transform:`rotate(${c.angle}deg)`, opacity:c.opacity, pointerEvents:'none' }} />
+            ))}
+            <div style={{ fontSize:'clamp(13px,2vw,18px)', fontWeight:'700', letterSpacing:'0.45em', color:'rgba(147,210,255,0.5)', textTransform:'uppercase', marginBottom:'18px', animation:'iaSlideIn 1s 0.3s both' }}>Pack Perfect Presents</div>
+            <div style={{ fontSize:'clamp(52px,10vw,110px)', fontWeight:'900', letterSpacing:'-0.01em', color:'#fff', textAlign:'center', lineHeight:0.9, animation:'iaTitleSlam 1.1s 0.7s cubic-bezier(0.22,1,0.36,1) both', textShadow:'0 0 60px rgba(147,210,255,0.6), 0 0 120px rgba(147,210,255,0.3), 0 4px 30px rgba(0,0,0,0.8)' }}>
+              ICE<br/><span style={{ color:'#7dd3fc' }}>AGE</span>
+            </div>
+            <div style={{ marginTop:'22px', fontSize:'clamp(12px,1.6vw,16px)', color:'rgba(147,210,255,0.6)', letterSpacing:'0.2em', textTransform:'uppercase', animation:'iaSlideIn 0.9s 1.4s both' }}>Antarctica Edition</div>
+            <div style={{ marginTop:'40px', fontSize:'13px', color:'rgba(100,160,200,0.35)', animation:'iaSlideIn 0.8s 2.2s both' }}>❄ Preparing your frozen expedition... ❄</div>
+            <button onClick={() => { setIaSplit(true); setIceAgePhase(2) }} style={{ position:'absolute', bottom:22, right:22, background:'transparent', border:'1px solid rgba(147,210,255,0.15)', borderRadius:6, color:'rgba(147,210,255,0.3)', fontSize:11, padding:'5px 13px', cursor:'pointer', letterSpacing:'0.12em', zIndex:4 }}>skip →</button>
+          </div>
+        )}
+
+        {/* PHASE 2: PAGE SPLITS IN HALF */}
+        {iceAgePhase === 2 && iaSplit && (
+          <div style={{ position:'fixed', inset:0, zIndex:350, overflow:'hidden', pointerEvents:'none' }}>
+            {/* Left half */}
+            <div style={{ position:'absolute', left:0, top:0, width:'50%', height:'100%', background:'linear-gradient(180deg,#0a1a35,#071528)', animation:'iaSplitLeft 1.8s cubic-bezier(0.55,0,0.45,1) 0.4s both', transformOrigin:'left center' }}>
+              <div style={{ position:'absolute', inset:0, background:'radial-gradient(ellipse 80% 60% at 30% 40%, rgba(100,180,255,0.07),transparent)' }} />
+              <div style={{ position:'absolute', right:0, top:0, bottom:0, width:'3px', background:'linear-gradient(180deg,transparent,rgba(147,210,255,0.8) 20%,rgba(200,240,255,1) 50%,rgba(147,210,255,0.8) 80%,transparent)', boxShadow:'0 0 20px rgba(147,210,255,0.8), 0 0 40px rgba(147,210,255,0.4)' }} />
+              <div style={{ position:'absolute', top:'35%', left:'10%', right:'10%', textAlign:'center' }}>
+                <div style={{ fontSize:'clamp(40px,8vw,90px)', fontWeight:'900', color:'#fff', textShadow:'0 0 40px rgba(147,210,255,0.5)' }}>ICE</div>
+              </div>
+              {/* Ice crack lines on left */}
+              {ICE_CRACKS.slice(0,3).map(c => (
+                <div key={c.id} style={{ position:'absolute', right:`${c.x-47}%`, top:'30%', width:`${c.len}px`, height:`${c.w}px`, background:'rgba(147,210,255,0.6)', transform:`rotate(${c.angle}deg)`, transformOrigin:'right center', animation:'iaCrackFlash 0.8s 0.3s both', boxShadow:'0 0 6px rgba(147,210,255,0.8)' }} />
+              ))}
+            </div>
+            {/* Right half */}
+            <div style={{ position:'absolute', right:0, top:0, width:'50%', height:'100%', background:'linear-gradient(180deg,#071528,#030e1e)', animation:'iaSplitRight 1.8s cubic-bezier(0.55,0,0.45,1) 0.4s both', transformOrigin:'right center' }}>
+              <div style={{ position:'absolute', inset:0, background:'radial-gradient(ellipse 80% 60% at 70% 40%, rgba(100,180,255,0.07),transparent)' }} />
+              <div style={{ position:'absolute', left:0, top:0, bottom:0, width:'3px', background:'linear-gradient(180deg,transparent,rgba(147,210,255,0.8) 20%,rgba(200,240,255,1) 50%,rgba(147,210,255,0.8) 80%,transparent)', boxShadow:'0 0 20px rgba(147,210,255,0.8), 0 0 40px rgba(147,210,255,0.4)' }} />
+              <div style={{ position:'absolute', top:'35%', left:'10%', right:'10%', textAlign:'center' }}>
+                <div style={{ fontSize:'clamp(40px,8vw,90px)', fontWeight:'900', color:'#7dd3fc', textShadow:'0 0 40px rgba(147,210,255,0.6)' }}>AGE</div>
+              </div>
+              {/* Ice crack lines on right */}
+              {ICE_CRACKS.slice(3).map(c => (
+                <div key={c.id} style={{ position:'absolute', left:`${47-c.x+47}%`, top:'35%', width:`${c.len}px`, height:`${c.w}px`, background:'rgba(147,210,255,0.6)', transform:`rotate(${-c.angle}deg)`, transformOrigin:'left center', animation:'iaCrackFlash 0.8s 0.3s both', boxShadow:'0 0 6px rgba(147,210,255,0.8)' }} />
+              ))}
+            </div>
+            {/* Crack glow at center */}
+            <div style={{ position:'absolute', left:'50%', top:0, bottom:0, width:'6px', transform:'translateX(-50%)', background:'linear-gradient(180deg,transparent 0%,rgba(200,240,255,1) 30%,rgba(147,210,255,0.9) 70%,transparent 100%)', boxShadow:'0 0 30px rgba(147,210,255,1), 0 0 60px rgba(147,210,255,0.6)', animation:'iaCrackFlash 2s ease both', zIndex:2 }} />
+          </div>
+        )}
+
+        {/* PHASE 3: Reassembling */}
+        {iceAgePhase === 3 && (
+          <div style={{ position:'fixed', inset:0, background:'rgba(10,22,40,0.9)', zIndex:200, display:'flex', alignItems:'center', justifyContent:'center', animation:'iaFreezeIn 0.6s ease both' }}>
+            <div style={{ textAlign:'center', animation:'iaSlideIn 0.8s ease both' }}>
+              <div style={{ fontSize:'clamp(38px,7vw,80px)', fontWeight:'900', color:'#fff', letterSpacing:'-0.02em', textShadow:'0 0 50px rgba(147,210,255,0.7), 0 4px 20px rgba(0,0,0,0.8)' }}>
+                ICE <span style={{ color:'#7dd3fc' }}>AGE</span>
+              </div>
+              <div style={{ marginTop:'16px', fontSize:'14px', color:'rgba(147,210,255,0.7)', letterSpacing:'0.15em' }}>THE GLACIER IS LOADING...</div>
+              <div style={{ marginTop:'24px', display:'flex', gap:'8px', justifyContent:'center' }}>
+                {[0,1,2,3,4].map(i => (
+                  <div key={i} style={{ width:8, height:8, borderRadius:'50%', background:'#7dd3fc', opacity:0.3+(i*0.14), animationName:'iaIcePulse', animationDuration:'1.2s', animationDelay:`${i*0.18}s`, animationIterationCount:'infinite', animationTimingFunction:'ease-in-out' }} />
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* PHASE 4: Full ice age theme active */}
+        {iceAgePhase === 4 && (<>
+          {/* Icy bg overlay */}
+          <div style={{ position:'fixed', inset:0, background:'linear-gradient(180deg,rgba(10,22,40,0.4) 0%,transparent 40%,rgba(5,15,28,0.3) 100%)', zIndex:6, pointerEvents:'none' }} />
+
+          {/* Scrat chasing acorn */}
+          <div className="ia-acorn-glow" style={{ position:'fixed', left:scratState.ax, top:scratState.ay, width:50, height:50, zIndex:75, pointerEvents:'none', transform:`scaleX(${scratState.flip ? -1 : 1})`, willChange:'transform' }}>
+            <img src="/acorn.png" alt="acorn" style={{ width:'100%', height:'100%', objectFit:'contain' }} onError={e => { e.currentTarget.style.display='none'; e.currentTarget.parentElement.innerHTML='🌰' }} />
+          </div>
+          <div className="ia-scrat" style={{ position:'fixed', left:scratState.sx - 10, top:scratState.sy - 10, width:80, height:80, zIndex:74, pointerEvents:'none', transform:`scaleX(${scratState.ax < scratState.sx ? -1 : 1})`, willChange:'transform' }}>
+            <img src="/scrat.png" alt="Scrat" style={{ width:'100%', height:'100%', objectFit:'contain' }} onError={e => { e.currentTarget.style.display='none'; e.currentTarget.parentElement.innerHTML='🐿️' }} />
+          </div>
+
+          {/* Ice age banner at top */}
+          <div style={{ position:'fixed', top:0, left:0, right:0, zIndex:1003, pointerEvents:'none', animation:'iaSlideIn 0.8s ease both' }}>
+            <div style={{ background:'linear-gradient(90deg,#0c2a5e,#1a4a8a,#0c3060,#1a4a8a,#0c2a5e)', backgroundSize:'300% 100%', padding:'7px 16px', textAlign:'center', fontSize:'13px', fontWeight:'700', color:'#bfecff', letterSpacing:'0.05em', animationName:'iaBannerShimmer', animationDuration:'5s', animationIterationCount:'infinite', animationTimingFunction:'ease-in-out', borderBottom:'1px solid rgba(125,211,252,0.3)' }}>
+              ❄&nbsp; WELCOME TO ANTARCTICA — ICE AGE EXPEDITION MODE ACTIVE ❄&nbsp; 🦣 Manny, Sid & Diego approve your packing list 🐿️&nbsp; ❄
+            </div>
+          </div>
+
+          {/* Rotating quote at bottom */}
+          <div key={iceAgeQuoteIdx} style={{ position:'fixed', bottom:65, left:'50%', transform:'translateX(-50%)', zIndex:1003, pointerEvents:'none', animationName:'iaQuoteIn', animationDuration:'0.7s', animationFillMode:'both', maxWidth:'min(520px,88vw)', textAlign:'center' }}>
+            <div style={{ background:'rgba(10,25,50,0.92)', border:'1px solid rgba(125,211,252,0.35)', borderRadius:'12px', padding:'10px 18px', fontSize:'13px', fontWeight:'500', color:'#bfecff', letterSpacing:'0.02em', boxShadow:'0 4px 20px rgba(0,0,0,0.5), 0 0 20px rgba(125,211,252,0.1)' }}>
+              {ICE_AGE_QUOTES[iceAgeQuoteIdx]}
+            </div>
+          </div>
+
+          {/* Bottom-right ice age watermark */}
+          <div style={{ position:'fixed', bottom:18, right:18, zIndex:1010, pointerEvents:'none', animation:'iaFreezeIn 2s ease both' }}>
+            <div style={{ fontFamily:'monospace', fontSize:9, color:'rgba(125,211,252,0.35)', letterSpacing:'0.14em', textAlign:'right', lineHeight:2 }}>
+              TEMP: -89°C<br/>
+              PENGUINS: MANY<br/>
+              ACORNS: 1<br/>
+              SCRAT: CHASING ❄
             </div>
           </div>
         </>)}
