@@ -557,8 +557,10 @@ function getVisualImage(climate, tripType) {
   return IMG_NORM
 }
 
-function suggestTripTypes() {
-  return ['Leisure','Business','Beach','Adventure','Family','Backpacking','Skiing','Sports Tournament']
+function suggestTripTypes(climate, dest = '') {
+  const base = ['Leisure','Business','Beach','Adventure','Family','Backpacking','Skiing','Sports Tournament']
+  if (/minsk.*belarus/i.test(dest)) base.push('Dance')
+  return base
 }
 
 function isUSDestination(dest) {
@@ -1206,7 +1208,7 @@ export default function PackPerfect() {
   const selectDest = (d) => {
     setDestInput(d); setDestination(d)
     const c = classifyClimate(d); setClimate(c)
-    const suggested = suggestTripTypes(c)
+    const suggested = suggestTripTypes(c, d)
     if (!suggested.includes(tripType)) setTripType(suggested[0])
     setShowSug(false)
   }
@@ -1322,7 +1324,7 @@ export default function PackPerfect() {
 
   const selectPremiumDest = (idx, d) => {
     const c = classifyClimate(d)
-    const suggested = suggestTripTypes(c)
+    const suggested = suggestTripTypes(c, d)
     const currentTripType = premiumLegs[idx].tripType
     const newTripType = suggested.includes(currentTripType) ? currentTripType : suggested[0]
     updatePremiumLeg(idx, { destInput: d, destination: d, climate: c, showSug: false, tripType: newTripType })
