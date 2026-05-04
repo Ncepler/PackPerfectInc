@@ -2142,7 +2142,7 @@ export default function PackPerfect() {
               <div style={{ flex:1, maxWidth:210, display:'flex', flexDirection:'column', alignItems:'center', animationName:'mnMinionRise', animationDuration:'0.85s', animationDelay:'0.1s', animationFillMode:'both', animationTimingFunction:'cubic-bezier(0.22,1,0.36,1)' }}>
                 <div style={{ position:'relative', width:'100%' }}>
                   <div style={{ position:'absolute', top:-8, right:-8, background:'#fffde7', border:'2.5px solid #ffdc00', borderRadius:10, padding:'5px 10px', fontSize:12, fontWeight:700, color:'#3d2a00', whiteSpace:'nowrap', zIndex:3, animationName:'mnSpeechPop', animationDuration:'0.4s', animationDelay:'1.3s', animationFillMode:'both', boxShadow:'0 3px 10px rgba(0,0,0,0.35)' }}>Bello! 👋</div>
-                  <img src="/kevin.png" alt="Kevin" style={{ width:'100%', objectFit:'contain', display:'block' }} />
+                  <img src="/kevin.jpg" alt="Kevin" style={{ width:'100%', objectFit:'contain', display:'block' }} />
                 </div>
                 <div style={{ marginTop:10, textAlign:'center', animationName:'mnNameCard', animationDuration:'0.5s', animationDelay:'0.7s', animationFillMode:'both' }}>
                   <div style={{ fontSize:'clamp(15px,2.8vw,22px)', fontWeight:900, color:'#ffdc00', letterSpacing:'0.14em' }}>KEVIN</div>
@@ -2153,7 +2153,7 @@ export default function PackPerfect() {
               <div style={{ flex:'0 0 auto', width:'clamp(90px,18vw,180px)', display:'flex', flexDirection:'column', alignItems:'center', animationName:'mnMinionRise', animationDuration:'0.85s', animationDelay:'0.28s', animationFillMode:'both', animationTimingFunction:'cubic-bezier(0.22,1,0.36,1)' }}>
                 <div style={{ position:'relative', width:'100%' }}>
                   <div style={{ position:'absolute', top:-8, left:-16, background:'#fffde7', border:'2.5px solid #ffdc00', borderRadius:10, padding:'5px 10px', fontSize:12, fontWeight:700, color:'#3d2a00', whiteSpace:'nowrap', zIndex:3, animationName:'mnSpeechPop', animationDuration:'0.4s', animationDelay:'1.6s', animationFillMode:'both', boxShadow:'0 3px 10px rgba(0,0,0,0.35)' }}>BANANA! 🍌</div>
-                  <img src="/bob.png" alt="Bob" style={{ width:'100%', objectFit:'contain', display:'block' }} />
+                  <img src="/bob.jpg" alt="Bob" style={{ width:'100%', objectFit:'contain', display:'block' }} />
                 </div>
                 <div style={{ marginTop:10, textAlign:'center', animationName:'mnNameCard', animationDuration:'0.5s', animationDelay:'0.8s', animationFillMode:'both' }}>
                   <div style={{ fontSize:'clamp(15px,2.8vw,22px)', fontWeight:900, color:'#ffdc00', letterSpacing:'0.14em' }}>BOB</div>
@@ -2164,7 +2164,7 @@ export default function PackPerfect() {
               <div style={{ flex:1, maxWidth:210, display:'flex', flexDirection:'column', alignItems:'center', animationName:'mnMinionRise', animationDuration:'0.85s', animationDelay:'0.45s', animationFillMode:'both', animationTimingFunction:'cubic-bezier(0.22,1,0.36,1)' }}>
                 <div style={{ position:'relative', width:'100%' }}>
                   <div style={{ position:'absolute', top:-8, left:-16, background:'#fffde7', border:'2.5px solid #ffdc00', borderRadius:10, padding:'5px 10px', fontSize:12, fontWeight:700, color:'#3d2a00', whiteSpace:'nowrap', zIndex:3, animationName:'mnSpeechPop', animationDuration:'0.4s', animationDelay:'1.9s', animationFillMode:'both', boxShadow:'0 3px 10px rgba(0,0,0,0.35)' }}>Tulaliloo! 💛</div>
-                  <img src="/stuart.png" alt="Stuart" style={{ width:'100%', objectFit:'contain', display:'block' }} />
+                  <img src="/stuart.jpg" alt="Stuart" style={{ width:'100%', objectFit:'contain', display:'block' }} />
                 </div>
                 <div style={{ marginTop:10, textAlign:'center', animationName:'mnNameCard', animationDuration:'0.5s', animationDelay:'0.9s', animationFillMode:'both' }}>
                   <div style={{ fontSize:'clamp(15px,2.8vw,22px)', fontWeight:900, color:'#ffdc00', letterSpacing:'0.14em' }}>STUART</div>
@@ -2174,7 +2174,7 @@ export default function PackPerfect() {
             </div>
             {/* Crowd rises over them */}
             <div style={{ position:'absolute', bottom:0, left:'50%', transform:'translateX(-50%)', width:'min(400px,72vw)', zIndex:3, animationName:'mnCrowdRise', animationDuration:'1s', animationDelay:'2.4s', animationFillMode:'both', animationTimingFunction:'cubic-bezier(0.22,1,0.36,1)' }}>
-              <img src="/minions_crowd.png" alt="The Crew" style={{ width:'100%', objectFit:'contain', display:'block' }} />
+              <img src="/minions_crowd.jpg" alt="The Crew" style={{ width:'100%', objectFit:'contain', display:'block' }} />
             </div>
             <button onClick={() => setMinionsPhase(4)} style={{ position:'absolute', bottom:22, right:22, background:'transparent', border:'1px solid rgba(255,220,0,0.18)', borderRadius:6, color:'rgba(255,220,0,0.32)', fontSize:11, padding:'5px 13px', cursor:'pointer', letterSpacing:'0.1em', zIndex:10 }}>skip →</button>
           </div>
@@ -2184,7 +2184,7 @@ export default function PackPerfect() {
         {minionsPhase === 3 && (
           <div style={{ position:'fixed', inset:0, zIndex:200, background:'#050e1c', display:'flex', alignItems:'center', justifyContent:'center', animation:'mnFadeIn 0.8s ease both', overflow:'hidden' }}>
             {/* Lair background zoom */}
-            <div style={{ position:'absolute', inset:0, backgroundImage:`url('/minions_lair.jpg')`, backgroundSize:'cover', backgroundPosition:'center', opacity:0.5, animationName:'mnLairZoom', animationDuration:'6s', animationFillMode:'both', animationTimingFunction:'ease-out' }} />
+            <div style={{ position:'absolute', inset:0, backgroundImage:`url('/gru_lair.jpg')`, backgroundSize:'cover', backgroundPosition:'center', opacity:0.5, animationName:'mnLairZoom', animationDuration:'6s', animationFillMode:'both', animationTimingFunction:'ease-out' }} />
             {/* Dark gradient */}
             <div style={{ position:'absolute', inset:0, background:'linear-gradient(90deg,rgba(5,14,28,0.35) 0%,transparent 45%,rgba(5,14,28,0.6) 100%)' }} />
             {/* Banana rain */}
@@ -2193,7 +2193,7 @@ export default function PackPerfect() {
             ))}
             {/* Gru — left, large and proud */}
             <div style={{ position:'absolute', bottom:0, left:'clamp(-10px,1vw,16px)', width:'clamp(150px,26vw,300px)', zIndex:3, animationName:'mnGruSlide', animationDuration:'1s', animationDelay:'0.4s', animationFillMode:'both', animationTimingFunction:'cubic-bezier(0.22,1,0.36,1)' }}>
-              <img src="/minions_gru.png" alt="Gru" style={{ width:'100%', objectFit:'contain', display:'block' }} />
+              <img src="/minions_gru.jpg" alt="Gru" style={{ width:'100%', objectFit:'contain', display:'block' }} />
             </div>
             {/* Text right side */}
             <div style={{ position:'relative', zIndex:3, textAlign:'center', marginLeft:'28%', padding:'0 24px' }}>
@@ -2205,7 +2205,7 @@ export default function PackPerfect() {
               </div>
               {/* Crowd group — bottom of text block */}
               <div style={{ marginTop:22, display:'flex', justifyContent:'center', animationName:'mnFadeIn', animationDuration:'0.9s', animationDelay:'2.2s', animationFillMode:'both' }}>
-                <img src="/minions_crowd.png" alt="Minions" style={{ width:'clamp(120px,20vw,220px)', objectFit:'contain' }} />
+                <img src="/minions_crowd.jpg" alt="Minions" style={{ width:'clamp(120px,20vw,220px)', objectFit:'contain' }} />
               </div>
             </div>
             <button onClick={() => setMinionsPhase(4)} style={{ position:'absolute', bottom:22, right:22, background:'transparent', border:'1px solid rgba(255,220,0,0.18)', borderRadius:6, color:'rgba(255,220,0,0.32)', fontSize:11, padding:'5px 13px', cursor:'pointer', letterSpacing:'0.1em', zIndex:10 }}>skip →</button>
@@ -2215,7 +2215,7 @@ export default function PackPerfect() {
         {/* ── PHASE 4: STEADY STATE ── */}
         {minionsPhase === 4 && (<>
           {/* Gru background — like Gargantua */}
-          <div style={{ position:'fixed', inset:0, backgroundImage:`url('/minions_gru.png')`, backgroundSize:'cover', backgroundPosition:'center top', opacity:0.2, zIndex:6, pointerEvents:'none' }} />
+          <div style={{ position:'fixed', inset:0, backgroundImage:`url('/minions_gru.jpg')`, backgroundSize:'cover', backgroundPosition:'center top', opacity:0.2, zIndex:6, pointerEvents:'none' }} />
           {/* Vignette */}
           <div style={{ position:'fixed', inset:0, background:'radial-gradient(ellipse at 50% 70%, transparent 22%, rgba(5,12,22,0.86) 100%)', zIndex:7, pointerEvents:'none' }} />
           {/* Sparse banana rain */}
@@ -2224,19 +2224,19 @@ export default function PackPerfect() {
           ))}
           {/* Kevin peeks left */}
           <div style={{ position:'fixed', bottom:0, left:'1%', width:'min(108px,15vw)', zIndex:70, pointerEvents:'none', animationName:'mnPeek', animationDuration:'2.3s', animationIterationCount:'infinite', animationTimingFunction:'ease-in-out' }}>
-            <img src="/kevin.png" alt="Kevin" style={{ width:'100%', objectFit:'contain', display:'block' }} />
+            <img src="/kevin.jpg" alt="Kevin" style={{ width:'100%', objectFit:'contain', display:'block' }} />
           </div>
           {/* Bob peeks center */}
           <div style={{ position:'fixed', bottom:0, left:'50%', transform:'translateX(-50%)', width:'min(84px,11vw)', zIndex:70, pointerEvents:'none', animationName:'mnPeek', animationDuration:'1.85s', animationDelay:'0.55s', animationIterationCount:'infinite', animationTimingFunction:'ease-in-out' }}>
-            <img src="/bob.png" alt="Bob" style={{ width:'100%', objectFit:'contain', display:'block' }} />
+            <img src="/bob.jpg" alt="Bob" style={{ width:'100%', objectFit:'contain', display:'block' }} />
           </div>
           {/* Stuart peeks right */}
           <div style={{ position:'fixed', bottom:0, right:'1%', width:'min(96px,13vw)', zIndex:70, pointerEvents:'none', animationName:'mnPeek', animationDuration:'2.05s', animationDelay:'1.05s', animationIterationCount:'infinite', animationTimingFunction:'ease-in-out' }}>
-            <img src="/stuart.png" alt="Stuart" style={{ width:'100%', objectFit:'contain', display:'block' }} />
+            <img src="/stuart.jpg" alt="Stuart" style={{ width:'100%', objectFit:'contain', display:'block' }} />
           </div>
           {/* Crowd group photo — bottom corner */}
           <div style={{ position:'fixed', bottom:78, right:12, width:'min(128px,17vw)', zIndex:69, pointerEvents:'none', opacity:0.88, animationName:'mnWiggle', animationDuration:'3.2s', animationIterationCount:'infinite', animationTimingFunction:'ease-in-out' }}>
-            <img src="/minions_crowd.png" alt="The Crew" style={{ width:'100%', objectFit:'contain', display:'block' }} />
+            <img src="/minions_crowd.jpg" alt="The Crew" style={{ width:'100%', objectFit:'contain', display:'block' }} />
           </div>
           {/* Banner */}
           <div style={{ position:'fixed', top:0, left:0, right:0, zIndex:1003, pointerEvents:'none', animationName:'mnBannerIn', animationDuration:'0.9s', animationFillMode:'both' }}>
