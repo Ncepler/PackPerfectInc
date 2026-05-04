@@ -9,6 +9,27 @@ const IMG_SKI_BEACH = "/ski-beach.jpg"
 const IMG_SKI       = "/ski-trip.jpg"
 const IMG_SPORTS    = "/sports-trip.jpg"
 
+const KJ_QUOTES = [
+  "I like to move it, move it! 🕺",
+  "I AM the king! Everyone bow down! 👑",
+  "SILENCE! The king is packing! 🧳",
+  "I decree you shall DANCE! 💃",
+  "This is MY kingdom! 🌴",
+  "You are welcome! ...I don't know why! 😂",
+  "Move it! MOVE IT! 🎶",
+  "Nobody touches the royal luggage! 👜",
+  "I am so pretty! So pretty and so royal! ✨",
+  "Bring me my crown, I'm going on vacation! 🏖️",
+]
+const KJ_CONFETTI = Array.from({length:24}, (_, i) => ({
+  id: i,
+  left: (i * 4.3 + 2) % 100,
+  delay: (i * 0.41) % 5,
+  dur: 4 + (i * 0.47) % 4,
+  emoji: ['👑','🎉','🕺','🦁','✨','🌴','🎊','💃','🐒','🎶','🎵','🥳','🌺','🍌','🦜','🎪','🌈','🎸','🏆','🎭','🎨','🎯','🌸','🎀'][i % 24],
+  size: 18 + (i * 3) % 16,
+}))
+
 const DESTINATIONS = [...new Set([
   // New York City & boroughs
   'New York, NY','Manhattan, NY','Brooklyn, NY','Queens, NY','The Bronx, NY','Staten Island, NY',
@@ -403,7 +424,7 @@ const DESTINATIONS = [...new Set([
   'Diani Beach, Kenya','Lamu, Kenya','Masai Mara, Kenya',
   'Arusha, Tanzania','Ngorongoro, Tanzania','Serengeti, Tanzania','Pemba Island, Tanzania','Zanzibar Stone Town, Tanzania',
   'Lake Malawi, Malawi','Inhambane, Mozambique',
-  'Nosy Be, Madagascar',"Ile Sainte-Marie, Madagascar",
+  'Nosy Be, Madagascar',"Ile Sainte-Marie, Madagascar",'King Julien, Madagascar',
   // Africa — South
   'Okavango Delta, Botswana','Sossusvlei, Namibia',
   'Drakensberg, South Africa','Stellenbosch, South Africa','Garden Route, South Africa',
@@ -1135,6 +1156,12 @@ export default function PackPerfect() {
   const statTransitionRef = useRef(null)
   const closingRef = useRef(null)
   const heroRef = useRef(null)
+  const kjPosRef = useRef({ x: 200, y: 200 })
+  const kjVelRef = useRef({ vx: 4.5, vy: 3.2 })
+  const kjRotRef = useRef(0)
+  const kjAnimRef = useRef(null)
+  const [kjState, setKjState] = useState({ x: 200, y: 200, rot: 0, flip: false, sx: 1, sy: 1 })
+  const [kjQuoteIdx, setKjQuoteIdx] = useState(0)
 
   const handleStatClick = (idx) => {
     if (statTransitionRef.current) clearTimeout(statTransitionRef.current)
@@ -1194,6 +1221,47 @@ export default function PackPerfect() {
     }, interval)
     return () => clearInterval(t)
   }, [heroVisible])
+
+  const kingJulienMode = /king julien.*madagascar/i.test(destination)
+
+  useEffect(() => {
+    if (!kingJulienMode) {
+      if (kjAnimRef.current) cancelAnimationFrame(kjAnimRef.current)
+      return
+    }
+    const SIZE = 120
+    kjPosRef.current = { x: (window.innerWidth - SIZE) * 0.35, y: (window.innerHeight - SIZE) * 0.35 }
+    kjVelRef.current = { vx: (Math.random() > 0.5 ? 1 : -1) * (3.5 + Math.random() * 2.5), vy: (Math.random() > 0.5 ? 1 : -1) * (2.8 + Math.random() * 2) }
+    kjRotRef.current = 0
+    let lastTs = null
+    const loop = (ts) => {
+      if (!lastTs) lastTs = ts
+      const dt = Math.min((ts - lastTs) / 16, 3)
+      lastTs = ts
+      let { x, y } = kjPosRef.current
+      let { vx, vy } = kjVelRef.current
+      x += vx * dt; y += vy * dt
+      const W = window.innerWidth - SIZE, H = window.innerHeight - SIZE
+      let sx = 1, sy = 1
+      if (x <= 0) { x = 0; vx = Math.abs(vx); sx = 0.55; sy = 1.5 }
+      if (x >= W) { x = W; vx = -Math.abs(vx); sx = 0.55; sy = 1.5 }
+      if (y <= 0) { y = 0; vy = Math.abs(vy); sx = 1.5; sy = 0.55 }
+      if (y >= H) { y = H; vy = -Math.abs(vy); sx = 1.5; sy = 0.55 }
+      kjPosRef.current = { x, y }
+      kjVelRef.current = { vx, vy }
+      kjRotRef.current = (kjRotRef.current + vx * 0.45 * dt) % 360
+      setKjState({ x, y, rot: kjRotRef.current, flip: vx < 0, sx, sy })
+      kjAnimRef.current = requestAnimationFrame(loop)
+    }
+    kjAnimRef.current = requestAnimationFrame(loop)
+    return () => { if (kjAnimRef.current) cancelAnimationFrame(kjAnimRef.current) }
+  }, [kingJulienMode])
+
+  useEffect(() => {
+    if (!kingJulienMode) return
+    const iv = setInterval(() => setKjQuoteIdx(i => (i + 1) % KJ_QUOTES.length), 4000)
+    return () => clearInterval(iv)
+  }, [kingJulienMode])
 
   const toggleDark = () => { const v = !dark; setDark(v); try{ localStorage.setItem('pp_dark', v ? '1' : '0') }catch(e){} }
   const saveProfile = (updates) => { const u = { ...profile, ...updates }; setProfile(u); try{ localStorage.setItem('pp_profile', JSON.stringify(u)) }catch(e){} }
@@ -1660,6 +1728,22 @@ export default function PackPerfect() {
     .dot-pulse span:nth-child(1){animation:pulse-dot 1.2s ease-in-out 0s infinite}
     .dot-pulse span:nth-child(2){animation:pulse-dot 1.2s ease-in-out 0.2s infinite}
     .dot-pulse span:nth-child(3){animation:pulse-dot 1.2s ease-in-out 0.4s infinite}
+    @keyframes kjConfettiFall { 0%{transform:translateY(-30px) rotate(0deg) scale(1);opacity:1} 100%{transform:translateY(110vh) rotate(900deg) scale(0.75);opacity:0.5} }
+    @keyframes kjBanner { from{transform:translateY(-110%);opacity:0} to{transform:translateY(0);opacity:1} }
+    @keyframes kjBgPulse { 0%,100%{background:rgba(126,34,206,0.10)} 33%{background:rgba(21,128,61,0.08)} 66%{background:rgba(180,83,9,0.09)} }
+    @keyframes kjRainbowBorder { 0%,100%{border-color:#a855f7} 25%{border-color:#f59e0b} 50%{border-color:#10b981} 75%{border-color:#ef4444} }
+    @keyframes kjBannerGrad { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+    @keyframes kjSpeech { from{opacity:0;transform:scale(0.7) translateY(8px)} to{opacity:1;transform:scale(1) translateY(0)} }
+    @keyframes kjGlow { 0%,100%{filter:drop-shadow(0 0 10px rgba(168,85,247,0.8)) drop-shadow(0 0 20px rgba(168,85,247,0.4))} 50%{filter:drop-shadow(0 0 18px rgba(251,191,36,0.9)) drop-shadow(0 0 36px rgba(251,191,36,0.5))} }
+    .kj-img { animation:kjGlow 2s ease-in-out infinite; transition:transform 100ms ease; }
+    .kj-speech { animation:kjSpeech 0.4s cubic-bezier(0.22,1,0.36,1) both; }
+    .kj-banner { animation:kjBanner 0.65s cubic-bezier(0.22,1,0.36,1) both; }
+    .kj-bg { animation:kjBgPulse 3.5s ease-in-out infinite; }
+    .kj-header-border { animation:kjRainbowBorder 2s linear infinite !important; }
+    ${kingJulienMode ? `
+      .pp-header { border-bottom: 2px solid #a855f7 !important; }
+      body { background: #1a0533 !important; }
+    ` : ''}
     @media (prefers-reduced-motion:reduce) { *, *::before, *::after { transition-duration:0.01ms !important; animation-duration:0.01ms !important } }
     @media (max-width:640px) {
       .pp-header { flex-wrap:wrap; height:auto !important; padding:10px 14px !important; gap:6px; }
@@ -1674,8 +1758,41 @@ export default function PackPerfect() {
   `
 
   return (
-    <div style={{ fontFamily:"'Sora',sans-serif", minHeight:'100vh', background:t.bg, color:t.text }}>
+    <div style={{ fontFamily:"'Sora',sans-serif", minHeight:'100vh', background: kingJulienMode ? 'linear-gradient(135deg,#1a0533 0%,#0a2010 50%,#2d1000 100%)' : t.bg, color: kingJulienMode ? '#fef9e7' : t.text }}>
       <style>{CSS}</style>
+
+      {/* KING JULIEN EASTER EGG */}
+      {kingJulienMode && (<>
+        {/* Pulsing bg overlay */}
+        <div className="kj-bg" style={{ position:'fixed', inset:0, pointerEvents:'none', zIndex:5 }} />
+
+        {/* Falling confetti emojis */}
+        {KJ_CONFETTI.map(c => (
+          <div key={c.id} style={{ position:'fixed', top:0, left:`${c.left}%`, fontSize:`${c.size}px`, zIndex:6, pointerEvents:'none', animationName:'kjConfettiFall', animationDuration:`${c.dur}s`, animationDelay:`${c.delay}s`, animationIterationCount:'infinite', animationTimingFunction:'linear', willChange:'transform' }}>
+            {c.emoji}
+          </div>
+        ))}
+
+        {/* Bouncing King Julien */}
+        <div style={{ position:'fixed', left: kjState.x, top: kjState.y, width:120, height:120, zIndex:70, pointerEvents:'none', transform:`rotate(${kjState.rot}deg) scaleX(${kjState.flip ? -kjState.sx : kjState.sx}) scaleY(${kjState.sy})`, willChange:'transform' }}>
+          <img className="kj-img" src="/king_julien.png" alt="King Julien" style={{ width:'100%', height:'100%', objectFit:'contain', display:'block' }} />
+        </div>
+
+        {/* Speech bubble near King Julien */}
+        <div key={kjQuoteIdx} className="kj-speech" style={{ position:'fixed', left: Math.min(kjState.x + 130, window.innerWidth - 240), top: Math.max(kjState.y - 10, 70), zIndex:71, pointerEvents:'none', maxWidth:220 }}>
+          <div style={{ background:'rgba(255,255,255,0.97)', border:'2.5px solid #a855f7', borderRadius:'14px', padding:'8px 12px', fontSize:'13px', fontWeight:'600', color:'#581c87', lineHeight:1.4, boxShadow:'0 4px 20px rgba(168,85,247,0.4)', position:'relative' }}>
+            {KJ_QUOTES[kjQuoteIdx]}
+            <div style={{ position:'absolute', left:'-10px', top:'50%', transform:'translateY(-50%)', width:0, height:0, borderTop:'7px solid transparent', borderBottom:'7px solid transparent', borderRight:'10px solid #a855f7' }} />
+          </div>
+        </div>
+
+        {/* Party banner */}
+        <div className="kj-banner" style={{ position:'fixed', top:0, left:0, right:0, zIndex:1003, pointerEvents:'none' }}>
+          <div style={{ background:'linear-gradient(90deg,#7e22ce,#b45309,#15803d,#b91c1c,#7e22ce)', backgroundSize:'300% 100%', padding:'7px 16px', textAlign:'center', fontSize:'14px', fontWeight:'700', color:'#fef08a', letterSpacing:'0.04em', animationName:'kjBannerGrad', animationDuration:'4s', animationIterationCount:'infinite', animationTimingFunction:'ease-in-out' }}>
+            👑&nbsp; Welcome to MY kingdom! I like to MOVE IT MOVE IT! 🕺🎶&nbsp; 👑
+          </div>
+        </div>
+      </>)}
 
       {/* FULLSCREEN AD */}
       {showFullscreenAd && (
