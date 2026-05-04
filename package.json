@@ -3,5 +3,8 @@
   "scripts": {
     "build": "cd preview && npm install && npm run build",
     "dev": "cd preview && npm run dev"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.92.0"
   }
 }

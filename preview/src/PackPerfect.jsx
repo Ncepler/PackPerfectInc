@@ -1839,44 +1839,76 @@ export default function PackPerfect() {
     }, 6000)
   }
 
-  // Typing effect for AI
-  const typeMessage = (fullText) => {
-    setChatTyping(true)
-    let i = 0
-    const chunk = 3 // chars per tick
-    const tick = 18 // ms per tick
-    setChatMessages(prev => [...prev, { role:'assistant', content:'' }])
-    const interval = setInterval(() => {
-      i += chunk
-      setChatMessages(prev => {
-        const updated = [...prev]
-        updated[updated.length - 1] = { role:'assistant', content: fullText.slice(0, i) }
-        return updated
-      })
-      if (i >= fullText.length) {
-        clearInterval(interval)
-        setChatMessages(prev => {
-          const updated = [...prev]
-          updated[updated.length - 1] = { role:'assistant', content: fullText }
-          return updated
-        })
-        setChatTyping(false)
-      }
-    }, tick)
-  }
-
-  const sendChat = (preset) => {
+  const sendChat = async (preset) => {
     const text = preset || chatInput
     if (!text?.trim() || chatTyping || chatLoading) return
     setChatInput('')
-    setChatMessages(prev => [...prev, { role:'user', content: text }])
+    const userMsg = { role: 'user', content: text }
+    setChatMessages(prev => [...prev, userMsg])
     setChatLoading(true)
-    const thinkDelay = 1000 + Math.random() * 1000
-    setTimeout(() => {
+
+    const tripContext = [
+      destination && `Destination: ${destination}`,
+      tripType && `Trip type: ${tripType}`,
+      climate && `Climate: ${climate}`,
+      startDate && endDate && `Dates: ${startDate} to ${endDate} (${getDays()} days)`,
+      selectedSuitcase && `Luggage: ${selectedSuitcase.name} (${selectedSuitcase.liters}L)`,
+      profile?.gender && `Traveler: ${profile.gender}`,
+    ].filter(Boolean).join('\n')
+
+    // history excludes the initial greeting to keep context tight
+    const history = chatMessages
+      .filter(m => m.role === 'user' || (m.role === 'assistant' && m !== chatMessages[0]))
+      .slice(-10)
+      .map(m => ({ role: m.role, content: m.content }))
+
+    try {
+      const resp = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text, history, tripContext }),
+      })
+
+      if (!resp.ok) throw new Error(`API error ${resp.status}`)
+
       setChatLoading(false)
+      setChatTyping(true)
+      setChatMessages(prev => [...prev, { role: 'assistant', content: '' }])
+
+      const reader = resp.body.getReader()
+      const decoder = new TextDecoder()
+      let buf = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        buf += decoder.decode(value, { stream: true })
+        const lines = buf.split('\n')
+        buf = lines.pop()
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue
+          const payload = line.slice(6)
+          if (payload === '[DONE]') break
+          try {
+            const { text: chunk } = JSON.parse(payload)
+            if (chunk) {
+              setChatMessages(prev => {
+                const updated = [...prev]
+                updated[updated.length - 1] = { role: 'assistant', content: updated[updated.length - 1].content + chunk }
+                return updated
+              })
+            }
+          } catch (_) {}
+        }
+      }
+    } catch (err) {
+      setChatLoading(false)
+      // Fall back to local KB if API unavailable
       const resp = getAIResponse(text, { destination, tripType })
-      typeMessage(resp)
-    }, thinkDelay)
+      setChatMessages(prev => [...prev, { role: 'assistant', content: resp }])
+    } finally {
+      setChatTyping(false)
+    }
   }
 
   // Theme
