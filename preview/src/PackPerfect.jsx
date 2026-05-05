@@ -1236,6 +1236,12 @@ export default function PackPerfect() {
   const [premiumCustomItemBag, setPremiumCustomItemBag] = useState('main')
   const lastGenerateCtx = useRef(null)
   const listTimerRef = useRef(null)
+  const [suitcaseFile, setSuitcaseFile] = useState(null)
+  const [suitcasePreviewUrl, setSuitcasePreviewUrl] = useState(null)
+  const [layerLoading, setLayerLoading] = useState(false)
+  const [layerError, setLayerError] = useState('')
+  const [layerResult, setLayerResult] = useState(null)
+  const [layerToast, setLayerToast] = useState(false)
   const [heroVisible, setHeroVisible] = useState(false)
   const [statCounts, setStatCounts] = useState({ trips: 0, destinations: 0, items: 0, time: 0 })
   const [activeStatIdx, setActiveStatIdx] = useState(null)
@@ -1846,6 +1852,38 @@ export default function PackPerfect() {
     }
   }
 
+  const generateLayers = async () => {
+    if (!suitcaseFile || Object.keys(items).length === 0) return
+    setLayerLoading(true)
+    setLayerError('')
+    setLayerResult(null)
+    try {
+      const arrayBuffer = await suitcaseFile.arrayBuffer()
+      const bytes = new Uint8Array(arrayBuffer)
+      let binary = ''
+      for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i])
+      const imageBase64 = btoa(binary)
+      const imageMimeType = suitcaseFile.type || 'image/jpeg'
+
+      const resp = await fetch('/api/generate-layers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageBase64, imageMimeType, packingList: items }),
+      })
+      if (!resp.ok) {
+        const errData = await resp.json().catch(() => ({}))
+        throw new Error(errData.error || `Server error ${resp.status}`)
+      }
+      const data = await resp.json()
+      setLayerResult(data)
+      setLayerToast(true)
+      setTimeout(() => setLayerToast(false), 4500)
+    } catch (err) {
+      setLayerError(err.message || 'Something went wrong. Please try again.')
+    }
+    setLayerLoading(false)
+  }
+
   // Theme
   const t = {
     bg: dark ? '#080f1c' : '#f4f6f9',
@@ -2051,11 +2089,26 @@ export default function PackPerfect() {
       .hero-stats { grid-template-columns:repeat(2, 1fr) !important; }
       .pp-chat-messages { min-height:260px !important; max-height:320px !important; }
     }
+    @keyframes toastSlideIn { from{opacity:0;transform:translateY(-110%)} to{opacity:1;transform:translateY(0)} }
+    @keyframes toastSlideOut { from{opacity:1;transform:translateY(0)} to{opacity:0;transform:translateY(-110%)} }
+    .layer-toast { animation:toastSlideIn 0.35s cubic-bezier(0.22,1,0.36,1) both }
+    .layer-toast-out { animation:toastSlideOut 0.3s ease-in both }
   `
 
   return (
     <div style={{ fontFamily:"'Sora',sans-serif", minHeight:'100vh', background: iceAgeMode ? 'linear-gradient(180deg,#0a1628 0%,#0d2040 40%,#0a2535 100%)' : kingJulienMode ? 'linear-gradient(135deg,#1a0533 0%,#0a2010 50%,#2d1000 100%)' : interstellarMode ? '#000510' : minionsMode ? '#0d1a2e' : t.bg, color: iceAgeMode ? '#e0f4ff' : kingJulienMode ? '#fef9e7' : interstellarMode ? '#c8d8e8' : minionsMode ? '#e8f0fe' : t.text }}>
       <style>{CSS}</style>
+
+      {/* ── PACKING LAYERS TOAST ── */}
+      {layerToast && (
+        <div className="layer-toast" style={{ position:'fixed', top:'16px', left:'50%', transform:'translateX(-50%)', zIndex:2000, pointerEvents:'auto' }}>
+          <div style={{ display:'flex', alignItems:'center', gap:'12px', background: dark ? '#0d1625' : '#ffffff', border:`1px solid ${t.border}`, borderLeft:`3px solid ${t.accent}`, borderRadius:'10px', padding:'12px 18px', boxShadow:'0 8px 28px rgba(0,0,0,0.18)', fontSize:'14px', fontWeight:'500', color:t.text, whiteSpace:'nowrap' }}>
+            <span style={{ fontSize:'18px' }}>🧳</span>
+            Your packing layers are ready!
+            <button onClick={() => setLayerToast(false)} style={{ background:'none', border:'none', cursor:'pointer', color:t.textMuted, fontSize:'16px', padding:'0 0 0 4px', lineHeight:1 }}>✕</button>
+          </div>
+        </div>
+      )}
 
       {/* KING JULIEN EASTER EGG */}
       {kingJulienMode && (<>
@@ -3279,6 +3332,116 @@ export default function PackPerfect() {
                 </div>
 
                 <button className="btn-primary" onClick={saveList} style={btnPrimary}>Save List</button>
+              </div>
+            )}
+
+            {/* ── SUITCASE LAYER VISUALIZER ── */}
+            {!premiumMode && listGenerated && (
+              <div style={{ ...card, marginTop:'12px' }}>
+                <div style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'4px' }}>
+                  <span style={{ fontSize:'22px' }}>🧳</span>
+                  <h2 style={{ fontSize:'18px', fontWeight:'600', color:t.text }}>Suitcase Layer Visualizer</h2>
+                </div>
+                <p style={{ fontSize:'13px', color:t.textMuted, lineHeight:'1.6', marginBottom:'18px' }}>
+                  Upload a photo of your empty suitcase. We'll analyze it and generate a visual packing guide with 3 layers — bottom, middle, and top.
+                </p>
+
+                {/* Photo upload */}
+                <div style={{ marginBottom:'16px' }}>
+                  <label style={labelStyle}>Suitcase Photo</label>
+                  <div style={{ display:'flex', gap:'12px', alignItems:'flex-start', flexWrap:'wrap' }}>
+                    <label style={{ display:'flex', alignItems:'center', gap:'8px', background:t.inputBg, border:`1.5px dashed ${suitcaseFile ? t.accent : t.border}`, borderRadius:'8px', padding:'10px 16px', cursor:'pointer', fontSize:'13px', color: suitcaseFile ? t.accent : t.textMuted, fontWeight:'500', transition:'border-color 150ms ease, color 150ms ease' }}>
+                      <span style={{ fontSize:'18px' }}>📷</span>
+                      {suitcaseFile ? suitcaseFile.name : 'Choose photo…'}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        style={{ display:'none' }}
+                        onChange={e => {
+                          const f = e.target.files?.[0]
+                          if (!f) return
+                          setSuitcaseFile(f)
+                          setSuitcasePreviewUrl(URL.createObjectURL(f))
+                          setLayerResult(null)
+                          setLayerError('')
+                        }}
+                      />
+                    </label>
+                    {suitcasePreviewUrl && (
+                      <img src={suitcasePreviewUrl} alt="Suitcase preview" style={{ width:'80px', height:'80px', objectFit:'cover', borderRadius:'8px', border:`1px solid ${t.border}` }} />
+                    )}
+                  </div>
+                </div>
+
+                <button
+                  className="btn-primary"
+                  onClick={generateLayers}
+                  disabled={!suitcaseFile || layerLoading}
+                  style={{ ...btnPrimary, opacity: (!suitcaseFile || layerLoading) ? 0.55 : 1, marginBottom: (layerLoading || layerError || layerResult) ? '20px' : '0' }}
+                >
+                  {layerLoading ? 'Generating layers…' : 'Generate Packing Layers'}
+                </button>
+
+                {/* Loading state */}
+                {layerLoading && (
+                  <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:'14px', padding:'28px 20px', background:t.inputBg, borderRadius:'10px', border:`1px solid ${t.border}` }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
+                      <div className="spinner" style={{ width:'22px', height:'22px', borderWidth:'3px' }} />
+                      <div className="dot-pulse"><span /><span /><span /></div>
+                      <div className="spinner" style={{ width:'22px', height:'22px', borderWidth:'3px' }} />
+                    </div>
+                    <div style={{ fontSize:'14px', fontWeight:'500', color:t.textMuted }}>Analyzing your suitcase and generating layers…</div>
+                    <div style={{ fontSize:'12px', color:t.textDim }}>This can take up to 60 seconds while we generate your images</div>
+                  </div>
+                )}
+
+                {/* Error state */}
+                {layerError && !layerLoading && (
+                  <div style={{ background: dark ? 'rgba(239,68,68,0.08)' : 'rgba(254,226,226,0.8)', border:'1px solid rgba(239,68,68,0.3)', borderRadius:'8px', padding:'12px 16px', fontSize:'13px', color: dark ? '#fca5a5' : '#b91c1c' }}>
+                    ⚠️ {layerError}
+                  </div>
+                )}
+
+                {/* Results */}
+                {layerResult && !layerLoading && (
+                  <div>
+                    {layerResult.suitcaseNote && (
+                      <p style={{ fontSize:'12px', color:t.textMuted, marginBottom:'16px', fontStyle:'italic' }}>
+                        {layerResult.suitcaseNote}
+                      </p>
+                    )}
+                    <div style={{ display:'flex', flexDirection:'column', gap:'20px' }}>
+                      {layerResult.layers.map((layer, i) => (
+                        <div key={i} style={{ border:`1px solid ${t.border}`, borderRadius:'10px', overflow:'hidden' }}>
+                          <div style={{ padding:'12px 16px', background: dark ? 'rgba(37,99,235,0.08)' : 'rgba(37,99,235,0.05)', borderBottom:`1px solid ${t.border}`, display:'flex', alignItems:'center', gap:'10px' }}>
+                            <span style={{ fontSize:'20px' }}>{i === 0 ? '🔽' : i === 1 ? '➡️' : '🔼'}</span>
+                            <div>
+                              <div style={{ fontSize:'14px', fontWeight:'600', color:t.accent }}>{layer.label}</div>
+                              {layer.packingTip && <div style={{ fontSize:'12px', color:t.textMuted, marginTop:'2px' }}>{layer.packingTip}</div>}
+                            </div>
+                          </div>
+                          {layer.imageUrl ? (
+                            <img src={layer.imageUrl} alt={layer.label} style={{ width:'100%', display:'block', maxHeight:'340px', objectFit:'cover' }} />
+                          ) : (
+                            <div style={{ padding:'24px', textAlign:'center', color:t.textDim, fontSize:'13px' }}>Image unavailable</div>
+                          )}
+                          {layer.items?.length > 0 && (
+                            <div style={{ padding:'12px 16px', background:t.inputBg }}>
+                              <div style={{ fontSize:'11px', fontWeight:'600', color:t.textMuted, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:'6px' }}>Items</div>
+                              <div style={{ display:'flex', flexWrap:'wrap', gap:'6px' }}>
+                                {layer.items.map((item, j) => (
+                                  <span key={j} style={{ background:t.surface, border:`1px solid ${t.border}`, borderRadius:'999px', padding:'3px 10px', fontSize:'12px', color:t.text }}>
+                                    {item}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

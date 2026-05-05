@@ -1,4 +1,4 @@
-import Anthropic from '@anthropic-ai/sdk'
+import OpenAI from 'openai'
 
 export const config = { runtime: 'edge' }
 
@@ -13,8 +13,8 @@ export default async function handler(req) {
     return new Response(JSON.stringify({ error: 'No message provided' }), { status: 400 })
   }
 
-  // Add your Anthropic API key here — set ANTHROPIC_API_KEY in your environment
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+  // API key read from OPENAI_API_KEY environment variable — never exposed to the frontend
+  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
   const systemPrompt = `You are a friendly, expert packing assistant for PackPerfect, a travel packing list app. Help users pack smart for their trips.
 
@@ -27,14 +27,15 @@ Your rules:
 - Reference the user's trip details when relevant`
 
   const messages = [
+    { role: 'system', content: systemPrompt },
     ...(Array.isArray(history) ? history.slice(-10) : []),
     { role: 'user', content: message },
   ]
 
-  const stream = await client.messages.stream({
-    model: 'claude-haiku-4-5-20251001',
+  const stream = await client.chat.completions.create({
+    model: 'gpt-4o-mini',
     max_tokens: 1024,
-    system: systemPrompt,
+    stream: true,
     messages,
   })
 
@@ -43,8 +44,9 @@ Your rules:
       const enc = new TextEncoder()
       try {
         for await (const chunk of stream) {
-          if (chunk.type === 'content_block_delta' && chunk.delta?.type === 'text_delta') {
-            controller.enqueue(enc.encode(`data: ${JSON.stringify({ text: chunk.delta.text })}\n\n`))
+          const text = chunk.choices[0]?.delta?.content || ''
+          if (text) {
+            controller.enqueue(enc.encode(`data: ${JSON.stringify({ text })}\n\n`))
           }
         }
         controller.enqueue(enc.encode('data: [DONE]\n\n'))

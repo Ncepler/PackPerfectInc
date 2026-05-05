@@ -5,6 +5,7 @@
     "dev": "cd preview && npm run dev"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.92.0"
+    "@anthropic-ai/sdk": "^0.92.0",
+    "openai": "^6.36.0"
   }
 }
