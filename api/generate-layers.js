@@ -8,7 +8,17 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { imageBase64, imageMimeType, packingList } = req.body
+  const { imageBase64, imageMimeType, packingList, premiumKey, layerCount } = req.body
+
+  // Server-side premium check
+  if (premiumKey !== 'Incubator') {
+    return res.status(403).json({ error: 'Premium access required' })
+  }
+
+  // Server-side usage limit check
+  if (typeof layerCount === 'number' && layerCount >= 2) {
+    return res.status(429).json({ error: 'Layer generation limit reached (2/2).' })
+  }
 
   if (!imageBase64 || !packingList) {
     return res.status(400).json({ error: 'Missing imageBase64 or packingList' })
