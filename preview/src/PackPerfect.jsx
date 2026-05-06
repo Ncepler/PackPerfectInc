@@ -3665,47 +3665,43 @@ export default function PackPerfect() {
               </div>
             )}
 
-            {/* ── SUITCASE LAYER VISUALIZER (Premium only) ── */}
-            {!premiumMode && listGenerated && (
-              <div style={{ ...card, marginTop:'12px' }}>
+          </div>
+        )}
+
+        {/* ── VISUAL AID ── */}
+        {activeTab === 'Visual Aid' && (
+          <div>
+            {/* Layer Visualizer for premium, static image for everyone else */}
+            {premiumUnlocked && !premiumMode ? (
+              <div style={card}>
                 <div style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'4px' }}>
                   <span style={{ fontSize:'22px' }}>🧳</span>
                   <h2 style={{ fontSize:'18px', fontWeight:'600', color:t.text }}>Suitcase Layer Visualizer</h2>
                   <span style={{ fontSize:'11px', fontWeight:'700', color:'#ca8a04', background:'rgba(202,138,4,0.12)', border:'1px solid rgba(202,138,4,0.3)', borderRadius:'999px', padding:'2px 9px' }}>✦ Premium</span>
                 </div>
-                <p style={{ fontSize:'13px', color:t.textMuted, lineHeight:'1.6', marginBottom:'18px' }}>
+                <p style={{ fontSize:'13px', color:t.textMuted, lineHeight:'1.6', marginBottom:'16px' }}>
                   Upload a photo of your empty suitcase. AI analyzes it and generates 3 visual layer images — bottom, middle, and top — showing exactly what goes where.
                 </p>
 
-                {!premiumUnlocked ? (
-                  <div style={{ background: dark ? 'rgba(202,138,4,0.07)' : 'rgba(254,243,199,0.5)', border:'1px solid rgba(202,138,4,0.3)', borderRadius:'10px', padding:'20px', textAlign:'center' }}>
-                    <div style={{ fontSize:'28px', marginBottom:'8px' }}>✦</div>
-                    <div style={{ fontSize:'15px', fontWeight:'600', color:'#ca8a04', marginBottom:'6px' }}>Premium Feature</div>
-                    <div style={{ fontSize:'13px', color:t.textMuted, marginBottom:'16px', lineHeight:'1.6' }}>
-                      Unlock the Suitcase Layer Visualizer with a Premium subscription.
-                    </div>
-                    <button className="btn-primary" onClick={() => setShowPremiumModal(true)}
-                      style={{ ...btnPrimary, background:'linear-gradient(135deg,#ca8a04,#d97706)', width:'auto', padding:'10px 28px' }}>
-                      Unlock Premium ✦
-                    </button>
-                  </div>
-                ) : layerCount >= 2 ? (
+                {!listGenerated && (
+                  <p style={{ fontSize:'12px', color:t.textDim, marginBottom:'14px' }}>Generate a packing list first so the AI knows what to pack.</p>
+                )}
+
+                {layerCount >= 2 ? (
                   <div style={{ background: dark ? 'rgba(239,68,68,0.08)' : 'rgba(254,226,226,0.6)', border:'1px solid rgba(239,68,68,0.3)', borderRadius:'10px', padding:'20px', textAlign:'center' }}>
-                    <div style={{ fontSize:'28px', marginBottom:'8px' }}>🔒</div>
-                    <div style={{ fontSize:'15px', fontWeight:'600', color: dark ? '#fca5a5' : '#b91c1c', marginBottom:'6px' }}>Generation Limit Reached</div>
-                    <div style={{ fontSize:'13px', color:t.textMuted, lineHeight:'1.6' }}>
-                      You've used both of your layer visualizer generations (2/2).
-                    </div>
+                    <div style={{ fontSize:'24px', marginBottom:'8px' }}>🔒</div>
+                    <div style={{ fontSize:'15px', fontWeight:'600', color: dark ? '#fca5a5' : '#b91c1c', marginBottom:'4px' }}>Generation Limit Reached</div>
+                    <div style={{ fontSize:'13px', color:t.textMuted }}>You've used both layer visualizer generations (2/2).</div>
                   </div>
                 ) : (
                   <>
-                    {/* Usage indicator */}
+                    {/* Usage dots */}
                     <div style={{ display:'flex', alignItems:'center', gap:'6px', marginBottom:'16px' }}>
-                      <div style={{ fontSize:'12px', color:t.textMuted }}>Generations used:</div>
+                      <span style={{ fontSize:'12px', color:t.textMuted }}>Generations used:</span>
                       {[0,1].map(i => (
                         <div key={i} style={{ width:'10px', height:'10px', borderRadius:'50%', background: i < layerCount ? t.accent : t.border, border:`1px solid ${i < layerCount ? t.accent : t.borderStrong}` }} />
                       ))}
-                      <div style={{ fontSize:'12px', color:t.textMuted }}>{layerCount}/2</div>
+                      <span style={{ fontSize:'12px', color:t.textMuted }}>{layerCount}/2</span>
                     </div>
 
                     {/* Photo upload */}
@@ -3715,10 +3711,7 @@ export default function PackPerfect() {
                         <label style={{ display:'flex', alignItems:'center', gap:'8px', background:t.inputBg, border:`1.5px dashed ${suitcaseFile ? t.accent : t.border}`, borderRadius:'8px', padding:'10px 16px', cursor:'pointer', fontSize:'13px', color: suitcaseFile ? t.accent : t.textMuted, fontWeight:'500', transition:'border-color 150ms ease, color 150ms ease' }}>
                           <span style={{ fontSize:'18px' }}>📷</span>
                           {suitcaseFile ? suitcaseFile.name : 'Choose photo…'}
-                          <input
-                            type="file"
-                            accept="image/*"
-                            style={{ display:'none' }}
+                          <input type="file" accept="image/*" style={{ display:'none' }}
                             onChange={e => {
                               const f = e.target.files?.[0]
                               if (!f) return
@@ -3735,20 +3728,16 @@ export default function PackPerfect() {
                       </div>
                     </div>
 
-                    <button
-                      className="btn-primary"
-                      onClick={generateLayers}
-                      disabled={!suitcaseFile || layerLoading}
-                      style={{ ...btnPrimary, opacity: (!suitcaseFile || layerLoading) ? 0.55 : 1, marginBottom: (layerLoading || layerError || layerResult) ? '20px' : '0' }}
-                    >
+                    <button className="btn-primary" onClick={generateLayers} disabled={!suitcaseFile || !listGenerated || layerLoading}
+                      style={{ ...btnPrimary, opacity: (!suitcaseFile || !listGenerated || layerLoading) ? 0.55 : 1, marginBottom: (layerLoading || layerError || layerResult) ? '16px' : '0' }}>
                       {layerLoading ? 'Generating layers…' : `Generate Packing Layers (${2 - layerCount} left)`}
                     </button>
                   </>
                 )}
 
-                {/* Loading state */}
+                {/* Loading */}
                 {layerLoading && (
-                  <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:'14px', padding:'28px 20px', background:t.inputBg, borderRadius:'10px', border:`1px solid ${t.border}`, marginTop:'16px' }}>
+                  <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:'14px', padding:'28px 20px', background:t.inputBg, borderRadius:'10px', border:`1px solid ${t.border}` }}>
                     <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
                       <div className="spinner" style={{ width:'22px', height:'22px', borderWidth:'3px' }} />
                       <div className="dot-pulse"><span /><span /><span /></div>
@@ -3759,32 +3748,28 @@ export default function PackPerfect() {
                   </div>
                 )}
 
-                {/* Error state */}
+                {/* Error */}
                 {layerError && !layerLoading && (
-                  <div style={{ background: dark ? 'rgba(239,68,68,0.08)' : 'rgba(254,226,226,0.8)', border:'1px solid rgba(239,68,68,0.3)', borderRadius:'8px', padding:'12px 16px', fontSize:'13px', color: dark ? '#fca5a5' : '#b91c1c', marginTop:'16px' }}>
+                  <div style={{ background: dark ? 'rgba(239,68,68,0.08)' : 'rgba(254,226,226,0.8)', border:'1px solid rgba(239,68,68,0.3)', borderRadius:'8px', padding:'12px 16px', fontSize:'13px', color: dark ? '#fca5a5' : '#b91c1c' }}>
                     ⚠️ {layerError}
                   </div>
                 )}
 
-                {/* Results — swipeable carousel */}
+                {/* Carousel results */}
                 {layerResult && !layerLoading && (() => {
                   const layers = layerResult.layers || []
                   const cur = layers[layerCarouselIdx]
-                  const layerIcons = ['🔽','➡️','🔼']
+                  const icons = ['🔽','➡️','🔼']
                   return (
-                    <div style={{ marginTop:'16px' }}>
+                    <div>
                       {layerResult.suitcaseNote && (
-                        <p style={{ fontSize:'12px', color:t.textMuted, marginBottom:'14px', fontStyle:'italic' }}>
-                          {layerResult.suitcaseNote}
-                        </p>
+                        <p style={{ fontSize:'12px', color:t.textMuted, marginBottom:'12px', fontStyle:'italic' }}>{layerResult.suitcaseNote}</p>
                       )}
-
-                      {/* Carousel container */}
                       <div style={{ border:`1px solid ${t.border}`, borderRadius:'12px', overflow:'hidden' }}>
-                        {/* Layer header + nav */}
+                        {/* Header + arrows */}
                         <div style={{ padding:'12px 16px', background: dark ? 'rgba(37,99,235,0.08)' : 'rgba(37,99,235,0.05)', borderBottom:`1px solid ${t.border}`, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
                           <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
-                            <span style={{ fontSize:'20px' }}>{layerIcons[layerCarouselIdx]}</span>
+                            <span style={{ fontSize:'20px' }}>{icons[layerCarouselIdx]}</span>
                             <div>
                               <div style={{ fontSize:'14px', fontWeight:'600', color:t.accent }}>{cur?.label}</div>
                               {cur?.packingTip && <div style={{ fontSize:'12px', color:t.textMuted, marginTop:'2px' }}>{cur.packingTip}</div>}
@@ -3792,21 +3777,18 @@ export default function PackPerfect() {
                           </div>
                           <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
                             <button onClick={() => setLayerCarouselIdx(i => Math.max(0, i - 1))} disabled={layerCarouselIdx === 0}
-                              style={{ background:t.inputBg, border:`1px solid ${t.border}`, borderRadius:'6px', padding:'5px 10px', cursor: layerCarouselIdx === 0 ? 'default' : 'pointer', color:t.text, opacity: layerCarouselIdx === 0 ? 0.35 : 1, fontSize:'14px' }}>‹</button>
-                            <span style={{ fontSize:'12px', color:t.textMuted, minWidth:'40px', textAlign:'center' }}>{layerCarouselIdx + 1} / {layers.length}</span>
+                              style={{ background:t.inputBg, border:`1px solid ${t.border}`, borderRadius:'6px', padding:'5px 11px', cursor: layerCarouselIdx === 0 ? 'default' : 'pointer', color:t.text, opacity: layerCarouselIdx === 0 ? 0.35 : 1, fontSize:'16px', lineHeight:1 }}>‹</button>
+                            <span style={{ fontSize:'12px', color:t.textMuted, minWidth:'36px', textAlign:'center' }}>{layerCarouselIdx + 1} / {layers.length}</span>
                             <button onClick={() => setLayerCarouselIdx(i => Math.min(layers.length - 1, i + 1))} disabled={layerCarouselIdx === layers.length - 1}
-                              style={{ background:t.inputBg, border:`1px solid ${t.border}`, borderRadius:'6px', padding:'5px 10px', cursor: layerCarouselIdx === layers.length - 1 ? 'default' : 'pointer', color:t.text, opacity: layerCarouselIdx === layers.length - 1 ? 0.35 : 1, fontSize:'14px' }}>›</button>
+                              style={{ background:t.inputBg, border:`1px solid ${t.border}`, borderRadius:'6px', padding:'5px 11px', cursor: layerCarouselIdx === layers.length - 1 ? 'default' : 'pointer', color:t.text, opacity: layerCarouselIdx === layers.length - 1 ? 0.35 : 1, fontSize:'16px', lineHeight:1 }}>›</button>
                           </div>
                         </div>
-
                         {/* Image */}
-                        {cur?.imageUrl ? (
-                          <img src={cur.imageUrl} alt={cur.label} style={{ width:'100%', display:'block', maxHeight:'380px', objectFit:'cover' }} />
-                        ) : (
-                          <div style={{ padding:'40px', textAlign:'center', color:t.textDim, fontSize:'13px' }}>Image unavailable</div>
-                        )}
-
-                        {/* Items for this layer */}
+                        {cur?.imageUrl
+                          ? <img src={cur.imageUrl} alt={cur.label} style={{ width:'100%', display:'block', maxHeight:'400px', objectFit:'cover' }} />
+                          : <div style={{ padding:'40px', textAlign:'center', color:t.textDim, fontSize:'13px' }}>Image unavailable</div>
+                        }
+                        {/* Items */}
                         {cur?.items?.length > 0 && (
                           <div style={{ padding:'12px 16px', background:t.inputBg }}>
                             <div style={{ fontSize:'11px', fontWeight:'600', color:t.textMuted, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:'6px' }}>Items in this layer</div>
@@ -3818,8 +3800,7 @@ export default function PackPerfect() {
                           </div>
                         )}
                       </div>
-
-                      {/* Dot indicators */}
+                      {/* Dot nav */}
                       <div style={{ display:'flex', justifyContent:'center', gap:'6px', marginTop:'10px' }}>
                         {layers.map((_, i) => (
                           <button key={i} onClick={() => setLayerCarouselIdx(i)}
@@ -3830,30 +3811,25 @@ export default function PackPerfect() {
                   )
                 })()}
               </div>
-            )}
-          </div>
-        )}
-
-        {/* ── VISUAL AID ── */}
-        {activeTab === 'Visual Aid' && (
-          <div>
-            <div style={card}>
-              <h2 style={{ fontSize:'18px', fontWeight:'600', marginBottom:'12px', color:t.text }}>Visual Packing Aid</h2>
-              {!listGenerated && !listLoading && <p style={{ fontSize:'12px', color:t.textDim, marginBottom:'14px' }}>Generate a list first to see the right image for your trip type.</p>}
-              {(listLoading || (listGenerated && !visualAidReady)) ? (
-                <div style={{ width:'100%', borderRadius:'12px', background: dark ? '#0d1625' : '#eef2f8', border:`1px solid ${t.border}`, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'16px', padding:'48px 20px' }}>
-                  <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:'12px' }}>
-                    <div className="spinner" style={{ width:'22px', height:'22px', borderWidth:'3px' }} />
-                    <div className="dot-pulse"><span /><span /><span /></div>
-                    <div className="spinner" style={{ width:'22px', height:'22px', borderWidth:'3px' }} />
+            ) : (
+              <div style={card}>
+                <h2 style={{ fontSize:'18px', fontWeight:'600', marginBottom:'12px', color:t.text }}>Visual Packing Aid</h2>
+                {!listGenerated && !listLoading && <p style={{ fontSize:'12px', color:t.textDim, marginBottom:'14px' }}>Generate a list first to see the right image for your trip type.</p>}
+                {(listLoading || (listGenerated && !visualAidReady)) ? (
+                  <div style={{ width:'100%', borderRadius:'12px', background: dark ? '#0d1625' : '#eef2f8', border:`1px solid ${t.border}`, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'16px', padding:'48px 20px' }}>
+                    <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:'12px' }}>
+                      <div className="spinner" style={{ width:'22px', height:'22px', borderWidth:'3px' }} />
+                      <div className="dot-pulse"><span /><span /><span /></div>
+                      <div className="spinner" style={{ width:'22px', height:'22px', borderWidth:'3px' }} />
+                    </div>
+                    <div style={{ fontSize:'14px', fontWeight:'500', color:t.textMuted }}>Perfecting your visual aid…</div>
+                    <div style={{ fontSize:'12px', color:t.textDim }}>Rendering the perfect scene for your trip</div>
                   </div>
-                  <div style={{ fontSize:'14px', fontWeight:'500', color:t.textMuted }}>Perfecting your visual aid…</div>
-                  <div style={{ fontSize:'12px', color:t.textDim }}>Rendering the perfect scene for your trip</div>
-                </div>
-              ) : (listGenerated || premiumGenerated) ? (
-                <img src={premiumMode ? premiumVisImage : visImage} alt="Packing visual guide" style={{ width:'100%', borderRadius:'12px', display:'block' }} />
-              ) : null}
-            </div>
+                ) : (listGenerated || premiumGenerated) ? (
+                  <img src={premiumMode ? premiumVisImage : visImage} alt="Packing visual guide" style={{ width:'100%', borderRadius:'12px', display:'block' }} />
+                ) : null}
+              </div>
+            )}
             <div style={card}>
               <div style={{ fontSize:'11px', fontWeight:'600', color:t.textMuted, textTransform:'uppercase', letterSpacing:'0.09em', marginBottom:'14px' }}>Expert Packing Tips</div>
               <div className="pp-tips-grid" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'9px' }}>
@@ -3877,97 +3853,29 @@ export default function PackPerfect() {
 
         {/* ── AI ASSISTANT ── */}
         {activeTab === 'AI Assistant' && (
-          <div>
-            {/* Free keyword-based assistant */}
-            <div style={{ ...card, padding:0, overflow:'hidden', marginBottom:'12px' }}>
-              <div style={{ padding:'20px 22px', borderBottom:`1px solid ${t.border}` }}>
-                <h2 style={{ fontSize:'18px', fontWeight:'600', color:t.text, marginBottom:'3px' }}>Packing Assistant</h2>
-                <p style={{ fontSize:'13px', color:t.textMuted }}>
-                  {destination ? `${destination} — ${tripType}` : 'Ask me anything about packing'}
-                </p>
-              </div>
-              <div style={{ padding:'12px 16px', borderBottom:`1px solid ${t.border}`, display:'flex', gap:'7px', flexWrap:'wrap' }}>
-                {['Packing for rain?','Avoid baggage fees?','TSA liquid rules?','Long trip laundry?','Packing cubes worth it?'].map(q => (
-                  <button key={q} onClick={() => sendChat(q)} disabled={chatTyping}
-                    style={{ background:t.accentDim, border:`1px solid ${t.border}`, borderRadius:'999px', padding:'5px 13px', fontSize:'12px', cursor: chatTyping ? 'default' : 'pointer', color:t.accent, opacity: chatTyping ? 0.5 : 1 }}>
-                    {q}
-                  </button>
-                ))}
-              </div>
-              <div className="pp-chat-messages" style={{ padding:'16px', minHeight:'260px', maxHeight:'360px', overflowY:'auto', display:'flex', flexDirection:'column', gap:'10px' }}>
-                {chatMessages.map((msg, i) => {
-                  const isLast = i === chatMessages.length - 1
-                  const isTypingMsg = chatTyping && isLast && msg.role === 'assistant'
-                  return (
-                    <div key={i} style={{ display:'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
-                      <div className={isTypingMsg ? 'cursor-blink' : ''} style={{
-                        maxWidth:'78%', padding:'10px 14px',
-                        borderRadius: msg.role === 'user' ? '12px 12px 3px 12px' : '12px 12px 12px 3px',
-                        background: msg.role === 'user' ? t.accent : t.inputBg,
-                        border: msg.role === 'assistant' ? `1px solid ${t.border}` : 'none',
-                        color: msg.role === 'user' ? '#fff' : t.text,
-                        fontSize:'14px', lineHeight:'1.6',
-                      }}>
-                        {msg.content}
-                      </div>
-                    </div>
-                  )
-                })}
-                <div ref={chatEndRef} />
-              </div>
-              <div style={{ padding:'14px 16px', borderTop:`1px solid ${t.border}`, display:'flex', gap:'8px' }}>
-                <input value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && sendChat()}
-                  placeholder="Ask anything about packing..." disabled={chatTyping}
-                  style={{ flex:1, padding:'10px 16px', background:t.inputBg, border:`1px solid ${t.border}`, borderRadius:'999px', fontSize:'14px', color:t.text, outline:'none', opacity: chatTyping ? 0.6 : 1 }} />
-                <button className="btn-primary" onClick={() => sendChat()} disabled={chatTyping} style={{ ...btnPrimary, width:'auto', padding:'10px 22px', borderRadius:'999px', opacity: chatTyping ? 0.6 : 1 }}>Send</button>
-              </div>
-            </div>
-
-            {/* Premium AI Chat */}
+          premiumUnlocked ? (
+            /* Premium users: only the AI chat, no keyword chat */
             <div style={{ ...card, padding:0, overflow:'hidden' }}>
               <div style={{ padding:'18px 22px', borderBottom:`1px solid ${t.border}`, display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:'8px' }}>
                 <div>
                   <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'2px' }}>
-                    <h2 style={{ fontSize:'17px', fontWeight:'600', color:t.text }}>AI-Powered Chat</h2>
+                    <h2 style={{ fontSize:'18px', fontWeight:'600', color:t.text }}>AI Packing Assistant</h2>
                     <span style={{ fontSize:'11px', fontWeight:'700', color:'#ca8a04', background:'rgba(202,138,4,0.12)', border:'1px solid rgba(202,138,4,0.3)', borderRadius:'999px', padding:'2px 9px' }}>✦ Premium</span>
                   </div>
                   <p style={{ fontSize:'13px', color:t.textMuted }}>
-                    {premiumUnlocked
-                      ? (destination ? `${destination} — aware of your full packing list` : 'Real AI, aware of your packing list')
-                      : 'Real AI responses powered by GPT-4o mini'}
+                    {destination ? `${destination} — aware of your full packing list` : 'Real AI, aware of your packing list'}
                   </p>
                 </div>
-                {premiumUnlocked && (
-                  <div style={{ fontSize:'12px', color:t.textMuted, background:t.inputBg, border:`1px solid ${t.border}`, borderRadius:'999px', padding:'4px 12px' }}>
-                    {premiumChatCount}/10 chats used
-                  </div>
-                )}
+                <div style={{ fontSize:'12px', color:t.textMuted, background:t.inputBg, border:`1px solid ${t.border}`, borderRadius:'999px', padding:'4px 12px' }}>
+                  {premiumChatCount}/10 chats
+                </div>
               </div>
 
-              {!premiumUnlocked ? (
-                <div style={{ padding:'32px 24px', textAlign:'center' }}>
-                  <div style={{ fontSize:'32px', marginBottom:'10px' }}>✦</div>
-                  <div style={{ fontSize:'16px', fontWeight:'600', color:'#ca8a04', marginBottom:'8px' }}>Premium AI Chat</div>
-                  <div style={{ fontSize:'13px', color:t.textMuted, marginBottom:'20px', lineHeight:'1.7', maxWidth:'360px', margin:'0 auto 20px' }}>
-                    Get real AI-powered responses from GPT-4o mini. The AI knows your exact packing list, destination, dates, and trip type — and only talks packing and travel.
-                  </div>
-                  <div style={{ display:'flex', gap:'8px', flexWrap:'wrap', justifyContent:'center', marginBottom:'20px' }}>
-                    {['10 AI chats included','Knows your packing list','Travel-focused only','Streaming responses'].map(f => (
-                      <span key={f} style={{ fontSize:'12px', background:t.inputBg, border:`1px solid ${t.border}`, borderRadius:'999px', padding:'4px 12px', color:t.textMuted }}>✓ {f}</span>
-                    ))}
-                  </div>
-                  <button className="btn-primary" onClick={() => setShowPremiumModal(true)}
-                    style={{ ...btnPrimary, background:'linear-gradient(135deg,#ca8a04,#d97706)', width:'auto', padding:'11px 32px' }}>
-                    Unlock Premium ✦
-                  </button>
-                </div>
-              ) : premiumChatCount >= 10 ? (
+              {premiumChatCount >= 10 ? (
                 <div style={{ padding:'32px 24px', textAlign:'center' }}>
                   <div style={{ fontSize:'32px', marginBottom:'10px' }}>🔒</div>
                   <div style={{ fontSize:'16px', fontWeight:'600', color: dark ? '#fca5a5' : '#b91c1c', marginBottom:'8px' }}>Chat Limit Reached</div>
-                  <div style={{ fontSize:'13px', color:t.textMuted, lineHeight:'1.6' }}>
-                    You've used all 10 of your premium AI chats. Your keyword-based assistant above is always available.
-                  </div>
+                  <div style={{ fontSize:'13px', color:t.textMuted, lineHeight:'1.6' }}>You've used all 10 of your premium AI chats.</div>
                 </div>
               ) : (
                 <>
@@ -3979,7 +3887,7 @@ export default function PackPerfect() {
                       </button>
                     ))}
                   </div>
-                  <div className="pp-chat-messages" style={{ padding:'16px', minHeight:'260px', maxHeight:'360px', overflowY:'auto', display:'flex', flexDirection:'column', gap:'10px' }}>
+                  <div className="pp-chat-messages" style={{ padding:'16px', minHeight:'340px', maxHeight:'420px', overflowY:'auto', display:'flex', flexDirection:'column', gap:'10px' }}>
                     {premiumChatMessages.map((msg, i) => {
                       const isLast = i === premiumChatMessages.length - 1
                       const isTypingMsg = premiumChatTyping && isLast && msg.role === 'assistant'
@@ -4017,7 +3925,58 @@ export default function PackPerfect() {
                 </>
               )}
             </div>
-          </div>
+          ) : (
+            /* Non-premium: keyword chat with "Use AI" upgrade button */
+            <div style={{ ...card, padding:0, overflow:'hidden' }}>
+              <div style={{ padding:'18px 22px', borderBottom:`1px solid ${t.border}`, display:'flex', alignItems:'center', justifyContent:'space-between', gap:'10px', flexWrap:'wrap' }}>
+                <div>
+                  <h2 style={{ fontSize:'18px', fontWeight:'600', color:t.text, marginBottom:'3px' }}>Packing Assistant</h2>
+                  <p style={{ fontSize:'13px', color:t.textMuted }}>
+                    {destination ? `${destination} — ${tripType}` : 'Ask me anything about packing'}
+                  </p>
+                </div>
+                <button onClick={() => setShowPremiumModal(true)}
+                  style={{ display:'flex', alignItems:'center', gap:'6px', background:'linear-gradient(135deg,#ca8a04,#d97706)', color:'#fff', border:'none', borderRadius:'999px', padding:'8px 16px', fontSize:'13px', fontWeight:'600', cursor:'pointer', flexShrink:0, fontFamily:"'Sora',sans-serif" }}>
+                  ✦ Use AI
+                </button>
+              </div>
+              <div style={{ padding:'12px 16px', borderBottom:`1px solid ${t.border}`, display:'flex', gap:'7px', flexWrap:'wrap' }}>
+                {['Packing for rain?','Avoid baggage fees?','TSA liquid rules?','Long trip laundry?','Packing cubes worth it?'].map(q => (
+                  <button key={q} onClick={() => sendChat(q)} disabled={chatTyping}
+                    style={{ background:t.accentDim, border:`1px solid ${t.border}`, borderRadius:'999px', padding:'5px 13px', fontSize:'12px', cursor: chatTyping ? 'default' : 'pointer', color:t.accent, opacity: chatTyping ? 0.5 : 1 }}>
+                    {q}
+                  </button>
+                ))}
+              </div>
+              <div className="pp-chat-messages" style={{ padding:'16px', minHeight:'340px', maxHeight:'420px', overflowY:'auto', display:'flex', flexDirection:'column', gap:'10px' }}>
+                {chatMessages.map((msg, i) => {
+                  const isLast = i === chatMessages.length - 1
+                  const isTypingMsg = chatTyping && isLast && msg.role === 'assistant'
+                  return (
+                    <div key={i} style={{ display:'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
+                      <div className={isTypingMsg ? 'cursor-blink' : ''} style={{
+                        maxWidth:'78%', padding:'10px 14px',
+                        borderRadius: msg.role === 'user' ? '12px 12px 3px 12px' : '12px 12px 12px 3px',
+                        background: msg.role === 'user' ? t.accent : t.inputBg,
+                        border: msg.role === 'assistant' ? `1px solid ${t.border}` : 'none',
+                        color: msg.role === 'user' ? '#fff' : t.text,
+                        fontSize:'14px', lineHeight:'1.6',
+                      }}>
+                        {msg.content}
+                      </div>
+                    </div>
+                  )
+                })}
+                <div ref={chatEndRef} />
+              </div>
+              <div style={{ padding:'14px 16px', borderTop:`1px solid ${t.border}`, display:'flex', gap:'8px' }}>
+                <input value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && sendChat()}
+                  placeholder="Ask anything about packing..." disabled={chatTyping}
+                  style={{ flex:1, padding:'10px 16px', background:t.inputBg, border:`1px solid ${t.border}`, borderRadius:'999px', fontSize:'14px', color:t.text, outline:'none', opacity: chatTyping ? 0.6 : 1 }} />
+                <button className="btn-primary" onClick={() => sendChat()} disabled={chatTyping} style={{ ...btnPrimary, width:'auto', padding:'10px 22px', borderRadius:'999px', opacity: chatTyping ? 0.6 : 1 }}>Send</button>
+              </div>
+            </div>
+          )
         )}
 
         {/* ── PREMIUM ── */}
