@@ -1521,6 +1521,7 @@ export default function PackPerfect() {
   const [layerResult, setLayerResult] = useState(null)
   const [layerToast, setLayerToast] = useState(false)
   const [layerCount, setLayerCount] = useState(0)
+  const [visualAidSubTab, setVisualAidSubTab] = useState('guide')
   const [layerCarouselIdx, setLayerCarouselIdx] = useState(0)
   const [premiumChatMessages, setPremiumChatMessages] = useState([{ role:'assistant', content:"I'm your AI-powered packing assistant. Ask me anything about your specific trip, what to pack, TSA rules, or travel advice — I know your exact packing list." }])
   const [premiumChatInput, setPremiumChatInput] = useState('')
@@ -1549,7 +1550,6 @@ export default function PackPerfect() {
   const [minionsPhase, setMinionsPhase] = useState(0)
   const minionsAudioRef = useRef(null)
   const [minionsQuoteIdx, setMinionsQuoteIdx] = useState(0)
-  const [minionsDepth, setMinionsDepth] = useState(0)
   const [iceAgePhase, setIceAgePhase] = useState(0)
   const [iceAgeQuoteIdx, setIceAgeQuoteIdx] = useState(0)
   const scratPosRef = useRef({ x: -200, y: 80 })
@@ -3671,13 +3671,48 @@ export default function PackPerfect() {
         {/* ── VISUAL AID ── */}
         {activeTab === 'Visual Aid' && (
           <div>
-            {/* Layer Visualizer for premium, static image for everyone else */}
-            {premiumUnlocked && !premiumMode ? (
+            {/* Segmented toggle */}
+            <div style={{ display:'flex', justifyContent:'center', marginBottom:'16px' }}>
+              <div style={{ display:'inline-flex', background:t.inputBg, border:`1px solid ${t.border}`, borderRadius:'999px', padding:'3px', gap:'2px' }}>
+                {[['guide','Visual Guide'],['layers','Layer Visualizer']].map(([key, label]) => (
+                  <button key={key} onClick={() => setVisualAidSubTab(key)}
+                    style={{ padding:'6px 18px', borderRadius:'999px', border:'none', cursor:'pointer', fontSize:'13px', fontWeight:'600', transition:'background 150ms, color 150ms',
+                      background: visualAidSubTab === key ? t.accent : 'transparent',
+                      color: visualAidSubTab === key ? '#fff' : t.textMuted }}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Visual Guide panel */}
+            {visualAidSubTab === 'guide' && (
+              <div style={card}>
+                <h2 style={{ fontSize:'18px', fontWeight:'600', marginBottom:'12px', color:t.text }}>Visual Packing Aid</h2>
+                {!listGenerated && !listLoading && <p style={{ fontSize:'12px', color:t.textDim, marginBottom:'14px' }}>Generate a list first to see the right image for your trip type.</p>}
+                {(listLoading || (listGenerated && !visualAidReady)) ? (
+                  <div style={{ width:'100%', borderRadius:'12px', background: dark ? '#0d1625' : '#eef2f8', border:`1px solid ${t.border}`, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'16px', padding:'48px 20px' }}>
+                    <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:'12px' }}>
+                      <div className="spinner" style={{ width:'22px', height:'22px', borderWidth:'3px' }} />
+                      <div className="dot-pulse"><span /><span /><span /></div>
+                      <div className="spinner" style={{ width:'22px', height:'22px', borderWidth:'3px' }} />
+                    </div>
+                    <div style={{ fontSize:'14px', fontWeight:'500', color:t.textMuted }}>Perfecting your visual aid…</div>
+                    <div style={{ fontSize:'12px', color:t.textDim }}>Rendering the perfect scene for your trip</div>
+                  </div>
+                ) : (listGenerated || premiumGenerated) ? (
+                  <img src={premiumMode ? premiumVisImage : visImage} alt="Packing visual guide" style={{ width:'100%', borderRadius:'12px', display:'block' }} />
+                ) : null}
+              </div>
+            )}
+
+            {/* Layer Visualizer panel */}
+            {visualAidSubTab === 'layers' && (
               <div style={card}>
                 <div style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'4px' }}>
                   <span style={{ fontSize:'22px' }}>🧳</span>
                   <h2 style={{ fontSize:'18px', fontWeight:'600', color:t.text }}>Suitcase Layer Visualizer</h2>
-                  <span style={{ fontSize:'11px', fontWeight:'700', color:'#ca8a04', background:'rgba(202,138,4,0.12)', border:'1px solid rgba(202,138,4,0.3)', borderRadius:'999px', padding:'2px 9px' }}>✦ Premium</span>
+                  <span style={{ fontSize:'11px', fontWeight:'700', color:'#ca8a04', background:'rgba(202,138,4,0.12)', border:'1px solid rgba(202,138,4,0.3)', borderRadius:'999px', padding:'2px 9px' }}>✦ Premium to Generate</span>
                 </div>
                 <p style={{ fontSize:'13px', color:t.textMuted, lineHeight:'1.6', marginBottom:'16px' }}>
                   Upload a photo of your empty suitcase. AI analyzes it and generates 3 visual layer images — bottom, middle, and top — showing exactly what goes where.
@@ -3687,52 +3722,60 @@ export default function PackPerfect() {
                   <p style={{ fontSize:'12px', color:t.textDim, marginBottom:'14px' }}>Generate a packing list first so the AI knows what to pack.</p>
                 )}
 
-                {layerCount >= 2 ? (
-                  <div style={{ background: dark ? 'rgba(239,68,68,0.08)' : 'rgba(254,226,226,0.6)', border:'1px solid rgba(239,68,68,0.3)', borderRadius:'10px', padding:'20px', textAlign:'center' }}>
+                {/* Photo upload — open to everyone */}
+                <div style={{ marginBottom:'16px' }}>
+                  <label style={labelStyle}>Suitcase Photo</label>
+                  <div style={{ display:'flex', gap:'12px', alignItems:'flex-start', flexWrap:'wrap' }}>
+                    <label style={{ display:'flex', alignItems:'center', gap:'8px', background:t.inputBg, border:`1.5px dashed ${suitcaseFile ? t.accent : t.border}`, borderRadius:'8px', padding:'10px 16px', cursor:'pointer', fontSize:'13px', color: suitcaseFile ? t.accent : t.textMuted, fontWeight:'500', transition:'border-color 150ms ease, color 150ms ease' }}>
+                      <span style={{ fontSize:'18px' }}>📷</span>
+                      {suitcaseFile ? suitcaseFile.name : 'Choose photo…'}
+                      <input type="file" accept="image/*" style={{ display:'none' }}
+                        onChange={e => {
+                          const f = e.target.files?.[0]
+                          if (!f) return
+                          setSuitcaseFile(f)
+                          setSuitcasePreviewUrl(URL.createObjectURL(f))
+                          setLayerResult(null)
+                          setLayerError('')
+                        }}
+                      />
+                    </label>
+                    {suitcasePreviewUrl && (
+                      <img src={suitcasePreviewUrl} alt="Suitcase preview" style={{ width:'80px', height:'80px', objectFit:'cover', borderRadius:'8px', border:`1px solid ${t.border}` }} />
+                    )}
+                  </div>
+                </div>
+
+                {/* Generate button — premium check here */}
+                {premiumUnlocked && layerCount >= 2 ? (
+                  <div style={{ background: dark ? 'rgba(239,68,68,0.08)' : 'rgba(254,226,226,0.6)', border:'1px solid rgba(239,68,68,0.3)', borderRadius:'10px', padding:'20px', textAlign:'center', marginBottom:'16px' }}>
                     <div style={{ fontSize:'24px', marginBottom:'8px' }}>🔒</div>
                     <div style={{ fontSize:'15px', fontWeight:'600', color: dark ? '#fca5a5' : '#b91c1c', marginBottom:'4px' }}>Generation Limit Reached</div>
                     <div style={{ fontSize:'13px', color:t.textMuted }}>You've used both layer visualizer generations (2/2).</div>
                   </div>
                 ) : (
-                  <>
-                    {/* Usage dots */}
-                    <div style={{ display:'flex', alignItems:'center', gap:'6px', marginBottom:'16px' }}>
-                      <span style={{ fontSize:'12px', color:t.textMuted }}>Generations used:</span>
-                      {[0,1].map(i => (
-                        <div key={i} style={{ width:'10px', height:'10px', borderRadius:'50%', background: i < layerCount ? t.accent : t.border, border:`1px solid ${i < layerCount ? t.accent : t.borderStrong}` }} />
-                      ))}
-                      <span style={{ fontSize:'12px', color:t.textMuted }}>{layerCount}/2</span>
-                    </div>
-
-                    {/* Photo upload */}
-                    <div style={{ marginBottom:'16px' }}>
-                      <label style={labelStyle}>Suitcase Photo</label>
-                      <div style={{ display:'flex', gap:'12px', alignItems:'flex-start', flexWrap:'wrap' }}>
-                        <label style={{ display:'flex', alignItems:'center', gap:'8px', background:t.inputBg, border:`1.5px dashed ${suitcaseFile ? t.accent : t.border}`, borderRadius:'8px', padding:'10px 16px', cursor:'pointer', fontSize:'13px', color: suitcaseFile ? t.accent : t.textMuted, fontWeight:'500', transition:'border-color 150ms ease, color 150ms ease' }}>
-                          <span style={{ fontSize:'18px' }}>📷</span>
-                          {suitcaseFile ? suitcaseFile.name : 'Choose photo…'}
-                          <input type="file" accept="image/*" style={{ display:'none' }}
-                            onChange={e => {
-                              const f = e.target.files?.[0]
-                              if (!f) return
-                              setSuitcaseFile(f)
-                              setSuitcasePreviewUrl(URL.createObjectURL(f))
-                              setLayerResult(null)
-                              setLayerError('')
-                            }}
-                          />
-                        </label>
-                        {suitcasePreviewUrl && (
-                          <img src={suitcasePreviewUrl} alt="Suitcase preview" style={{ width:'80px', height:'80px', objectFit:'cover', borderRadius:'8px', border:`1px solid ${t.border}` }} />
-                        )}
-                      </div>
-                    </div>
-
-                    <button className="btn-primary" onClick={generateLayers} disabled={!suitcaseFile || !listGenerated || layerLoading}
-                      style={{ ...btnPrimary, opacity: (!suitcaseFile || !listGenerated || layerLoading) ? 0.55 : 1, marginBottom: (layerLoading || layerError || layerResult) ? '16px' : '0' }}>
-                      {layerLoading ? 'Generating layers…' : `Generate Packing Layers (${2 - layerCount} left)`}
-                    </button>
-                  </>
+                  <div style={{ display:'flex', alignItems:'center', gap:'12px', flexWrap:'wrap', marginBottom: (layerLoading || layerError || layerResult) ? '16px' : '0' }}>
+                    {premiumUnlocked ? (
+                      <>
+                        {/* Usage dots */}
+                        <div style={{ display:'flex', alignItems:'center', gap:'6px' }}>
+                          {[0,1].map(i => (
+                            <div key={i} style={{ width:'10px', height:'10px', borderRadius:'50%', background: i < layerCount ? t.accent : t.border, border:`1px solid ${i < layerCount ? t.accent : t.borderStrong}` }} />
+                          ))}
+                          <span style={{ fontSize:'12px', color:t.textMuted }}>{layerCount}/2</span>
+                        </div>
+                        <button className="btn-primary" onClick={generateLayers} disabled={!suitcaseFile || !listGenerated || layerLoading}
+                          style={{ ...btnPrimary, opacity: (!suitcaseFile || !listGenerated || layerLoading) ? 0.55 : 1 }}>
+                          {layerLoading ? 'Generating layers…' : `Generate Packing Layers (${2 - layerCount} left)`}
+                        </button>
+                      </>
+                    ) : (
+                      <button className="btn-primary" onClick={() => setShowPremiumModal(true)}
+                        style={{ ...btnPrimary, background:'linear-gradient(135deg,#ca8a04,#d97706)', border:'none' }}>
+                        ✦ Unlock with Premium
+                      </button>
+                    )}
+                  </div>
                 )}
 
                 {/* Loading */}
@@ -3766,7 +3809,6 @@ export default function PackPerfect() {
                         <p style={{ fontSize:'12px', color:t.textMuted, marginBottom:'12px', fontStyle:'italic' }}>{layerResult.suitcaseNote}</p>
                       )}
                       <div style={{ border:`1px solid ${t.border}`, borderRadius:'12px', overflow:'hidden' }}>
-                        {/* Header + arrows */}
                         <div style={{ padding:'12px 16px', background: dark ? 'rgba(37,99,235,0.08)' : 'rgba(37,99,235,0.05)', borderBottom:`1px solid ${t.border}`, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
                           <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
                             <span style={{ fontSize:'20px' }}>{icons[layerCarouselIdx]}</span>
@@ -3783,12 +3825,10 @@ export default function PackPerfect() {
                               style={{ background:t.inputBg, border:`1px solid ${t.border}`, borderRadius:'6px', padding:'5px 11px', cursor: layerCarouselIdx === layers.length - 1 ? 'default' : 'pointer', color:t.text, opacity: layerCarouselIdx === layers.length - 1 ? 0.35 : 1, fontSize:'16px', lineHeight:1 }}>›</button>
                           </div>
                         </div>
-                        {/* Image */}
                         {cur?.imageUrl
                           ? <img src={cur.imageUrl} alt={cur.label} style={{ width:'100%', display:'block', maxHeight:'400px', objectFit:'cover' }} />
                           : <div style={{ padding:'40px', textAlign:'center', color:t.textDim, fontSize:'13px' }}>Image unavailable</div>
                         }
-                        {/* Items */}
                         {cur?.items?.length > 0 && (
                           <div style={{ padding:'12px 16px', background:t.inputBg }}>
                             <div style={{ fontSize:'11px', fontWeight:'600', color:t.textMuted, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:'6px' }}>Items in this layer</div>
@@ -3800,7 +3840,6 @@ export default function PackPerfect() {
                           </div>
                         )}
                       </div>
-                      {/* Dot nav */}
                       <div style={{ display:'flex', justifyContent:'center', gap:'6px', marginTop:'10px' }}>
                         {layers.map((_, i) => (
                           <button key={i} onClick={() => setLayerCarouselIdx(i)}
@@ -3810,24 +3849,6 @@ export default function PackPerfect() {
                     </div>
                   )
                 })()}
-              </div>
-            ) : (
-              <div style={card}>
-                <h2 style={{ fontSize:'18px', fontWeight:'600', marginBottom:'12px', color:t.text }}>Visual Packing Aid</h2>
-                {!listGenerated && !listLoading && <p style={{ fontSize:'12px', color:t.textDim, marginBottom:'14px' }}>Generate a list first to see the right image for your trip type.</p>}
-                {(listLoading || (listGenerated && !visualAidReady)) ? (
-                  <div style={{ width:'100%', borderRadius:'12px', background: dark ? '#0d1625' : '#eef2f8', border:`1px solid ${t.border}`, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'16px', padding:'48px 20px' }}>
-                    <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:'12px' }}>
-                      <div className="spinner" style={{ width:'22px', height:'22px', borderWidth:'3px' }} />
-                      <div className="dot-pulse"><span /><span /><span /></div>
-                      <div className="spinner" style={{ width:'22px', height:'22px', borderWidth:'3px' }} />
-                    </div>
-                    <div style={{ fontSize:'14px', fontWeight:'500', color:t.textMuted }}>Perfecting your visual aid…</div>
-                    <div style={{ fontSize:'12px', color:t.textDim }}>Rendering the perfect scene for your trip</div>
-                  </div>
-                ) : (listGenerated || premiumGenerated) ? (
-                  <img src={premiumMode ? premiumVisImage : visImage} alt="Packing visual guide" style={{ width:'100%', borderRadius:'12px', display:'block' }} />
-                ) : null}
               </div>
             )}
             <div style={card}>
