@@ -3712,7 +3712,6 @@ export default function PackPerfect() {
                 <div style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'4px' }}>
                   <span style={{ fontSize:'22px' }}>🧳</span>
                   <h2 style={{ fontSize:'18px', fontWeight:'600', color:t.text }}>Suitcase Layer Visualizer</h2>
-                  <span style={{ fontSize:'11px', fontWeight:'700', color:'#ca8a04', background:'rgba(202,138,4,0.12)', border:'1px solid rgba(202,138,4,0.3)', borderRadius:'999px', padding:'2px 9px' }}>✦ Premium to Generate</span>
                 </div>
                 <p style={{ fontSize:'13px', color:t.textMuted, lineHeight:'1.6', marginBottom:'16px' }}>
                   Upload a photo of your empty suitcase. AI analyzes it and generates 3 visual layer images — bottom, middle, and top — showing exactly what goes where.
@@ -3722,7 +3721,7 @@ export default function PackPerfect() {
                   <p style={{ fontSize:'12px', color:t.textDim, marginBottom:'14px' }}>Generate a packing list first so the AI knows what to pack.</p>
                 )}
 
-                {/* Photo upload — open to everyone */}
+                {/* Photo upload */}
                 <div style={{ marginBottom:'16px' }}>
                   <label style={labelStyle}>Suitcase Photo</label>
                   <div style={{ display:'flex', gap:'12px', alignItems:'flex-start', flexWrap:'wrap' }}>
@@ -3746,7 +3745,7 @@ export default function PackPerfect() {
                   </div>
                 </div>
 
-                {/* Generate button — premium check here */}
+                {/* Generate button — premium gate triggers only on click */}
                 {premiumUnlocked && layerCount >= 2 ? (
                   <div style={{ background: dark ? 'rgba(239,68,68,0.08)' : 'rgba(254,226,226,0.6)', border:'1px solid rgba(239,68,68,0.3)', borderRadius:'10px', padding:'20px', textAlign:'center', marginBottom:'16px' }}>
                     <div style={{ fontSize:'24px', marginBottom:'8px' }}>🔒</div>
@@ -3755,26 +3754,20 @@ export default function PackPerfect() {
                   </div>
                 ) : (
                   <div style={{ display:'flex', alignItems:'center', gap:'12px', flexWrap:'wrap', marginBottom: (layerLoading || layerError || layerResult) ? '16px' : '0' }}>
-                    {premiumUnlocked ? (
-                      <>
-                        {/* Usage dots */}
-                        <div style={{ display:'flex', alignItems:'center', gap:'6px' }}>
-                          {[0,1].map(i => (
-                            <div key={i} style={{ width:'10px', height:'10px', borderRadius:'50%', background: i < layerCount ? t.accent : t.border, border:`1px solid ${i < layerCount ? t.accent : t.borderStrong}` }} />
-                          ))}
-                          <span style={{ fontSize:'12px', color:t.textMuted }}>{layerCount}/2</span>
-                        </div>
-                        <button className="btn-primary" onClick={generateLayers} disabled={!suitcaseFile || !listGenerated || layerLoading}
-                          style={{ ...btnPrimary, opacity: (!suitcaseFile || !listGenerated || layerLoading) ? 0.55 : 1 }}>
-                          {layerLoading ? 'Generating layers…' : `Generate Packing Layers (${2 - layerCount} left)`}
-                        </button>
-                      </>
-                    ) : (
-                      <button className="btn-primary" onClick={() => setShowPremiumModal(true)}
-                        style={{ ...btnPrimary, background:'linear-gradient(135deg,#ca8a04,#d97706)', border:'none' }}>
-                        ✦ Unlock with Premium
-                      </button>
+                    {premiumUnlocked && (
+                      <div style={{ display:'flex', alignItems:'center', gap:'6px' }}>
+                        {[0,1].map(i => (
+                          <div key={i} style={{ width:'10px', height:'10px', borderRadius:'50%', background: i < layerCount ? t.accent : t.border, border:`1px solid ${i < layerCount ? t.accent : t.borderStrong}` }} />
+                        ))}
+                        <span style={{ fontSize:'12px', color:t.textMuted }}>{layerCount}/2</span>
+                      </div>
                     )}
+                    <button className="btn-primary"
+                      onClick={() => premiumUnlocked ? generateLayers() : setShowPremiumModal(true)}
+                      disabled={premiumUnlocked && (!suitcaseFile || !listGenerated || layerLoading)}
+                      style={{ ...btnPrimary, opacity: premiumUnlocked && (!suitcaseFile || !listGenerated || layerLoading) ? 0.55 : 1 }}>
+                      {layerLoading ? 'Generating layers…' : 'Generate Packing Layers'}
+                    </button>
                   </div>
                 )}
 
