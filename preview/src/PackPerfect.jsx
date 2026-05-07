@@ -1604,6 +1604,7 @@ export default function PackPerfect() {
   const [premiumChatTyping, setPremiumChatTyping] = useState(false)
   const [premiumChatLoading, setPremiumChatLoading] = useState(false)
   const [premiumChatCount, setPremiumChatCount] = useState(0)
+  const [useFallbackChat, setUseFallbackChat] = useState(false)
   const premiumChatEndRef = useRef(null)
   const [heroVisible, setHeroVisible] = useState(false)
   const [statCounts, setStatCounts] = useState({ trips: 0, destinations: 0, items: 0, time: 0 })
@@ -4049,11 +4050,58 @@ export default function PackPerfect() {
               </div>
 
               {premiumChatCount >= 10 ? (
-                <div style={{ padding:'32px 24px', textAlign:'center' }}>
-                  <div style={{ fontSize:'32px', marginBottom:'10px' }}>🔒</div>
-                  <div style={{ fontSize:'16px', fontWeight:'600', color: dark ? '#fca5a5' : '#b91c1c', marginBottom:'8px' }}>Chat Limit Reached</div>
-                  <div style={{ fontSize:'13px', color:t.textMuted, lineHeight:'1.6' }}>You've used all 10 of your premium AI chats.</div>
-                </div>
+                useFallbackChat ? (
+                  <>
+                    <div style={{ padding:'10px 16px', borderBottom:`1px solid ${t.border}`, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                      <span style={{ fontSize:'12px', color:t.textMuted }}>Basic assistant — keyword responses</span>
+                      <button onClick={() => setUseFallbackChat(false)} style={{ background:'none', border:'none', fontSize:'12px', color:t.textDim, cursor:'pointer', padding:0, fontFamily:"'Sora',sans-serif" }}>← Back</button>
+                    </div>
+                    <div style={{ padding:'12px 16px', borderBottom:`1px solid ${t.border}`, display:'flex', gap:'7px', flexWrap:'wrap' }}>
+                      {['Packing for rain?','Avoid baggage fees?','TSA liquid rules?','Long trip laundry?','Packing cubes worth it?'].map(q => (
+                        <button key={q} onClick={() => sendChat(q)} disabled={chatTyping}
+                          style={{ background:t.accentDim, border:`1px solid ${t.border}`, borderRadius:'999px', padding:'5px 13px', fontSize:'12px', cursor: chatTyping ? 'default' : 'pointer', color:t.accent, opacity: chatTyping ? 0.5 : 1 }}>
+                          {q}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="pp-chat-messages" style={{ padding:'16px', minHeight:'300px', maxHeight:'380px', overflowY:'auto', display:'flex', flexDirection:'column', gap:'10px' }}>
+                      {chatMessages.map((msg, i) => {
+                        const isLast = i === chatMessages.length - 1
+                        const isTypingMsg = chatTyping && isLast && msg.role === 'assistant'
+                        return (
+                          <div key={i} style={{ display:'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
+                            <div className={isTypingMsg ? 'cursor-blink' : ''} style={{
+                              maxWidth:'78%', padding:'10px 14px',
+                              borderRadius: msg.role === 'user' ? '12px 12px 3px 12px' : '12px 12px 12px 3px',
+                              background: msg.role === 'user' ? t.accent : t.inputBg,
+                              border: msg.role === 'assistant' ? `1px solid ${t.border}` : 'none',
+                              color: msg.role === 'user' ? '#fff' : t.text,
+                              fontSize:'14px', lineHeight:'1.6',
+                            }}>
+                              {msg.content}
+                            </div>
+                          </div>
+                        )
+                      })}
+                      <div ref={chatEndRef} />
+                    </div>
+                    <div style={{ padding:'14px 16px', borderTop:`1px solid ${t.border}`, display:'flex', gap:'8px' }}>
+                      <input value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && sendChat()}
+                        placeholder="Ask anything about packing..." disabled={chatTyping}
+                        style={{ flex:1, padding:'10px 16px', background:t.inputBg, border:`1px solid ${t.border}`, borderRadius:'999px', fontSize:'14px', color:t.text, outline:'none', opacity: chatTyping ? 0.6 : 1 }} />
+                      <button className="btn-primary" onClick={() => sendChat()} disabled={chatTyping} style={{ ...btnPrimary, width:'auto', padding:'10px 22px', borderRadius:'999px', opacity: chatTyping ? 0.6 : 1 }}>Send</button>
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ padding:'32px 24px', textAlign:'center' }}>
+                    <div style={{ fontSize:'32px', marginBottom:'10px' }}>🔒</div>
+                    <div style={{ fontSize:'16px', fontWeight:'600', color: dark ? '#fca5a5' : '#b91c1c', marginBottom:'8px' }}>Chat Limit Reached</div>
+                    <div style={{ fontSize:'13px', color:t.textMuted, lineHeight:'1.6' }}>You've used all 10 of your premium AI chats.</div>
+                    <button onClick={() => setUseFallbackChat(true)} style={{ marginTop:'16px', padding:'9px 22px', background:t.inputBg, border:`1px solid ${t.border}`, borderRadius:'8px', fontSize:'13px', color:t.textMuted, cursor:'pointer', fontFamily:"'Sora',sans-serif" }}>
+                      Switch to basic assistant
+                    </button>
+                  </div>
+                )
               ) : (
                 <>
                   <div style={{ padding:'12px 16px', borderBottom:`1px solid ${t.border}`, display:'flex', gap:'7px', flexWrap:'wrap' }}>
