@@ -966,7 +966,28 @@ function smartQty(base, cap) {
   return cap  // will add laundry note
 }
 
-function generateList(tripType, days, climate, liters = 69, gender = '', dest = '', hotelType = '', travelStyle = 'Average') {
+const ITINERARY_KW_MAP = {
+  water:    ['beach','snorkel','snorkeling','swim','swimming','pool','surf','surfing','kayak','kayaking','dive','diving','scuba','sailing','sail','boat','ocean','sea','lake','river','waterfall','rafting','paddleboard','paddleboarding','fishing','jet ski'],
+  formal:   ['dinner','gala','wedding','show','theatre','theater','restaurant','cocktail','dress code','semi-formal','black tie','formal','banquet','reception','opera','ballet','fundraiser'],
+  outdoor:  ['hike','hiking','trail','trek','trekking','mountain','camp','camping','forest','national park','safari','wildlife','jungle','canyon','volcano','waterfall','rappel','rappelling','zip line','zip-line','rock climb','backpacking outdoors'],
+  business: ['meeting','conference','presentation','office','boardroom','keynote','summit','expo','seminar','workshop','trade show','client dinner','networking'],
+  nightlife:['club','clubbing','bar','lounge','party','nightlife','concert','festival','pub','rooftop bar','live music','disco','karaoke'],
+  ski:      ['ski','skiing','snowboard','snowboarding','slope','gondola','après-ski','apres ski','powder','chalet'],
+  rain:     ['rain','rainy','monsoon','wet season','typhoon','drizzle','umbrella'],
+  cold:     ['cold','freezing','arctic','winter','frost','below zero','sub-zero'],
+  hot:      ['hot','heat','humid','tropical','sweltering','scorching'],
+}
+
+function extractItineraryKeywords(text) {
+  const lower = text.toLowerCase()
+  const result = {}
+  for (const [cat, words] of Object.entries(ITINERARY_KW_MAP)) {
+    result[cat] = words.some(w => lower.includes(w))
+  }
+  return result
+}
+
+function generateList(tripType, days, climate, liters = 69, gender = '', dest = '', hotelType = '', travelStyle = 'Average', itineraryKw = {}) {
   const needsLaundryNote = days > 10
 
   // Capacity factor: carry-on squeezes items, large bag allows more
@@ -1312,6 +1333,61 @@ function generateList(tripType, days, climate, liters = 69, gender = '', dest = 
       footwear.push({ name:'Shower Flip Flops', qty:1, weight:0.4, packed:false, bag:'main' })
   }
 
+  // Itinerary keyword extras
+  if (itineraryKw.water) {
+    if (!footwear.find(i => i.name.toLowerCase().includes('water shoe')))
+      footwear.push({ name:'Water Shoes', qty:1, weight:0.6, packed:false, bag:'main' })
+    if (!health.find(i => i.name.toLowerCase().includes('snorkel')))
+      health.push({ name:'Snorkel Mask', qty:1, weight:0.5, packed:false, bag:'main' })
+    if (!toiletries.find(i => i.name.toLowerCase().includes('reef')))
+      toiletries.push({ name:'Reef-Safe Sunscreen', qty:1, weight:0.5, packed:false, bag:'main' })
+    if (!clothing.find(i => i.name.toLowerCase().includes('rash')))
+      clothing.push({ name:'Rash Guard', qty:1, weight:0.3, packed:false, bag:'main' })
+  }
+  if (itineraryKw.formal) {
+    const hasSmartWear = clothing.some(i => /dress|blazer|suit|sport coat/i.test(i.name))
+    if (!hasSmartWear)
+      clothing.push({ name: gender === 'female' ? 'Dress / Evening Wear' : 'Dress Shirt & Blazer', qty:1, weight:0.6, packed:false, bag:'main' })
+    if (!footwear.find(i => /dress shoe|heel|formal/i.test(i.name)))
+      footwear.push({ name: gender === 'female' ? 'Heels / Dressy Flats' : 'Dress Shoes', qty:1, weight:0.8, packed:false, bag:'main' })
+    if (!clothing.find(i => /clutch|tie|pocket square/i.test(i.name)))
+      clothing.push({ name: gender === 'female' ? 'Evening Clutch' : 'Dress Tie', qty:1, weight:0.2, packed:false, bag:'main' })
+  }
+  if (itineraryKw.outdoor) {
+    if (!electronics.find(i => i.name.toLowerCase().includes('headlamp')))
+      electronics.push({ name:'Headlamp', qty:1, weight:0.3, packed:false, bag:'main' })
+    if (!health.find(i => i.name.toLowerCase().includes('blister')))
+      health.push({ name:'Blister Pads', qty:1, weight:0.1, packed:false, bag:'carry' })
+    if (!health.find(i => i.name.toLowerCase().includes('insect')))
+      health.push({ name:'Insect Repellent', qty:1, weight:0.4, packed:false, bag:'main' })
+  }
+  if (itineraryKw.business) {
+    if (!documents.find(i => i.name.toLowerCase().includes('business card')))
+      documents.push({ name:'Business Cards', qty:1, weight:0.1, packed:false, bag:'carry' })
+  }
+  if (itineraryKw.nightlife) {
+    if (!clothing.find(i => /going.out|nightlife|evening outfit/i.test(i.name)))
+      clothing.push({ name:'Going-Out Outfit', qty:1, weight:0.4, packed:false, bag:'main' })
+  }
+  if (itineraryKw.ski) {
+    if (!clothing.find(i => /ski goggle|goggles/i.test(i.name)))
+      clothing.push({ name:'Ski Goggles', qty:1, weight:0.5, packed:false, bag:'main' })
+    if (!clothing.find(i => /ski jacket|snow pant/i.test(i.name)))
+      clothing.push({ name:'Ski Jacket & Snow Pants', qty:1, weight:3.0, packed:false, bag:'main' })
+  }
+  if (itineraryKw.rain) {
+    if (!clothing.find(i => /rain jacket|raincoat/i.test(i.name)))
+      clothing.push({ name:'Packable Rain Jacket', qty:1, weight:0.8, packed:false, bag:'main' })
+  }
+  if (itineraryKw.cold) {
+    if (!clothing.find(i => /thermal|base layer/i.test(i.name)))
+      clothing.push({ name:'Thermal Base Layer', qty:2, weight:0.6, packed:false, bag:'main' })
+  }
+  if (itineraryKw.hot) {
+    if (!toiletries.find(i => i.name.toLowerCase().includes('sunscreen')))
+      toiletries.push({ name:'Sunscreen SPF 50', qty:1, weight:0.5, packed:false, bag:'main' })
+  }
+
   return {
     items: { Clothing: clothing, Footwear: footwear, Toiletries: toiletries, Electronics: electronics, Documents: documents, Health: health },
     laundryNote: needsLaundryNote
@@ -1553,6 +1629,14 @@ export default function PackPerfect() {
   const [iceAgePhase, setIceAgePhase] = useState(0)
   const [iceAgeQuoteIdx, setIceAgeQuoteIdx] = useState(0)
   const scratPosRef = useRef({ x: -200, y: 80 })
+
+  // Itinerary state
+  const [itineraryMode, setItineraryMode] = useState('paste')
+  const [itineraryText, setItineraryText] = useState('')
+  const [itineraryEvents, setItineraryEvents] = useState([])
+  const [itineraryEventInput, setItineraryEventInput] = useState('')
+  const [itinerarySubmitted, setItinerarySubmitted] = useState(false)
+  const [itineraryKeywords, setItineraryKeywords] = useState({})
   const acornPosRef = useRef({ x: 120, y: 80 })
   const scratAnimRef = useRef(null)
   const [scratState, setScratState] = useState({ sx: -200, sy: 80, ax: 120, ay: 80, flip: false })
@@ -2054,7 +2138,7 @@ export default function PackPerfect() {
     }
     const days = Math.max(1, Math.round((new Date(resolvedEnd) - new Date(resolvedStart)) / 86400000) + 1)
     const liters = selectedSuitcase?.liters ?? 69
-    const result = generateList(tripType, days, c, liters, profile.gender, dest, hotelType, profile.travelStyle)
+    const result = generateList(tripType, days, c, liters, profile.gender, dest, hotelType, profile.travelStyle, itineraryKeywords)
     setItems(result.items)
     setLaundryNote(result.laundryNote)
     setWeatherAdjustedList(false)
@@ -3395,6 +3479,85 @@ export default function PackPerfect() {
                     Business trip — suits scaled to trip length, carry-on with laptop compartment recommended.
                   </div>
                 )}
+
+                {/* Itinerary */}
+                <div>
+                  <label style={labelStyle}>Itinerary <span style={{ fontWeight:'400', textTransform:'none', letterSpacing:0, color:t.textDim }}>(optional)</span></label>
+                  {/* Toggle */}
+                  <div style={{ display:'flex', gap:'6px', marginBottom:'10px' }}>
+                    {['paste','type'].map(mode => (
+                      <button key={mode} className="btn-pill" onClick={() => { setItineraryMode(mode); setItinerarySubmitted(false) }} style={{
+                        ...t.pill(itineraryMode === mode), borderRadius:'999px', padding:'5px 14px',
+                        fontSize:'13px', fontWeight:'500', cursor:'pointer', fontFamily:"'Sora',sans-serif",
+                      }}>{mode === 'paste' ? 'Paste Itinerary' : 'Type Events'}</button>
+                    ))}
+                  </div>
+
+                  {itineraryMode === 'paste' ? (
+                    <textarea
+                      value={itineraryText}
+                      onChange={e => { setItineraryText(e.target.value); setItinerarySubmitted(false) }}
+                      placeholder="Paste your booking confirmation, Google doc, notes, or any travel text here…"
+                      rows={5}
+                      style={{ width:'100%', padding:'10px 13px', background:t.inputBg, border:`1px solid ${t.border}`, borderRadius:'8px', fontSize:'13px', color:t.text, outline:'none', resize:'vertical', lineHeight:'1.55', boxSizing:'border-box', fontFamily:"'Sora',sans-serif" }}
+                    />
+                  ) : (
+                    <div>
+                      <div style={{ display:'flex', gap:'8px', marginBottom:'8px' }}>
+                        <input
+                          value={itineraryEventInput}
+                          onChange={e => setItineraryEventInput(e.target.value)}
+                          onKeyDown={e => { if (e.key === 'Enter' && itineraryEventInput.trim()) { setItineraryEvents(ev => [...ev, itineraryEventInput.trim()]); setItineraryEventInput(''); setItinerarySubmitted(false) }}}
+                          placeholder="Add an event or activity…"
+                          style={{ flex:1, padding:'9px 12px', background:t.inputBg, border:`1px solid ${t.border}`, borderRadius:'8px', fontSize:'13px', color:t.text, outline:'none', fontFamily:"'Sora',sans-serif" }}
+                        />
+                        <button onClick={() => { if (itineraryEventInput.trim()) { setItineraryEvents(ev => [...ev, itineraryEventInput.trim()]); setItineraryEventInput(''); setItinerarySubmitted(false) }}} style={{ padding:'9px 14px', background:t.accent, color:'#fff', border:'none', borderRadius:'8px', fontSize:'13px', fontWeight:'500', cursor:'pointer', fontFamily:"'Sora',sans-serif", whiteSpace:'nowrap' }}>+ Add</button>
+                      </div>
+                      {itineraryEvents.length > 0 && (
+                        <div style={{ display:'flex', flexDirection:'column', gap:'5px' }}>
+                          {itineraryEvents.map((ev, i) => (
+                            <div key={i} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'7px 11px', background:t.inputBg, border:`1px solid ${t.border}`, borderRadius:'7px', fontSize:'13px', color:t.text }}>
+                              <span>{ev}</span>
+                              <button onClick={() => { setItineraryEvents(evs => evs.filter((_,j) => j !== i)); setItinerarySubmitted(false) }} style={{ background:'none', border:'none', color:t.textDim, cursor:'pointer', fontSize:'15px', lineHeight:1, padding:'0 2px' }}>×</button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Submit button */}
+                  {(itineraryMode === 'paste' ? itineraryText.trim() : itineraryEvents.length > 0) && !itinerarySubmitted && (
+                    <button onClick={() => {
+                      const raw = itineraryMode === 'paste' ? itineraryText : itineraryEvents.join(' ')
+                      setItineraryKeywords(extractItineraryKeywords(raw))
+                      setItinerarySubmitted(true)
+                    }} style={{ marginTop:'9px', padding:'8px 18px', background:t.accent, color:'#fff', border:'none', borderRadius:'8px', fontSize:'13px', fontWeight:'500', cursor:'pointer', fontFamily:"'Sora',sans-serif" }}>
+                      Confirm Itinerary
+                    </button>
+                  )}
+
+                  {/* Confirmed state — show detected tags */}
+                  {itinerarySubmitted && (() => {
+                    const active = Object.entries(itineraryKeywords).filter(([,v]) => v).map(([k]) => k)
+                    const labels = { water:'Water Activities', formal:'Formal Events', outdoor:'Outdoor / Hiking', business:'Business', nightlife:'Nightlife', ski:'Skiing', rain:'Rain Gear', cold:'Cold Weather', hot:'Hot Weather' }
+                    return (
+                      <div style={{ marginTop:'9px', padding:'9px 12px', background: dark ? 'rgba(16,185,129,0.08)' : 'rgba(16,185,129,0.06)', border:'1px solid rgba(16,185,129,0.3)', borderRadius:'8px' }}>
+                        <div style={{ fontSize:'12px', color:'#10b981', fontWeight:'600', marginBottom: active.length ? '6px' : 0 }}>
+                          Itinerary confirmed {active.length ? `— ${active.length} packing categor${active.length > 1 ? 'ies' : 'y'} detected` : '— no specific packing cues found'}
+                        </div>
+                        {active.length > 0 && (
+                          <div style={{ display:'flex', flexWrap:'wrap', gap:'5px' }}>
+                            {active.map(k => (
+                              <span key={k} style={{ fontSize:'11px', padding:'3px 9px', background: dark ? 'rgba(16,185,129,0.15)' : 'rgba(16,185,129,0.1)', color:'#10b981', borderRadius:'999px', border:'1px solid rgba(16,185,129,0.3)', fontWeight:'500' }}>{labels[k]}</span>
+                            ))}
+                          </div>
+                        )}
+                        <button onClick={() => setItinerarySubmitted(false)} style={{ marginTop:'7px', background:'none', border:'none', color:t.textDim, fontSize:'11px', cursor:'pointer', padding:0, fontFamily:"'Sora',sans-serif" }}>Edit itinerary</button>
+                      </div>
+                    )
+                  })()}
+                </div>
 
                 {/* Hotel / Accommodation Type */}
                 <div>
