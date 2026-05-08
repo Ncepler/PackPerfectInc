@@ -1661,6 +1661,7 @@ export default function PackPerfect() {
   const haFilthyRef = useRef(null)
   const haDinnerRef = useRef(null)
   const haDoorknobRef = useRef(null)
+  const haLoopCancelled = useRef(false)
   const [minionsPhase, setMinionsPhase] = useState(0)
   const minionsAudioRef = useRef(null)
   const [minionsQuoteIdx, setMinionsQuoteIdx] = useState(0)
@@ -1900,11 +1901,12 @@ export default function PackPerfect() {
 
   useEffect(() => {
     if (!homeAloneMode) {
+      haLoopCancelled.current = true
       setHaPhase(0); setHaQuoteIdx(0); setHaTrapIdx(-1); setHaDoorknobPhase(0)
-      if (haMemoryRef.current) { haMemoryRef.current.pause(); haMemoryRef.current.currentTime = 0 }
+      ;[haMemoryRef, haFilthyRef, haDinnerRef, haDoorknobRef].forEach(r => { if (r.current) { r.current.pause(); r.current.currentTime = 0 } })
       return
     }
-    // Start background music immediately
+    haLoopCancelled.current = false
     haMemoryRef.current = new Audio('/Memory.mp3'); haMemoryRef.current.loop = true; haMemoryRef.current.volume = 0.35
     haFilthyRef.current = new Audio('/Filthy.mp3'); haFilthyRef.current.volume = 0.9
     haDinnerRef.current = new Audio('/Dinner.mp3'); haDinnerRef.current.volume = 0.9
@@ -1915,47 +1917,49 @@ export default function PackPerfect() {
     const t2 = setTimeout(() => { setHaPhase(3); setHaTrapIdx(-1) }, 9000)
     const t3 = setTimeout(() => setHaPhase(4), 14500)
     return () => {
+      haLoopCancelled.current = true
       clearTimeout(t1); clearTimeout(t2); clearTimeout(t3)
-      if (haMemoryRef.current) { haMemoryRef.current.pause(); haMemoryRef.current.currentTime = 0 }
+      ;[haMemoryRef, haFilthyRef, haDinnerRef, haDoorknobRef].forEach(r => { if (r.current) { r.current.pause(); r.current.currentTime = 0 } })
     }
   }, [homeAloneMode])
 
+  // Trap list ticker
   useEffect(() => {
     if (haPhase !== 3) return
     let idx = -1
-    const iv = setInterval(() => {
-      idx++
-      setHaTrapIdx(idx)
-      if (idx >= HA_TRAPS.length - 1) clearInterval(iv)
-    }, 700)
+    const iv = setInterval(() => { idx++; setHaTrapIdx(idx); if (idx >= HA_TRAPS.length - 1) clearInterval(iv) }, 700)
     return () => clearInterval(iv)
   }, [haPhase])
 
+  // Overlay audio loop — starts when trap list appears, persists through phase 4
+  useEffect(() => {
+    if (haPhase !== 3) return
+    const wait = (ms) => new Promise(r => setTimeout(r, ms))
+    const waitEnd = (audio) => new Promise(r => { if (!audio) { r(); return }; audio.addEventListener('ended', r, { once: true }) })
+    const loop = async () => {
+      while (!haLoopCancelled.current) {
+        if (haFilthyRef.current) { haFilthyRef.current.currentTime = 0; haFilthyRef.current.play().catch(() => {}); await waitEnd(haFilthyRef.current) }
+        if (haLoopCancelled.current) return
+        await wait(2000)
+        if (haLoopCancelled.current) return
+        if (haDinnerRef.current) { haDinnerRef.current.currentTime = 0; haDinnerRef.current.play().catch(() => {}); await waitEnd(haDinnerRef.current) }
+        if (haLoopCancelled.current) return
+        await wait(2000)
+      }
+    }
+    loop()
+  }, [haPhase])
+
+  // Phase 4: quote init + doorknob sequence (audio already looping)
   useEffect(() => {
     if (haPhase !== 4) return
+    setHaQuoteIdx(2)
     setHaDoorknobPhase(0)
     let cancelled = false
     let cycleInterval = null
-
     const wait = (ms) => new Promise(r => setTimeout(r, ms))
     const waitEnd = (audio) => new Promise(r => { if (!audio) { r(); return }; audio.addEventListener('ended', r, { once: true }) })
-
     const run = async () => {
-      // 4s intro before first clip
-      await wait(4000); if (cancelled) return
-
-      // MERRY CHRISTMAS + filthy.mp3
-      setHaQuoteIdx(2)
-      if (haFilthyRef.current) { haFilthyRef.current.currentTime = 0; haFilthyRef.current.play().catch(() => {}); await waitEnd(haFilthyRef.current) }
-      if (cancelled) return
-
-      // 2s gap → Bless this + dinner.mp3
-      await wait(2000); if (cancelled) return
-      setHaQuoteIdx(7)
-      if (haDinnerRef.current) { haDinnerRef.current.currentTime = 0; haDinnerRef.current.play().catch(() => {}); await waitEnd(haDinnerRef.current) }
-      if (cancelled) return
-
-      // Doorknob sequence — 2s between each phase
       await wait(500); if (cancelled) return
       setHaDoorknobPhase(1)
       await wait(2000); if (cancelled) return
@@ -1964,12 +1968,9 @@ export default function PackPerfect() {
       setHaDoorknobPhase(3)
       if (haDoorknobRef.current) { haDoorknobRef.current.currentTime = 0; haDoorknobRef.current.play().catch(() => {}); await waitEnd(haDoorknobRef.current) }
       if (cancelled) return
-
-      // Glow stops, resume normal quote cycling
       setHaDoorknobPhase(0)
       cycleInterval = setInterval(() => setHaQuoteIdx(i => (i + 1) % HA_QUOTES.length), 5000)
     }
-
     run()
     return () => { cancelled = true; if (cycleInterval) clearInterval(cycleInterval) }
   }, [haPhase])
@@ -3254,7 +3255,7 @@ export default function PackPerfect() {
 
           {/* Wet Bandits peeking bottom-right */}
           <div style={{ position:'fixed', bottom:0, right:'2%', zIndex:70, pointerEvents:'none', animationName:'haMarvPeek', animationDuration:'2.1s', animationDelay:'0.6s', animationIterationCount:'infinite', animationTimingFunction:'ease-in-out' }}>
-            <div style={{ fontSize:'clamp(32px,6vw,60px)', lineHeight:1, transform:'scaleX(-1)' }}>🦹‍♂️🦹</div>
+            <img src="/marvharry.png" alt="Wet Bandits" style={{ width:'clamp(60px,11vw,110px)', objectFit:'contain', display:'block', borderRadius:'6px 6px 0 0', filter:'drop-shadow(0 0 8px rgba(80,120,255,0.5))' }} />
             <div style={{ fontSize:'9px', color:'rgba(150,180,255,0.5)', textAlign:'center', letterSpacing:'0.1em', fontWeight:600 }}>WET BANDITS</div>
           </div>
 
