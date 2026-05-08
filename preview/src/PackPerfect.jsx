@@ -1933,28 +1933,46 @@ export default function PackPerfect() {
 
   useEffect(() => {
     if (haPhase !== 4) return
-    // Start at MERRY CHRISTMAS quote, play filthy.mp3 immediately
-    setHaQuoteIdx(2)
-    if (haFilthyRef.current) { haFilthyRef.current.currentTime = 0; haFilthyRef.current.play().catch(() => {}) }
-    // Doorknob sequence: doorknob out → hand reaches → grabs
     setHaDoorknobPhase(0)
-    const d1 = setTimeout(() => setHaDoorknobPhase(1), 5500)
-    const d2 = setTimeout(() => setHaDoorknobPhase(2), 7800)
-    const d3 = setTimeout(() => {
-      setHaDoorknobPhase(3)
-      if (haDoorknobRef.current) { haDoorknobRef.current.currentTime = 0; haDoorknobRef.current.play().catch(() => {}) }
-    }, 9800)
-    // Quote cycle
-    const iv = setInterval(() => setHaQuoteIdx(i => (i + 1) % HA_QUOTES.length), 5000)
-    return () => { clearTimeout(d1); clearTimeout(d2); clearTimeout(d3); clearInterval(iv) }
-  }, [haPhase])
+    let cancelled = false
+    let cycleInterval = null
 
-  // Play dinner.mp3 when "Bless this..." quote shows; replay filthy.mp3 on repeat cycle
-  useEffect(() => {
-    if (!homeAloneMode || haPhase !== 4) return
-    if (haQuoteIdx === 7 && haDinnerRef.current) { haDinnerRef.current.currentTime = 0; haDinnerRef.current.play().catch(() => {}) }
-    if (haQuoteIdx === 2 && haFilthyRef.current) { haFilthyRef.current.currentTime = 0; haFilthyRef.current.play().catch(() => {}) }
-  }, [haQuoteIdx])
+    const wait = (ms) => new Promise(r => setTimeout(r, ms))
+    const waitEnd = (audio) => new Promise(r => { if (!audio) { r(); return }; audio.addEventListener('ended', r, { once: true }) })
+
+    const run = async () => {
+      // 4s intro before first clip
+      await wait(4000); if (cancelled) return
+
+      // MERRY CHRISTMAS + filthy.mp3
+      setHaQuoteIdx(2)
+      if (haFilthyRef.current) { haFilthyRef.current.currentTime = 0; haFilthyRef.current.play().catch(() => {}); await waitEnd(haFilthyRef.current) }
+      if (cancelled) return
+
+      // 2s gap → Bless this + dinner.mp3
+      await wait(2000); if (cancelled) return
+      setHaQuoteIdx(7)
+      if (haDinnerRef.current) { haDinnerRef.current.currentTime = 0; haDinnerRef.current.play().catch(() => {}); await waitEnd(haDinnerRef.current) }
+      if (cancelled) return
+
+      // Doorknob sequence — 2s between each phase
+      await wait(500); if (cancelled) return
+      setHaDoorknobPhase(1)
+      await wait(2000); if (cancelled) return
+      setHaDoorknobPhase(2)
+      await wait(2000); if (cancelled) return
+      setHaDoorknobPhase(3)
+      if (haDoorknobRef.current) { haDoorknobRef.current.currentTime = 0; haDoorknobRef.current.play().catch(() => {}); await waitEnd(haDoorknobRef.current) }
+      if (cancelled) return
+
+      // Glow stops, resume normal quote cycling
+      setHaDoorknobPhase(0)
+      cycleInterval = setInterval(() => setHaQuoteIdx(i => (i + 1) % HA_QUOTES.length), 5000)
+    }
+
+    run()
+    return () => { cancelled = true; if (cycleInterval) clearInterval(cycleInterval) }
+  }, [haPhase])
 
   const toggleDark = () => { const v = !dark; setDark(v); try{ localStorage.setItem('pp_dark', v ? '1' : '0') }catch(e){} }
   const saveProfile = (updates) => { const u = { ...profile, ...updates }; setProfile(u); try{ localStorage.setItem('pp_profile', JSON.stringify(u)) }catch(e){} }
@@ -3699,7 +3717,7 @@ export default function PackPerfect() {
                 )}
               </div>
             )}
-            <div style={{ ...card, borderColor: haDoorknobPhase === 3 ? '#c41e3a' : listGenerated ? t.border : t.borderStrong, ...(haDoorknobPhase === 3 ? { animationName:'haKnock, haKnockGlow', animationDuration:'0.18s, 0.9s', animationIterationCount:'infinite, infinite', animationTimingFunction:'ease-in-out, ease-in-out' } : {}) }}>
+            <div style={{ ...card, borderColor: haDoorknobPhase === 3 ? '#c41e3a' : listGenerated ? t.border : t.borderStrong, ...(haDoorknobPhase === 3 ? { background: dark ? 'rgba(196,30,58,0.13)' : 'rgba(196,30,58,0.07)', boxShadow:'0 0 0 2px #c41e3a, 0 0 32px 10px rgba(196,30,58,0.45), inset 0 0 18px rgba(196,30,58,0.12)', animationName:'haKnock', animationDuration:'0.18s', animationIterationCount:'infinite', animationTimingFunction:'ease-in-out' } : {}) }}>
               <h2 style={{ fontSize:'18px', fontWeight:'600', color:t.text, marginBottom:'4px' }}>{listGenerated ? 'Edit Trip Details' : 'Plan Your Trip'}</h2>
               <p style={{ fontSize:'13px', color:t.textMuted, marginBottom:'18px' }}>Enter your destination and dates to generate a smart packing list</p>
               <div style={{ display:'grid', gap:'14px' }}>
