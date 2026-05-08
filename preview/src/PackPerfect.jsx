@@ -1891,7 +1891,7 @@ export default function PackPerfect() {
     return () => clearInterval(iv)
   }, [iceAgePhase])
 
-  const homeAloneMode = /wet.?bandits|home.?alone|mccallister|kevin.*forgot|kevin.*left.*alone/i.test(destination)
+  const homeAloneMode = /winnetka|671 lincoln|mccallister house|kevin.?s house/i.test(destination)
 
   useEffect(() => {
     if (!homeAloneMode) { setHaPhase(0); setHaQuoteIdx(0); setHaTrapIdx(-1); return }
