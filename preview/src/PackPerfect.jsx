@@ -4251,7 +4251,7 @@ export default function PackPerfect() {
                 {layerResult && !layerLoading && (() => {
                   const layers = layerResult.layers || []
                   const cur = layers[layerCarouselIdx]
-                  const icons = ['🔽','➡️','🔼']
+                  const icons = ['📦','🧺','🔒']
                   return (
                     <div>
                       {layerResult.suitcaseNote && (

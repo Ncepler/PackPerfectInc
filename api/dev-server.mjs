@@ -96,6 +96,94 @@ ${packingListSummary ? `The user's current trip details and packing list:\n${pac
     return
   }
 
+  if (req.url === '/api/generate-layers' && req.method === 'POST') {
+    let body
+    try { body = await readBody(req) } catch {
+      res.writeHead(400, { 'Content-Type': 'application/json' })
+      return res.end(JSON.stringify({ error: 'Invalid JSON' }))
+    }
+
+    const { imageBase64, imageMimeType, packingList, premiumKey, layerCount } = body
+
+    if (premiumKey !== PREMIUM_KEY) {
+      res.writeHead(403, { 'Content-Type': 'application/json' })
+      return res.end(JSON.stringify({ error: 'Premium access required' }))
+    }
+    if (typeof layerCount === 'number' && layerCount >= 2) {
+      res.writeHead(429, { 'Content-Type': 'application/json' })
+      return res.end(JSON.stringify({ error: 'Layer generation limit reached (2/2).' }))
+    }
+    if (!imageBase64 || !packingList) {
+      res.writeHead(400, { 'Content-Type': 'application/json' })
+      return res.end(JSON.stringify({ error: 'Missing imageBase64 or packingList' }))
+    }
+
+    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+
+    const packingText = Object.entries(packingList)
+      .map(([category, items]) => {
+        const itemList = items.map(i => `${i.name} (x${i.qty})`).join(', ')
+        return `${category}: ${itemList}`
+      })
+      .join('\n')
+
+    let layerBreakdown
+    try {
+      const visionResponse = await client.chat.completions.create({
+        model: 'gpt-4o',
+        max_tokens: 1200,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image_url', image_url: { url: `data:${imageMimeType};base64,${imageBase64}` } },
+            { type: 'text', text: `You are an expert packing consultant. Look at this suitcase image to gauge its approximate size and shape.\n\nDivide ALL items from the packing list into exactly 3 progressive packing stages for a clamshell suitcase. The suitcase has two sides — a deep main compartment and a shallower lid compartment — and you pack 2 layers into the main side before filling the lid side:\n\n- Stage 1 (Main side — Layer 1): The heaviest and bulkiest items placed flat against the back panel of the main compartment, near the wheels. Think shoes, jeans, heavy jackets, boots. This is the foundation.\n- Stage 2 (Main side — Layer 2): Medium-weight items packed directly on top of Stage 1, filling the rest of the main compartment. Think shirts, pants, folded clothes, toiletries bag.\n- Stage 3 (Lid side): Light, delicate, or frequently-needed items that go in the lid/flip side. Think electronics, documents, underwear, socks, accessories, chargers.\n\nEvery item must appear in exactly one stage. Main side (Stages 1+2) should hold ~65% of items; lid side (Stage 3) ~35%.\n\nPacking list:\n${packingText}\n\nRespond ONLY with valid JSON in this exact shape — no markdown, no extra text:\n{\n  "suitcaseNote": "one sentence about the suitcase size/type you see",\n  "layers": [\n    {\n      "label": "Main Side — Layer 1",\n      "items": ["item name x qty", ...],\n      "packingTip": "one practical tip for packing this base layer"\n    },\n    {\n      "label": "Main Side — Layer 2",\n      "items": ["item name x qty", ...],\n      "packingTip": "one practical tip for packing on top of Layer 1"\n    },\n    {\n      "label": "Lid Side",\n      "items": ["item name x qty", ...],\n      "packingTip": "one practical tip for packing the lid side"\n    }\n  ]\n}` },
+          ],
+        }],
+      })
+      const raw = visionResponse.choices[0]?.message?.content || ''
+      const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+      layerBreakdown = JSON.parse(cleaned)
+    } catch (err) {
+      res.writeHead(500, { 'Content-Type': 'application/json' })
+      return res.end(JSON.stringify({ error: `Failed to analyze packing list: ${err.message}` }))
+    }
+
+    const [s1, s2, s3] = layerBreakdown.layers
+    const s1Items = s1.items.slice(0, 10).join(', ')
+    const s2Items = s2.items.slice(0, 10).join(', ')
+    const s3Items = s3.items.slice(0, 10).join(', ')
+
+    const imagePrompts = [
+      `An open clamshell travel suitcase photographed from slightly above at a 45-degree angle. The deep main compartment shows only the first packing layer laid flat against the back panel: ${s1Items}. Items are neatly arranged. The rest of the main compartment and the entire lid side are completely empty. Realistic product photography, clean neutral background, soft even lighting. No text, no people.`,
+
+      `An open clamshell travel suitcase photographed from slightly above at a 45-degree angle. The main compartment is now fully packed with two layers: ${s1Items} form the flat base layer against the back panel, and ${s2Items} are packed neatly on top filling the compartment. The lid side is still completely empty. Realistic product photography, clean neutral background, soft even lighting. No text, no people.`,
+
+      `An open clamshell travel suitcase photographed from slightly above at a 45-degree angle, both sides visible. The main compartment is fully packed (base layer: ${s1Items}; top layer: ${s2Items}). The lid side is now also packed with ${s3Items}. The suitcase is completely packed and ready to close. Realistic product photography, clean neutral background, soft even lighting. No text, no people.`,
+    ]
+
+    let layerImages
+    try {
+      layerImages = await Promise.all(
+        imagePrompts.map((prompt) =>
+          client.images.generate({ model: 'dall-e-3', prompt, size: '1024x1024', quality: 'standard', n: 1 })
+        )
+      )
+    } catch (err) {
+      res.writeHead(500, { 'Content-Type': 'application/json' })
+      return res.end(JSON.stringify({ error: `Failed to generate layer images: ${err.message}` }))
+    }
+
+    const layers = layerBreakdown.layers.map((layer, i) => ({
+      label: layer.label,
+      items: layer.items,
+      packingTip: layer.packingTip,
+      imageUrl: layerImages[i]?.data?.[0]?.url || null,
+    }))
+
+    res.writeHead(200, { 'Content-Type': 'application/json' })
+    return res.end(JSON.stringify({ suitcaseNote: layerBreakdown.suitcaseNote, layers }))
+  }
+
   res.writeHead(404)
   res.end()
 })

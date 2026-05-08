@@ -35,7 +35,7 @@ export default async function handler(req, res) {
     })
     .join('\n')
 
-  // Step 1: Use gpt-4o vision to analyze the suitcase and split items into 3 layers
+  // Step 1: Use gpt-4o vision to analyze the suitcase and split items into 3 progressive packing stages
   let layerBreakdown
   try {
     const visionResponse = await client.chat.completions.create({
@@ -53,10 +53,13 @@ export default async function handler(req, res) {
               type: 'text',
               text: `You are an expert packing consultant. Look at this suitcase image to gauge its approximate size and shape.
 
-Then take the packing list below and divide ALL items into exactly 3 packing layers, following these rules:
-- Bottom layer: heavy and bulky items (shoes, jeans, heavy jackets) — packed first, near the wheels
-- Middle layer: medium-weight clothing and accessories (shirts, pants, toiletries bag)
-- Top layer: light, delicate, or frequently-needed items (electronics, documents, underwear, socks)
+Divide ALL items from the packing list into exactly 3 progressive packing stages for a clamshell suitcase. The suitcase has two sides — a deep main compartment and a shallower lid compartment — and you pack 2 layers into the main side before filling the lid side:
+
+- Stage 1 (Main side — Layer 1): The heaviest and bulkiest items placed flat against the back panel of the main compartment, near the wheels. Think shoes, jeans, heavy jackets, boots. This is the foundation.
+- Stage 2 (Main side — Layer 2): Medium-weight items packed directly on top of Stage 1, filling the rest of the main compartment. Think shirts, pants, folded clothes, toiletries bag.
+- Stage 3 (Lid side): Light, delicate, or frequently-needed items that go in the lid/flip side. Think electronics, documents, underwear, socks, accessories, chargers.
+
+Every item must appear in exactly one stage. Main side (Stages 1+2) should hold ~65% of items; lid side (Stage 3) ~35%.
 
 Packing list:
 ${packingText}
@@ -66,19 +69,19 @@ Respond ONLY with valid JSON in this exact shape — no markdown, no extra text:
   "suitcaseNote": "one sentence about the suitcase size/type you see",
   "layers": [
     {
-      "label": "Bottom Layer",
+      "label": "Main Side — Layer 1",
       "items": ["item name x qty", ...],
-      "packingTip": "one practical tip for this layer"
+      "packingTip": "one practical tip for packing this base layer"
     },
     {
-      "label": "Middle Layer",
+      "label": "Main Side — Layer 2",
       "items": ["item name x qty", ...],
-      "packingTip": "one practical tip for this layer"
+      "packingTip": "one practical tip for packing on top of Layer 1"
     },
     {
-      "label": "Top Layer",
+      "label": "Lid Side",
       "items": ["item name x qty", ...],
-      "packingTip": "one practical tip for this layer"
+      "packingTip": "one practical tip for packing the lid side"
     }
   ]
 }`,
@@ -96,11 +99,19 @@ Respond ONLY with valid JSON in this exact shape — no markdown, no extra text:
     return res.status(500).json({ error: `Failed to analyze packing list: ${err.message}` })
   }
 
-  // Step 2: Generate one DALL-E 3 image per layer (all 3 in parallel)
-  const imagePrompts = layerBreakdown.layers.map((layer) => {
-    const itemsText = layer.items.slice(0, 12).join(', ')
-    return `A clean, professional flat-lay photograph on a white background. Travel items arranged neatly from a top-down bird's-eye view. Items shown: ${itemsText}. Minimalist styling, soft shadows, even lighting. Each item clearly visible and spaced apart. No text, no labels, no people.`
-  })
+  // Step 2: Build progressive DALL-E prompts — each image shows the suitcase more packed than the last
+  const [s1, s2, s3] = layerBreakdown.layers
+  const s1Items = s1.items.slice(0, 10).join(', ')
+  const s2Items = s2.items.slice(0, 10).join(', ')
+  const s3Items = s3.items.slice(0, 10).join(', ')
+
+  const imagePrompts = [
+    `An open clamshell travel suitcase photographed from slightly above at a 45-degree angle. The deep main compartment shows only the first packing layer laid flat against the back panel: ${s1Items}. Items are neatly arranged. The rest of the main compartment and the entire lid side are completely empty. Realistic product photography, clean neutral background, soft even lighting. No text, no people.`,
+
+    `An open clamshell travel suitcase photographed from slightly above at a 45-degree angle. The main compartment is now fully packed with two layers: ${s1Items} form the flat base layer against the back panel, and ${s2Items} are packed neatly on top filling the compartment. The lid side is still completely empty. Realistic product photography, clean neutral background, soft even lighting. No text, no people.`,
+
+    `An open clamshell travel suitcase photographed from slightly above at a 45-degree angle, both sides visible. The main compartment is fully packed (base layer: ${s1Items}; top layer: ${s2Items}). The lid side is now also packed with ${s3Items}. The suitcase is completely packed and ready to close. Realistic product photography, clean neutral background, soft even lighting. No text, no people.`,
+  ]
 
   let layerImages
   try {
