@@ -61,17 +61,9 @@ const ICE_CHUNKS = Array.from({length:12}, (_, i) => ({
 }))
 
 const HA_QUOTES = [
-  '"Keep the change, ya filthy animal." — Kevin McCallister',
-  '"This is my house. I have to defend it." — Kevin McCallister',
   '"MERRY CHRISTMAS, YA FILTHY ANIMALS. AND A HAPPY NEW YEAR."',
-  '"You guys give up, or you thirsty for more?" — Kevin',
-  '"Fuller, go easy on the Pepsi!" — Peter McCallister',
-  '"We\'re the Wet Bandits! THE WET BANDITS!" — Marv',
-  '"Look what you did, ya little jerk!" — Uncle Frank',
   '"Bless this highly nutritious micro-wavable macaroni and cheese dinner..." — Kevin',
-  '"WET BANDITS RIDE AGAIN! 💦🔫"',
-  '"A lovely cheese pizza, just for me." — Kevin 🍕',
-  '"Pack Perfect recommends: always check who\'s home before you pack." — Kevin',
+  '"AAAAHHHH!" — Marv',
 ]
 const HA_SNOWFLAKES = Array.from({length:55}, (_, i) => ({
   id:i, left:(i*2.11+0.9)%100, delay:(i*0.41)%8, dur:6+(i*0.47)%7,
@@ -1938,10 +1930,12 @@ export default function PackPerfect() {
     const waitEnd = (audio) => new Promise(r => { if (!audio) { r(); return }; audio.addEventListener('ended', r, { once: true }) })
     const loop = async () => {
       while (!haLoopCancelled.current) {
+        setHaQuoteIdx(0)
         if (haFilthyRef.current) { haFilthyRef.current.currentTime = 0; haFilthyRef.current.play().catch(() => {}); await waitEnd(haFilthyRef.current) }
         if (haLoopCancelled.current) return
         await wait(2000)
         if (haLoopCancelled.current) return
+        setHaQuoteIdx(1)
         if (haDinnerRef.current) { haDinnerRef.current.currentTime = 0; haDinnerRef.current.play().catch(() => {}); await waitEnd(haDinnerRef.current) }
         if (haLoopCancelled.current) return
         await wait(2000)
@@ -1950,13 +1944,11 @@ export default function PackPerfect() {
     loop()
   }, [haPhase])
 
-  // Phase 4: quote init + doorknob sequence (audio already looping)
+  // Phase 4: doorknob sequence (audio already looping from phase 3)
   useEffect(() => {
     if (haPhase !== 4) return
-    setHaQuoteIdx(2)
     setHaDoorknobPhase(0)
     let cancelled = false
-    let cycleInterval = null
     const wait = (ms) => new Promise(r => setTimeout(r, ms))
     const waitEnd = (audio) => new Promise(r => { if (!audio) { r(); return }; audio.addEventListener('ended', r, { once: true }) })
     const run = async () => {
@@ -1966,13 +1958,13 @@ export default function PackPerfect() {
       setHaDoorknobPhase(2)
       await wait(2000); if (cancelled) return
       setHaDoorknobPhase(3)
+      setHaQuoteIdx(2)
       if (haDoorknobRef.current) { haDoorknobRef.current.currentTime = 0; haDoorknobRef.current.play().catch(() => {}); await waitEnd(haDoorknobRef.current) }
       if (cancelled) return
       setHaDoorknobPhase(0)
-      cycleInterval = setInterval(() => setHaQuoteIdx(i => (i + 1) % HA_QUOTES.length), 5000)
     }
     run()
-    return () => { cancelled = true; if (cycleInterval) clearInterval(cycleInterval) }
+    return () => { cancelled = true }
   }, [haPhase])
 
   const toggleDark = () => { const v = !dark; setDark(v); try{ localStorage.setItem('pp_dark', v ? '1' : '0') }catch(e){} }
