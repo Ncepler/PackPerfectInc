@@ -60,6 +60,39 @@ const ICE_CHUNKS = Array.from({length:12}, (_, i) => ({
   angle:(i*31)%360, opacity:0.15+(i%4)*0.07,
 }))
 
+const HA_QUOTES = [
+  '"Keep the change, ya filthy animal." — Kevin McCallister',
+  '"This is my house. I have to defend it." — Kevin McCallister',
+  '"MERRY CHRISTMAS, YA FILTHY ANIMALS. AND A HAPPY NEW YEAR."',
+  '"You guys give up, or you thirsty for more?" — Kevin',
+  '"Fuller, go easy on the Pepsi!" — Peter McCallister',
+  '"We\'re the Wet Bandits! THE WET BANDITS!" — Marv',
+  '"Look what you did, ya little jerk!" — Uncle Frank',
+  '"Bless this highly nutritious micro-wavable macaroni and cheese dinner..." — Kevin',
+  '"WET BANDITS RIDE AGAIN! 💦🔫"',
+  '"A lovely cheese pizza, just for me." — Kevin 🍕',
+  '"Pack Perfect recommends: always check who\'s home before you pack." — Kevin',
+]
+const HA_SNOWFLAKES = Array.from({length:55}, (_, i) => ({
+  id:i, left:(i*2.11+0.9)%100, delay:(i*0.41)%8, dur:6+(i*0.47)%7,
+  size:10+(i*4)%20, opacity:0.45+(i%5)*0.1, drift:(i%2===0?1:-1)*(8+(i*2.7)%18),
+}))
+const HA_LIGHTS = Array.from({length:22}, (_, i) => ({
+  id:i, color:['#ff2222','#22cc22','#ffcc00','#2244ff','#ff44aa'][i%5],
+  delay:(i*0.18)%2.2,
+}))
+const HA_TRAPS = [
+  { icon:'🕯️', name:'Blow Torch',        note:'doorknob heating system' },
+  { icon:'🏒', name:'BB Gun',             note:'just in case' },
+  { icon:'🪣', name:'Paint Cans on Wire', note:'string-activated' },
+  { icon:'❄️', name:'Icy Front Steps',    note:'pre-applied, extra slippery' },
+  { icon:'🔮', name:'Ornament Landmines', note:'strategically placed' },
+  { icon:'🕷️', name:'Buzz\'s Tarantula', note:'borrowed without permission' },
+  { icon:'🧲', name:'Zip Line Kit',       note:'for rapid rooftop egress' },
+  { icon:'🔨', name:'Nail Board',         note:'basement entry deterrent' },
+  { icon:'🧴', name:'Aftershave',         note:'personal care & scream trigger' },
+  { icon:'🍕', name:'Cheese Pizza',       note:'just for me, not for Wet Bandits' },
+]
 
 const MINIONS_QUOTES = [
   '"LIGHTBULB." — Gru',
@@ -1638,6 +1671,9 @@ export default function PackPerfect() {
   const [itineraryEventInput, setItineraryEventInput] = useState('')
   const [itinerarySubmitted, setItinerarySubmitted] = useState(false)
   const [itineraryKeywords, setItineraryKeywords] = useState({})
+  const [haPhase, setHaPhase] = useState(0)
+  const [haQuoteIdx, setHaQuoteIdx] = useState(0)
+  const [haTrapIdx, setHaTrapIdx] = useState(-1)
   const acornPosRef = useRef({ x: 120, y: 80 })
   const scratAnimRef = useRef(null)
   const [scratState, setScratState] = useState({ sx: -200, sy: 80, ax: 120, ay: 80, flip: false })
@@ -1854,6 +1890,34 @@ export default function PackPerfect() {
     const iv = setInterval(() => setIceAgeQuoteIdx(i => (i + 1) % ICE_AGE_QUOTES.length), 5500)
     return () => clearInterval(iv)
   }, [iceAgePhase])
+
+  const homeAloneMode = /wet.?bandits|home.?alone|mccallister|kevin.*forgot|kevin.*left.*alone/i.test(destination)
+
+  useEffect(() => {
+    if (!homeAloneMode) { setHaPhase(0); setHaQuoteIdx(0); setHaTrapIdx(-1); return }
+    setHaPhase(1)
+    const t1 = setTimeout(() => setHaPhase(2), 4500)
+    const t2 = setTimeout(() => { setHaPhase(3); setHaTrapIdx(-1) }, 9000)
+    const t3 = setTimeout(() => setHaPhase(4), 14500)
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3) }
+  }, [homeAloneMode])
+
+  useEffect(() => {
+    if (haPhase !== 3) return
+    let idx = -1
+    const iv = setInterval(() => {
+      idx++
+      setHaTrapIdx(idx)
+      if (idx >= HA_TRAPS.length - 1) clearInterval(iv)
+    }, 700)
+    return () => clearInterval(iv)
+  }, [haPhase])
+
+  useEffect(() => {
+    if (haPhase !== 4) return
+    const iv = setInterval(() => setHaQuoteIdx(i => (i + 1) % HA_QUOTES.length), 5000)
+    return () => clearInterval(iv)
+  }, [haPhase])
 
   const toggleDark = () => { const v = !dark; setDark(v); try{ localStorage.setItem('pp_dark', v ? '1' : '0') }catch(e){} }
   const saveProfile = (updates) => { const u = { ...profile, ...updates }; setProfile(u); try{ localStorage.setItem('pp_profile', JSON.stringify(u)) }catch(e){} }
@@ -2488,6 +2552,26 @@ export default function PackPerfect() {
     @keyframes iaCrackFlash { 0%{opacity:0} 20%{opacity:1} 60%{opacity:0.6} 100%{opacity:0} }
     .ia-scrat { animation:iaScratBob 0.6s ease-in-out infinite; }
     .ia-acorn-glow { animation:iaIceGlow 1.8s ease-in-out infinite; }
+    @keyframes haSnowfall { 0%{transform:translateY(-20px) translateX(0) rotate(0deg);opacity:0} 5%{opacity:1} 90%{opacity:0.8} 100%{transform:translateY(110vh) translateX(var(--ha-drift,15px)) rotate(420deg);opacity:0} }
+    @keyframes haTitleIn { 0%{opacity:0;transform:scale(3.5) rotate(-6deg);filter:blur(16px)} 55%{transform:scale(0.92) rotate(1.5deg)} 75%{transform:scale(1.05) rotate(-0.5deg)} 100%{opacity:1;transform:scale(1) rotate(0);filter:blur(0)} }
+    @keyframes haSubIn { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes haVhsFlicker { 0%,100%{opacity:1} 7%{opacity:0.85} 14%{opacity:1} 28%{opacity:0.92} 42%{opacity:1} 56%{opacity:0.88} 70%{opacity:1} }
+    @keyframes haScanline { 0%{transform:translateY(-8px)} 100%{transform:translateY(100vh)} }
+    @keyframes haScreamPulse { 0%,100%{transform:scale(1) rotate(-1deg)} 30%{transform:scale(1.18) rotate(1.5deg)} 60%{transform:scale(0.92) rotate(-0.8deg)} }
+    @keyframes haShockRing { 0%{transform:translate(-50%,-50%) scale(0.2);opacity:0.9;border-width:6px} 100%{transform:translate(-50%,-50%) scale(2.8);opacity:0;border-width:1px} }
+    @keyframes haScreamBg { 0%,100%{background:radial-gradient(ellipse at 50% 50%, #8b0000 0%, #3d0000 55%, #1a0000 100%)} 50%{background:radial-gradient(ellipse at 50% 50%, #cc0000 0%, #600000 55%, #250000 100%)} }
+    @keyframes haTrapSlide { from{opacity:0;transform:translateX(-28px)} to{opacity:1;transform:translateX(0)} }
+    @keyframes haKevinPeek { 0%,100%{transform:translateY(0)} 40%{transform:translateY(-14px)} }
+    @keyframes haMarvPeek { 0%,100%{transform:translateY(0) scaleX(-1)} 40%{transform:translateY(-12px) scaleX(-1)} }
+    @keyframes haLightBlink { 0%,100%{opacity:1;filter:blur(0px)} 45%{opacity:0.15;filter:blur(2px)} 55%{opacity:0.15;filter:blur(2px)} }
+    @keyframes haLightSwing { 0%,100%{transform:rotate(-4deg)} 50%{transform:rotate(4deg)} }
+    @keyframes haBannerIn { from{transform:translateY(-110%)} to{transform:translateY(0)} }
+    @keyframes haQuoteIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes haRedPulse { 0%,100%{background:rgba(139,0,0,0.05)} 50%{background:rgba(180,0,0,0.12)} }
+    ${homeAloneMode ? `
+      .pp-header { border-bottom: 2px solid #c41e3a !important; }
+      body { background: #1a0505 !important; }
+    ` : ''}
     ${iceAgeMode ? `
       .pp-header { border-bottom: 2px solid #7dd3fc !important; }
       body { background: #0a1628 !important; }
@@ -2510,7 +2594,7 @@ export default function PackPerfect() {
   `
 
   return (
-    <div style={{ fontFamily:"'Sora',sans-serif", minHeight:'100vh', background: iceAgeMode ? 'linear-gradient(180deg,#0a1628 0%,#0d2040 40%,#0a2535 100%)' : kingJulienMode ? 'linear-gradient(135deg,#1a0533 0%,#0a2010 50%,#2d1000 100%)' : interstellarMode ? '#000510' : minionsMode ? '#0d1a2e' : t.bg, color: iceAgeMode ? '#e0f4ff' : kingJulienMode ? '#fef9e7' : interstellarMode ? '#c8d8e8' : minionsMode ? '#e8f0fe' : t.text }}>
+    <div style={{ fontFamily:"'Sora',sans-serif", minHeight:'100vh', background: homeAloneMode ? 'linear-gradient(180deg,#1a0505 0%,#110303 60%,#0d0202 100%)' : iceAgeMode ? 'linear-gradient(180deg,#0a1628 0%,#0d2040 40%,#0a2535 100%)' : kingJulienMode ? 'linear-gradient(135deg,#1a0533 0%,#0a2010 50%,#2d1000 100%)' : interstellarMode ? '#000510' : minionsMode ? '#0d1a2e' : t.bg, color: homeAloneMode ? '#ffe8e8' : iceAgeMode ? '#e0f4ff' : kingJulienMode ? '#fef9e7' : interstellarMode ? '#c8d8e8' : minionsMode ? '#e8f0fe' : t.text }}>
       <style>{CSS}</style>
 
       {/* ── PACKING LAYERS TOAST (global — shows on any tab) ── */}
@@ -2983,6 +3067,150 @@ export default function PackPerfect() {
               PENGUINS: MANY<br/>
               ACORNS: 1<br/>
               SCRAT: CHASING ❄
+            </div>
+          </div>
+        </>)}
+
+      </>)}
+
+      {/* ── HOME ALONE EASTER EGG ── */}
+      {homeAloneMode && haPhase > 0 && (<>
+
+        {/* Always: falling snow */}
+        {HA_SNOWFLAKES.map(s => (
+          <div key={s.id} style={{ position:'fixed', top:0, left:`${s.left}%`, fontSize:`${s.size}px`, zIndex:8, pointerEvents:'none', opacity:s.opacity, animationName:'haSnowfall', animationDuration:`${s.dur}s`, animationDelay:`${s.delay}s`, animationIterationCount:'infinite', animationTimingFunction:'linear', '--ha-drift':`${s.drift}px` }}>❄</div>
+        ))}
+
+        {/* PHASE 1: VHS intro → HOME ALONE title */}
+        {haPhase === 1 && (
+          <div style={{ position:'fixed', inset:0, zIndex:300, background:'#0a0000', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', animation:'haVhsFlicker 0.18s 3', overflow:'hidden' }}>
+            {/* Scanline effect */}
+            <div style={{ position:'absolute', inset:0, background:'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.18) 2px, rgba(0,0,0,0.18) 4px)', zIndex:2, pointerEvents:'none' }} />
+            <div style={{ position:'absolute', top:0, left:0, right:0, height:'3px', background:'rgba(255,255,255,0.06)', animationName:'haScanline', animationDuration:'4s', animationIterationCount:'infinite', animationTimingFunction:'linear', zIndex:3 }} />
+            {/* VHS Play badge */}
+            <div style={{ position:'absolute', top:18, left:20, display:'flex', alignItems:'center', gap:'6px', zIndex:4, animation:'haSubIn 0.5s 0.3s both' }}>
+              <div style={{ width:0, height:0, borderTop:'7px solid transparent', borderBottom:'7px solid transparent', borderLeft:'12px solid #cc0000' }} />
+              <span style={{ fontSize:11, fontWeight:700, letterSpacing:'0.28em', color:'rgba(255,80,80,0.8)', textTransform:'uppercase' }}>PLAY</span>
+            </div>
+            {/* Pack Perfect Presents */}
+            <div style={{ fontSize:'clamp(11px,1.7vw,15px)', fontWeight:'600', letterSpacing:'0.5em', color:'rgba(255,180,180,0.45)', textTransform:'uppercase', marginBottom:'20px', animation:'haSubIn 0.9s 0.5s both', zIndex:4 }}>Pack Perfect Presents</div>
+            {/* HOME ALONE title */}
+            <div style={{ zIndex:4, textAlign:'center', animation:'haTitleIn 1.1s 1s cubic-bezier(0.22,1,0.36,1) both' }}>
+              <div style={{ fontSize:'clamp(62px,14vw,148px)', fontWeight:900, lineHeight:0.88, letterSpacing:'-0.02em', textShadow:'0 0 60px rgba(220,30,30,0.7), 0 0 120px rgba(180,0,0,0.4), 0 6px 40px rgba(0,0,0,0.9)' }}>
+                <span style={{ color:'#fff' }}>HOME</span><br/>
+                <span style={{ color:'#c41e3a' }}>ALONE</span>
+              </div>
+            </div>
+            <div style={{ marginTop:'24px', fontSize:'clamp(11px,1.5vw,14px)', color:'rgba(255,160,160,0.55)', letterSpacing:'0.22em', textTransform:'uppercase', animation:'haSubIn 0.9s 1.9s both', zIndex:4 }}>Christmas 1990 Edition</div>
+            <div style={{ marginTop:'36px', fontSize:'13px', color:'rgba(220,80,80,0.3)', animation:'haSubIn 0.8s 2.7s both', zIndex:4 }}>🎄 Kevin is home... alone. Preparing his packing list. 🎄</div>
+            <button onClick={() => setHaPhase(4)} style={{ position:'absolute', bottom:22, right:22, background:'transparent', border:'1px solid rgba(220,80,80,0.2)', borderRadius:6, color:'rgba(220,80,80,0.35)', fontSize:11, padding:'5px 13px', cursor:'pointer', letterSpacing:'0.12em', zIndex:10 }}>skip →</button>
+          </div>
+        )}
+
+        {/* PHASE 2: THE SCREAM */}
+        {haPhase === 2 && (
+          <div style={{ position:'fixed', inset:0, zIndex:300, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', animationName:'haScreamBg', animationDuration:'1.6s', animationIterationCount:'infinite', animationTimingFunction:'ease-in-out', overflow:'hidden' }}>
+            {/* Shock rings */}
+            {[0,1,2,3].map(i => (
+              <div key={i} style={{ position:'absolute', top:'50%', left:'50%', width:'200px', height:'200px', border:'4px solid rgba(255,80,80,0.6)', borderRadius:'50%', animationName:'haShockRing', animationDuration:'1.8s', animationDelay:`${i*0.45}s`, animationIterationCount:'infinite', animationTimingFunction:'ease-out' }} />
+            ))}
+            {/* KEVIN! label */}
+            <div style={{ fontSize:'clamp(18px,3.5vw,32px)', fontWeight:800, letterSpacing:'0.35em', color:'rgba(255,200,200,0.7)', textTransform:'uppercase', marginBottom:'18px', animation:'haSubIn 0.5s 0.2s both' }}>KEVIN!</div>
+            {/* The scream face */}
+            <div style={{ fontSize:'clamp(100px,22vw,220px)', lineHeight:1, animationName:'haScreamPulse', animationDuration:'0.55s', animationIterationCount:'infinite', animationTimingFunction:'ease-in-out', zIndex:2 }}>😱</div>
+            {/* AAAAHHHH */}
+            <div style={{ fontSize:'clamp(28px,6vw,64px)', fontWeight:900, color:'#fff', letterSpacing:'0.08em', marginTop:'16px', animation:'haTitleIn 0.7s 0.4s both', textShadow:'0 0 30px rgba(255,100,100,0.9)' }}>AAAAHHHH!</div>
+            <div style={{ marginTop:'14px', fontSize:'clamp(12px,1.8vw,16px)', color:'rgba(255,180,180,0.6)', letterSpacing:'0.15em', animation:'haSubIn 0.8s 1.1s both' }}>He forgot his packing list.</div>
+            <div style={{ marginTop:'6px', fontSize:'12px', color:'rgba(255,140,140,0.38)', animation:'haSubIn 0.8s 1.8s both' }}>and his aftershave.</div>
+            <button onClick={() => setHaPhase(4)} style={{ position:'absolute', bottom:22, right:22, background:'transparent', border:'1px solid rgba(220,80,80,0.2)', borderRadius:6, color:'rgba(220,80,80,0.35)', fontSize:11, padding:'5px 13px', cursor:'pointer', letterSpacing:'0.12em', zIndex:10 }}>skip →</button>
+          </div>
+        )}
+
+        {/* PHASE 3: Booby Trap Packing List */}
+        {haPhase === 3 && (
+          <div style={{ position:'fixed', inset:0, zIndex:300, background:'linear-gradient(180deg,#120202 0%,#0d0101 100%)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', overflow:'hidden', animationName:'haRedPulse', animationDuration:'2s', animationIterationCount:'infinite' }}>
+            {/* Snow */}
+            {HA_SNOWFLAKES.filter((_,i) => i%3===0).map(s => (
+              <div key={s.id} style={{ position:'absolute', top:0, left:`${s.left}%`, fontSize:`${s.size*0.7}px`, pointerEvents:'none', opacity:s.opacity*0.6, animationName:'haSnowfall', animationDuration:`${s.dur*1.2}s`, animationDelay:`${s.delay}s`, animationIterationCount:'infinite', animationTimingFunction:'linear', '--ha-drift':`${s.drift}px` }}>❄</div>
+            ))}
+            <div style={{ position:'relative', zIndex:2, width:'100%', maxWidth:520, padding:'0 24px' }}>
+              {/* Header */}
+              <div style={{ textAlign:'center', marginBottom:'28px' }}>
+                <div style={{ fontSize:'clamp(11px,1.6vw,13px)', fontWeight:700, letterSpacing:'0.4em', color:'rgba(255,120,120,0.5)', textTransform:'uppercase', marginBottom:'10px', animation:'haSubIn 0.6s both' }}>Preparing Defensive Packing List</div>
+                <div style={{ fontSize:'clamp(26px,5.5vw,48px)', fontWeight:900, color:'#fff', textShadow:'0 0 30px rgba(196,30,58,0.8)', animation:'haTitleIn 0.8s 0.3s both' }}>Kevin's Way 🛡️</div>
+              </div>
+              {/* Trap items */}
+              <div style={{ display:'flex', flexDirection:'column', gap:'8px' }}>
+                {HA_TRAPS.map((trap, i) => (
+                  haTrapIdx >= i && (
+                    <div key={i} style={{ display:'flex', alignItems:'center', gap:'12px', padding:'10px 16px', background:'rgba(196,30,58,0.08)', border:'1px solid rgba(196,30,58,0.25)', borderRadius:'10px', animationName:'haTrapSlide', animationDuration:'0.4s', animationFillMode:'both', animationTimingFunction:'cubic-bezier(0.22,1,0.36,1)' }}>
+                      <span style={{ fontSize:'22px' }}>{trap.icon}</span>
+                      <div>
+                        <div style={{ fontSize:'14px', fontWeight:'600', color:'#ffd0d0' }}>{trap.name}</div>
+                        <div style={{ fontSize:'11px', color:'rgba(255,160,160,0.5)', marginTop:'1px' }}>{trap.note}</div>
+                      </div>
+                      <div style={{ marginLeft:'auto', fontSize:'11px', color:'rgba(196,30,58,0.7)', fontWeight:600 }}>✓ PACKED</div>
+                    </div>
+                  )
+                ))}
+              </div>
+            </div>
+            <button onClick={() => setHaPhase(4)} style={{ position:'absolute', bottom:22, right:22, background:'transparent', border:'1px solid rgba(220,80,80,0.2)', borderRadius:6, color:'rgba(220,80,80,0.35)', fontSize:11, padding:'5px 13px', cursor:'pointer', letterSpacing:'0.12em', zIndex:10 }}>skip →</button>
+          </div>
+        )}
+
+        {/* PHASE 4: Steady State */}
+        {haPhase === 4 && (<>
+          {/* Dark red bg overlay */}
+          <div style={{ position:'fixed', inset:0, background:'radial-gradient(ellipse at 50% 30%, rgba(139,0,0,0.12) 0%, transparent 65%)', zIndex:6, pointerEvents:'none' }} />
+
+          {/* Christmas lights banner */}
+          <div style={{ position:'fixed', top:0, left:0, right:0, zIndex:1003, pointerEvents:'none', animationName:'haBannerIn', animationDuration:'0.8s', animationFillMode:'both' }}>
+            <div style={{ background:'linear-gradient(90deg,#0d0202,#1a0404,#0d0202)', borderBottom:'1.5px solid rgba(196,30,58,0.4)', padding:'6px 0 4px' }}>
+              {/* Wire */}
+              <div style={{ position:'absolute', top:'50%', left:0, right:0, height:'2px', background:'rgba(80,40,20,0.7)', transform:'translateY(-50%)' }} />
+              {/* Lights */}
+              <div style={{ display:'flex', justifyContent:'space-around', alignItems:'center' }}>
+                {HA_LIGHTS.map(l => (
+                  <div key={l.id} style={{ display:'flex', flexDirection:'column', alignItems:'center', animationName:'haLightSwing', animationDuration:`${2.2+(l.id%5)*0.3}s`, animationIterationCount:'infinite', animationTimingFunction:'ease-in-out', animationDelay:`${l.delay}s` }}>
+                    <div style={{ width:'3px', height:'6px', background:'rgba(80,40,20,0.8)' }} />
+                    <div style={{ width:'12px', height:'16px', background:l.color, borderRadius:'2px 2px 50% 50%', boxShadow:`0 0 8px 3px ${l.color}88`, animationName:'haLightBlink', animationDuration:`${1.4+(l.id%7)*0.25}s`, animationDelay:`${l.delay}s`, animationIterationCount:'infinite', animationTimingFunction:'ease-in-out' }} />
+                  </div>
+                ))}
+              </div>
+              {/* Banner text */}
+              <div style={{ textAlign:'center', marginTop:'4px', fontSize:'11px', fontWeight:'700', color:'rgba(255,180,180,0.7)', letterSpacing:'0.22em', textTransform:'uppercase' }}>
+                🎄 MERRY CHRISTMAS, YA FILTHY ANIMALS 🎄
+              </div>
+            </div>
+          </div>
+
+          {/* Kevin peeking bottom-left */}
+          <div style={{ position:'fixed', bottom:0, left:'2%', zIndex:70, pointerEvents:'none', animationName:'haKevinPeek', animationDuration:'2.4s', animationIterationCount:'infinite', animationTimingFunction:'ease-in-out' }}>
+            <div style={{ fontSize:'clamp(36px,7vw,68px)', lineHeight:1 }}>🧒</div>
+            <div style={{ fontSize:'9px', color:'rgba(255,160,160,0.5)', textAlign:'center', letterSpacing:'0.1em', fontWeight:600 }}>KEVIN</div>
+          </div>
+
+          {/* Wet Bandits peeking bottom-right */}
+          <div style={{ position:'fixed', bottom:0, right:'2%', zIndex:70, pointerEvents:'none', animationName:'haMarvPeek', animationDuration:'2.1s', animationDelay:'0.6s', animationIterationCount:'infinite', animationTimingFunction:'ease-in-out' }}>
+            <div style={{ fontSize:'clamp(32px,6vw,60px)', lineHeight:1, transform:'scaleX(-1)' }}>🦹‍♂️🦹</div>
+            <div style={{ fontSize:'9px', color:'rgba(150,180,255,0.5)', textAlign:'center', letterSpacing:'0.1em', fontWeight:600 }}>WET BANDITS</div>
+          </div>
+
+          {/* Rotating quotes */}
+          <div key={haQuoteIdx} style={{ position:'fixed', bottom:62, left:'50%', transform:'translateX(-50%)', zIndex:1003, pointerEvents:'none', animationName:'haQuoteIn', animationDuration:'0.7s', animationFillMode:'both', maxWidth:'min(520px,88vw)', textAlign:'center' }}>
+            <div style={{ background:'rgba(20,2,2,0.93)', border:'1px solid rgba(196,30,58,0.35)', borderRadius:'12px', padding:'10px 18px', fontSize:'13px', fontWeight:'500', color:'#ffd0d0', letterSpacing:'0.02em', boxShadow:'0 4px 20px rgba(0,0,0,0.6), 0 0 20px rgba(196,30,58,0.08)' }}>
+              {HA_QUOTES[haQuoteIdx]}
+            </div>
+          </div>
+
+          {/* Bottom-right watermark */}
+          <div style={{ position:'fixed', bottom:18, right:18, zIndex:1010, pointerEvents:'none' }}>
+            <div style={{ fontFamily:'monospace', fontSize:9, color:'rgba(196,30,58,0.32)', letterSpacing:'0.14em', textAlign:'right', lineHeight:2 }}>
+              WET BANDITS: ACTIVE<br/>
+              BOOBY TRAPS: ARMED<br/>
+              PIZZA: ORDERED<br/>
+              KEVIN: HOME ALONE 🏠
             </div>
           </div>
         </>)}
@@ -4732,3 +4960,4 @@ export default function PackPerfect() {
     </div>
   )
 }
+
