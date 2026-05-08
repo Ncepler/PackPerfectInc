@@ -1657,6 +1657,10 @@ export default function PackPerfect() {
   const [isPhase, setIsPhase] = useState(0)
   const isAudioRef = useRef(null)
   const [isQuoteIdx, setIsQuoteIdx] = useState(0)
+  const haMemoryRef = useRef(null)
+  const haFilthyRef = useRef(null)
+  const haDinnerRef = useRef(null)
+  const haDoorknobRef = useRef(null)
   const [minionsPhase, setMinionsPhase] = useState(0)
   const minionsAudioRef = useRef(null)
   const [minionsQuoteIdx, setMinionsQuoteIdx] = useState(0)
@@ -1674,6 +1678,7 @@ export default function PackPerfect() {
   const [haPhase, setHaPhase] = useState(0)
   const [haQuoteIdx, setHaQuoteIdx] = useState(0)
   const [haTrapIdx, setHaTrapIdx] = useState(-1)
+  const [haDoorknobPhase, setHaDoorknobPhase] = useState(0)
   const acornPosRef = useRef({ x: 120, y: 80 })
   const scratAnimRef = useRef(null)
   const [scratState, setScratState] = useState({ sx: -200, sy: 80, ax: 120, ay: 80, flip: false })
@@ -1894,12 +1899,22 @@ export default function PackPerfect() {
   const homeAloneMode = /winnetka|671 lincoln|mccallister house|kevin.?s house/i.test(destination) || /winnetka|671 lincoln|mccallister house|kevin.?s house/i.test(destInput)
 
   useEffect(() => {
-    if (!homeAloneMode) { setHaPhase(0); setHaQuoteIdx(0); setHaTrapIdx(-1); return }
+    if (!homeAloneMode) {
+      setHaPhase(0); setHaQuoteIdx(0); setHaTrapIdx(-1); setHaDoorknobPhase(0)
+      if (haMemoryRef.current) { haMemoryRef.current.pause(); haMemoryRef.current.currentTime = 0 }
+      return
+    }
+    // Start background music immediately
+    if (!haMemoryRef.current) { haMemoryRef.current = new Audio('/memory.mp3'); haMemoryRef.current.loop = true; haMemoryRef.current.volume = 0.35 }
+    haMemoryRef.current.play().catch(() => {})
     setHaPhase(1)
     const t1 = setTimeout(() => setHaPhase(2), 4500)
     const t2 = setTimeout(() => { setHaPhase(3); setHaTrapIdx(-1) }, 9000)
     const t3 = setTimeout(() => setHaPhase(4), 14500)
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3) }
+    return () => {
+      clearTimeout(t1); clearTimeout(t2); clearTimeout(t3)
+      if (haMemoryRef.current) { haMemoryRef.current.pause(); haMemoryRef.current.currentTime = 0 }
+    }
   }, [homeAloneMode])
 
   useEffect(() => {
@@ -1915,9 +1930,39 @@ export default function PackPerfect() {
 
   useEffect(() => {
     if (haPhase !== 4) return
+    // Start at MERRY CHRISTMAS quote, play filthy.mp3 immediately
+    setHaQuoteIdx(2)
+    if (!haFilthyRef.current) { haFilthyRef.current = new Audio('/filthy.mp3'); haFilthyRef.current.volume = 0.9 }
+    haFilthyRef.current.currentTime = 0
+    haFilthyRef.current.play().catch(() => {})
+    // Doorknob sequence: doorknob out → hand reaches → grabs
+    setHaDoorknobPhase(0)
+    const d1 = setTimeout(() => setHaDoorknobPhase(1), 5500)
+    const d2 = setTimeout(() => setHaDoorknobPhase(2), 7800)
+    const d3 = setTimeout(() => {
+      setHaDoorknobPhase(3)
+      if (!haDoorknobRef.current) { haDoorknobRef.current = new Audio('/doorknob.mp3'); haDoorknobRef.current.volume = 0.95 }
+      haDoorknobRef.current.currentTime = 0
+      haDoorknobRef.current.play().catch(() => {})
+    }, 9800)
+    // Quote cycle
     const iv = setInterval(() => setHaQuoteIdx(i => (i + 1) % HA_QUOTES.length), 5000)
-    return () => clearInterval(iv)
+    return () => { clearTimeout(d1); clearTimeout(d2); clearTimeout(d3); clearInterval(iv) }
   }, [haPhase])
+
+  // Play dinner.mp3 when "Bless this..." quote shows; replay filthy.mp3 on repeat cycle
+  useEffect(() => {
+    if (!homeAloneMode || haPhase !== 4) return
+    if (haQuoteIdx === 7) {
+      if (!haDinnerRef.current) { haDinnerRef.current = new Audio('/dinner.mp3'); haDinnerRef.current.volume = 0.9 }
+      haDinnerRef.current.currentTime = 0
+      haDinnerRef.current.play().catch(() => {})
+    }
+    if (haQuoteIdx === 2 && haFilthyRef.current) {
+      haFilthyRef.current.currentTime = 0
+      haFilthyRef.current.play().catch(() => {})
+    }
+  }, [haQuoteIdx])
 
   const toggleDark = () => { const v = !dark; setDark(v); try{ localStorage.setItem('pp_dark', v ? '1' : '0') }catch(e){} }
   const saveProfile = (updates) => { const u = { ...profile, ...updates }; setProfile(u); try{ localStorage.setItem('pp_profile', JSON.stringify(u)) }catch(e){} }
@@ -2568,6 +2613,11 @@ export default function PackPerfect() {
     @keyframes haBannerIn { from{transform:translateY(-110%)} to{transform:translateY(0)} }
     @keyframes haQuoteIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
     @keyframes haRedPulse { 0%,100%{background:rgba(139,0,0,0.05)} 50%{background:rgba(180,0,0,0.12)} }
+    @keyframes haKnock { 0%,100%{transform:translateX(0) rotate(0deg)} 12%{transform:translateX(-6px) rotate(-0.6deg)} 28%{transform:translateX(6px) rotate(0.5deg)} 44%{transform:translateX(-5px) rotate(-0.4deg)} 60%{transform:translateX(4px) rotate(0.3deg)} 76%{transform:translateX(-2px) rotate(-0.2deg)} 90%{transform:translateX(1px)} }
+    @keyframes haDoorknobSlide { from{transform:translateX(110px);opacity:0} to{transform:translateX(0);opacity:1} }
+    @keyframes haHandSlide { from{transform:translateX(80px) translateY(20px);opacity:0} to{transform:translateX(0) translateY(0);opacity:1} }
+    @keyframes haHandGrab { 0%,100%{transform:scale(1) rotate(0deg)} 40%{transform:scale(1.25) rotate(-8deg)} 70%{transform:scale(0.9) rotate(5deg)} }
+    @keyframes haKnockGlow { 0%,100%{box-shadow:0 0 18px 6px rgba(196,30,58,0.55),0 0 0 2px #c41e3a} 50%{box-shadow:0 0 38px 14px rgba(220,30,30,0.8),0 0 0 2px #ff2020} }
     ${homeAloneMode ? `
       .pp-header { border-bottom: 2px solid #c41e3a !important; }
       body { background: #1a0505 !important; }
@@ -3117,7 +3167,7 @@ export default function PackPerfect() {
             {/* KEVIN! label */}
             <div style={{ fontSize:'clamp(18px,3.5vw,32px)', fontWeight:800, letterSpacing:'0.35em', color:'rgba(255,200,200,0.7)', textTransform:'uppercase', marginBottom:'18px', animation:'haSubIn 0.5s 0.2s both' }}>KEVIN!</div>
             {/* The scream face */}
-            <div style={{ fontSize:'clamp(100px,22vw,220px)', lineHeight:1, animationName:'haScreamPulse', animationDuration:'0.55s', animationIterationCount:'infinite', animationTimingFunction:'ease-in-out', zIndex:2 }}>😱</div>
+            <img src="/kevin_face.jpg" alt="Kevin" style={{ width:'clamp(180px,35vw,340px)', objectFit:'contain', zIndex:2, borderRadius:'8px', animationName:'haScreamPulse', animationDuration:'0.55s', animationIterationCount:'infinite', animationTimingFunction:'ease-in-out', filter:'drop-shadow(0 0 40px rgba(255,60,60,0.9))' }} />
             {/* AAAAHHHH */}
             <div style={{ fontSize:'clamp(28px,6vw,64px)', fontWeight:900, color:'#fff', letterSpacing:'0.08em', marginTop:'16px', animation:'haTitleIn 0.7s 0.4s both', textShadow:'0 0 30px rgba(255,100,100,0.9)' }}>AAAAHHHH!</div>
             <div style={{ marginTop:'14px', fontSize:'clamp(12px,1.8vw,16px)', color:'rgba(255,180,180,0.6)', letterSpacing:'0.15em', animation:'haSubIn 0.8s 1.1s both' }}>He forgot his packing list.</div>
@@ -3187,9 +3237,21 @@ export default function PackPerfect() {
 
           {/* Kevin peeking bottom-left */}
           <div style={{ position:'fixed', bottom:0, left:'2%', zIndex:70, pointerEvents:'none', animationName:'haKevinPeek', animationDuration:'2.4s', animationIterationCount:'infinite', animationTimingFunction:'ease-in-out' }}>
-            <div style={{ fontSize:'clamp(36px,7vw,68px)', lineHeight:1 }}>🧒</div>
+            <img src="/kevin_face.jpg" alt="Kevin" style={{ width:'clamp(52px,9vw,90px)', objectFit:'contain', display:'block', borderRadius:'6px 6px 0 0', filter:'drop-shadow(0 0 8px rgba(196,30,58,0.6))' }} />
             <div style={{ fontSize:'9px', color:'rgba(255,160,160,0.5)', textAlign:'center', letterSpacing:'0.1em', fontWeight:600 }}>KEVIN</div>
           </div>
+
+          {/* Doorknob sequence */}
+          {haDoorknobPhase >= 1 && (
+            <div style={{ position:'fixed', right:0, top:'42%', zIndex:1004, pointerEvents:'none', display:'flex', flexDirection:'column', alignItems:'flex-end', gap:'4px' }}>
+              {/* Doorknob emoji */}
+              <div style={{ fontSize:'clamp(32px,5vw,52px)', animationName:'haDoorknobSlide', animationDuration:'0.7s', animationFillMode:'both', animationTimingFunction:'cubic-bezier(0.22,1,0.36,1)', lineHeight:1 }}>🔑</div>
+              {/* Hand reaching in */}
+              {haDoorknobPhase >= 2 && (
+                <div style={{ fontSize:'clamp(28px,4.5vw,46px)', animationName:'haHandSlide', animationDuration:'0.6s', animationFillMode:'both', animationTimingFunction:'cubic-bezier(0.22,1,0.36,1)', lineHeight:1, animationIterationCount: haDoorknobPhase === 3 ? 'infinite' : '1', ...(haDoorknobPhase === 3 ? { animationName:'haHandGrab', animationDuration:'0.4s' } : {}) }}>✋</div>
+              )}
+            </div>
+          )}
 
           {/* Wet Bandits peeking bottom-right */}
           <div style={{ position:'fixed', bottom:0, right:'2%', zIndex:70, pointerEvents:'none', animationName:'haMarvPeek', animationDuration:'2.1s', animationDelay:'0.6s', animationIterationCount:'infinite', animationTimingFunction:'ease-in-out' }}>
@@ -3646,7 +3708,7 @@ export default function PackPerfect() {
               </div>
             )}
 
-            {!premiumMode && <div style={{ ...card, borderColor: listGenerated ? t.border : t.borderStrong }}>
+            {!premiumMode && <div style={{ ...card, borderColor: haDoorknobPhase === 3 ? '#c41e3a' : listGenerated ? t.border : t.borderStrong, ...(haDoorknobPhase === 3 ? { animationName:'haKnock, haKnockGlow', animationDuration:'0.18s, 0.9s', animationIterationCount:'infinite, infinite', animationTimingFunction:'ease-in-out, ease-in-out' } : {}) }}>
               <h2 style={{ fontSize:'18px', fontWeight:'600', color:t.text, marginBottom:'4px' }}>{listGenerated ? 'Edit Trip Details' : 'Plan Your Trip'}</h2>
               <p style={{ fontSize:'13px', color:t.textMuted, marginBottom:'18px' }}>Enter your destination and dates to generate a smart packing list</p>
               <div style={{ display:'grid', gap:'14px' }}>
