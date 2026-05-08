@@ -2396,14 +2396,46 @@ export default function PackPerfect() {
         const errData = await resp.json().catch(() => ({}))
         throw new Error(errData.error || `Server error ${resp.status}`)
       }
-      const data = await resp.json()
-      setLayerResult(data)
-      // Only count after a fully successful generation (all 3 images returned)
-      const newCount = layerCount + 1
-      setLayerCount(newCount)
-      try { localStorage.setItem('pp_layer_count', String(newCount)) } catch(_) {}
-      setLayerToast(true)
-      setTimeout(() => setLayerToast(false), 5000)
+
+      // Stream SSE — show layers as they arrive
+      const reader = resp.body.getReader()
+      const decoder = new TextDecoder()
+      let buf = ''
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        buf += decoder.decode(value, { stream: true })
+        const lines = buf.split('\n')
+        buf = lines.pop()
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue
+          const raw = line.slice(6).trim()
+          if (raw === '[DONE]') {
+            const newCount = layerCount + 1
+            setLayerCount(newCount)
+            try { localStorage.setItem('pp_layer_count', String(newCount)) } catch(_) {}
+            setLayerToast(true)
+            setTimeout(() => setLayerToast(false), 5000)
+            setLayerLoading(false)
+            return
+          }
+          try {
+            const evt = JSON.parse(raw)
+            if (evt.type === 'breakdown') {
+              setLayerResult({
+                suitcaseNote: evt.suitcaseNote,
+                layers: evt.layers.map(l => ({ ...l, imageUrl: null })),
+              })
+            } else if (evt.type === 'layer') {
+              setLayerResult(prev => {
+                const newLayers = [...(prev?.layers ?? [null, null, null])]
+                newLayers[evt.index] = evt.layer
+                return { ...prev, layers: newLayers }
+              })
+            }
+          } catch (_) {}
+        }
+      }
     } catch (err) {
       setLayerError(err.message || 'Something went wrong. Please try again.')
     }
@@ -4227,16 +4259,16 @@ export default function PackPerfect() {
                   </div>
                 )}
 
-                {/* Loading */}
-                {layerLoading && (
+                {/* Loading — shown only before breakdown arrives */}
+                {layerLoading && !layerResult && (
                   <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:'14px', padding:'28px 20px', background:t.inputBg, borderRadius:'10px', border:`1px solid ${t.border}` }}>
                     <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
                       <div className="spinner" style={{ width:'22px', height:'22px', borderWidth:'3px' }} />
                       <div className="dot-pulse"><span /><span /><span /></div>
                       <div className="spinner" style={{ width:'22px', height:'22px', borderWidth:'3px' }} />
                     </div>
-                    <div style={{ fontSize:'14px', fontWeight:'500', color:t.textMuted }}>Analyzing your suitcase and generating 3 layer images…</div>
-                    <div style={{ fontSize:'12px', color:t.textDim }}>This can take up to 60 seconds</div>
+                    <div style={{ fontSize:'14px', fontWeight:'500', color:t.textMuted }}>Analyzing your suitcase…</div>
+                    <div style={{ fontSize:'12px', color:t.textDim }}>Planning your packing layers</div>
                   </div>
                 )}
 
@@ -4247,8 +4279,8 @@ export default function PackPerfect() {
                   </div>
                 )}
 
-                {/* Carousel results */}
-                {layerResult && !layerLoading && (() => {
+                {/* Carousel results — visible as soon as breakdown arrives, even while images still loading */}
+                {layerResult && (() => {
                   const layers = layerResult.layers || []
                   const cur = layers[layerCarouselIdx]
                   const icons = ['📦','🧺','🔒']
@@ -4276,7 +4308,13 @@ export default function PackPerfect() {
                         </div>
                         {cur?.imageUrl
                           ? <img src={cur.imageUrl} alt={cur.label} style={{ width:'100%', display:'block', maxHeight:'400px', objectFit:'cover' }} />
-                          : <div style={{ padding:'40px', textAlign:'center', color:t.textDim, fontSize:'13px' }}>Image unavailable</div>
+                          : layerLoading
+                            ? <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'12px', minHeight:'260px', background: dark ? '#0d1625' : '#f0f2f6' }}>
+                                <div className="spinner" style={{ width:'22px', height:'22px', borderWidth:'3px' }} />
+                                <div style={{ fontSize:'13px', fontWeight:'500', color:t.textMuted }}>Generating this layer…</div>
+                                <div style={{ fontSize:'11px', color:t.textDim }}>Each layer is built on the previous one</div>
+                              </div>
+                            : <div style={{ padding:'40px', textAlign:'center', color:t.textDim, fontSize:'13px' }}>Image unavailable</div>
                         }
                         {cur?.items?.length > 0 && (
                           <div style={{ padding:'12px 16px', background:t.inputBg }}>

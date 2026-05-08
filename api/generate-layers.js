@@ -1,7 +1,7 @@
-import OpenAI from 'openai'
+import OpenAI, { toFile } from 'openai'
 
-// Increase timeout for DALL-E 3 image generation (3 images in parallel)
-export const maxDuration = 60
+// Sequential gpt-image-1 edits can take ~2 min total
+export const maxDuration = 120
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -10,24 +10,18 @@ export default async function handler(req, res) {
 
   const { imageBase64, imageMimeType, packingList, premiumKey, layerCount } = req.body
 
-  // Server-side premium check
   if (premiumKey !== 'Incubator') {
     return res.status(403).json({ error: 'Premium access required' })
   }
-
-  // Server-side usage limit check
   if (typeof layerCount === 'number' && layerCount >= 2) {
     return res.status(429).json({ error: 'Layer generation limit reached (2/2).' })
   }
-
   if (!imageBase64 || !packingList) {
     return res.status(400).json({ error: 'Missing imageBase64 or packingList' })
   }
 
-  // API key read from OPENAI_API_KEY environment variable — never exposed to the frontend
   const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
-  // Flatten packing list into a readable string
   const packingText = Object.entries(packingList)
     .map(([category, items]) => {
       const itemList = items.map(i => `${i.name} (x${i.qty})`).join(', ')
@@ -35,23 +29,19 @@ export default async function handler(req, res) {
     })
     .join('\n')
 
-  // Step 1: Use gpt-4o vision to analyze the suitcase and split items into 3 progressive packing stages
+  // Step 1: GPT-4o vision — analyze the suitcase photo and split items into 3 stages
   let layerBreakdown
   try {
     const visionResponse = await client.chat.completions.create({
       model: 'gpt-4o',
       max_tokens: 1200,
-      messages: [
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'image_url',
-              image_url: { url: `data:${imageMimeType};base64,${imageBase64}` },
-            },
-            {
-              type: 'text',
-              text: `You are an expert packing consultant. Look at this suitcase image to gauge its approximate size and shape.
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'image_url', image_url: { url: `data:${imageMimeType};base64,${imageBase64}` } },
+          {
+            type: 'text',
+            text: `You are an expert packing consultant. Look at this suitcase image to gauge its approximate size and shape.
 
 Divide ALL items from the packing list into exactly 3 progressive packing stages for a clamshell suitcase. The suitcase has two sides — a deep main compartment and a shallower lid compartment — and you pack 2 layers into the main side before filling the lid side:
 
@@ -85,61 +75,66 @@ Respond ONLY with valid JSON in this exact shape — no markdown, no extra text:
     }
   ]
 }`,
-            },
-          ],
-        },
-      ],
+          },
+        ],
+      }],
     })
-
     const raw = visionResponse.choices[0]?.message?.content || ''
-    // Strip any accidental markdown fences
     const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
     layerBreakdown = JSON.parse(cleaned)
   } catch (err) {
     return res.status(500).json({ error: `Failed to analyze packing list: ${err.message}` })
   }
 
-  // Step 2: Build progressive DALL-E prompts — each image shows the suitcase more packed than the last
+  // Step 2: Stream SSE — generate images sequentially, each editing the previous result
+  res.setHeader('Content-Type', 'text/event-stream')
+  res.setHeader('Cache-Control', 'no-cache')
+  res.setHeader('Connection', 'keep-alive')
+  res.status(200)
+
+  const sse = (data) => res.write(`data: ${JSON.stringify(data)}\n\n`)
+
+  // Send breakdown first so the client can render the layer list while images generate
+  sse({
+    type: 'breakdown',
+    suitcaseNote: layerBreakdown.suitcaseNote,
+    layers: layerBreakdown.layers.map(l => ({ label: l.label, items: l.items, packingTip: l.packingTip })),
+  })
+
   const [s1, s2, s3] = layerBreakdown.layers
   const s1Items = s1.items.slice(0, 10).join(', ')
   const s2Items = s2.items.slice(0, 10).join(', ')
   const s3Items = s3.items.slice(0, 10).join(', ')
 
-  const imagePrompts = [
-    `An open clamshell travel suitcase photographed from slightly above at a 45-degree angle. The deep main compartment shows only the first packing layer laid flat against the back panel: ${s1Items}. Items are neatly arranged. The rest of the main compartment and the entire lid side are completely empty. Realistic product photography, clean neutral background, soft even lighting. No text, no people.`,
-
-    `An open clamshell travel suitcase photographed from slightly above at a 45-degree angle. The main compartment is now fully packed with two layers: ${s1Items} form the flat base layer against the back panel, and ${s2Items} are packed neatly on top filling the compartment. The lid side is still completely empty. Realistic product photography, clean neutral background, soft even lighting. No text, no people.`,
-
-    `An open clamshell travel suitcase photographed from slightly above at a 45-degree angle, both sides visible. The main compartment is fully packed (base layer: ${s1Items}; top layer: ${s2Items}). The lid side is now also packed with ${s3Items}. The suitcase is completely packed and ready to close. Realistic product photography, clean neutral background, soft even lighting. No text, no people.`,
+  // Each prompt edits the result of the previous stage — truly builds inside the suitcase
+  const stagePrompts = [
+    `Pack the bottom layer of this suitcase's main compartment with these items laid flat and neatly arranged: ${s1Items}. The lid side and the rest of the main compartment should remain empty. Keep the suitcase exterior identical.`,
+    `Add a second layer directly on top of the existing packed items in the main compartment: ${s2Items}, neatly folded and stacked. The lid side should still be empty. Keep the suitcase exterior identical.`,
+    `Pack the lid/flip side of the suitcase with these items neatly arranged: ${s3Items}. The main compartment already has two layers packed. The suitcase is now fully loaded. Keep the suitcase exterior identical.`,
   ]
 
-  let layerImages
-  try {
-    layerImages = await Promise.all(
-      imagePrompts.map((prompt) =>
-        client.images.generate({
-          model: 'dall-e-3',
-          prompt,
-          size: '1024x1024',
-          quality: 'standard',
-          n: 1,
-        })
-      )
-    )
-  } catch (err) {
-    return res.status(500).json({ error: `Failed to generate layer images: ${err.message}` })
+  // Start from the user's actual suitcase photo; each stage feeds into the next
+  let currentBase64 = imageBase64
+  let currentType = imageMimeType
+
+  for (let i = 0; i < stagePrompts.length; i++) {
+    try {
+      const imgFile = await toFile(Buffer.from(currentBase64, 'base64'), `stage${i}.png`, { type: currentType })
+      const result = await client.images.edit({
+        model: 'gpt-image-1',
+        image: imgFile,
+        prompt: stagePrompts[i],
+        n: 1,
+      })
+      const b64 = result.data[0].b64_json
+      currentBase64 = b64
+      currentType = 'image/png'
+      sse({ type: 'layer', index: i, layer: { ...layerBreakdown.layers[i], imageUrl: `data:image/png;base64,${b64}` } })
+    } catch (err) {
+      sse({ type: 'layer', index: i, layer: { ...layerBreakdown.layers[i], imageUrl: null } })
+    }
   }
 
-  // Combine layer breakdown with generated image URLs
-  const layers = layerBreakdown.layers.map((layer, i) => ({
-    label: layer.label,
-    items: layer.items,
-    packingTip: layer.packingTip,
-    imageUrl: layerImages[i]?.data?.[0]?.url || null,
-  }))
-
-  return res.status(200).json({
-    suitcaseNote: layerBreakdown.suitcaseNote,
-    layers,
-  })
+  res.write('data: [DONE]\n\n')
+  res.end()
 }

@@ -2,7 +2,7 @@ import http from 'http'
 import { readFileSync, existsSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
-import OpenAI from 'openai'
+import OpenAI, { toFile } from 'openai'
 
 const __dir = dirname(fileURLToPath(import.meta.url))
 
@@ -148,40 +148,56 @@ ${packingListSummary ? `The user's current trip details and packing list:\n${pac
       return res.end(JSON.stringify({ error: `Failed to analyze packing list: ${err.message}` }))
     }
 
+    // Stream SSE — generate images sequentially, each editing the previous result
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+    })
+
+    const sse = (data) => res.write(`data: ${JSON.stringify(data)}\n\n`)
+
+    sse({
+      type: 'breakdown',
+      suitcaseNote: layerBreakdown.suitcaseNote,
+      layers: layerBreakdown.layers.map(l => ({ label: l.label, items: l.items, packingTip: l.packingTip })),
+    })
+
     const [s1, s2, s3] = layerBreakdown.layers
     const s1Items = s1.items.slice(0, 10).join(', ')
     const s2Items = s2.items.slice(0, 10).join(', ')
     const s3Items = s3.items.slice(0, 10).join(', ')
 
-    const imagePrompts = [
-      `An open clamshell travel suitcase photographed from slightly above at a 45-degree angle. The deep main compartment shows only the first packing layer laid flat against the back panel: ${s1Items}. Items are neatly arranged. The rest of the main compartment and the entire lid side are completely empty. Realistic product photography, clean neutral background, soft even lighting. No text, no people.`,
-
-      `An open clamshell travel suitcase photographed from slightly above at a 45-degree angle. The main compartment is now fully packed with two layers: ${s1Items} form the flat base layer against the back panel, and ${s2Items} are packed neatly on top filling the compartment. The lid side is still completely empty. Realistic product photography, clean neutral background, soft even lighting. No text, no people.`,
-
-      `An open clamshell travel suitcase photographed from slightly above at a 45-degree angle, both sides visible. The main compartment is fully packed (base layer: ${s1Items}; top layer: ${s2Items}). The lid side is now also packed with ${s3Items}. The suitcase is completely packed and ready to close. Realistic product photography, clean neutral background, soft even lighting. No text, no people.`,
+    const stagePrompts = [
+      `Pack the bottom layer of this suitcase's main compartment with these items laid flat and neatly arranged: ${s1Items}. The lid side and the rest of the main compartment should remain empty. Keep the suitcase exterior identical.`,
+      `Add a second layer directly on top of the existing packed items in the main compartment: ${s2Items}, neatly folded and stacked. The lid side should still be empty. Keep the suitcase exterior identical.`,
+      `Pack the lid/flip side of the suitcase with these items neatly arranged: ${s3Items}. The main compartment already has two layers packed. The suitcase is now fully loaded. Keep the suitcase exterior identical.`,
     ]
 
-    let layerImages
-    try {
-      layerImages = await Promise.all(
-        imagePrompts.map((prompt) =>
-          client.images.generate({ model: 'dall-e-3', prompt, size: '1024x1024', quality: 'standard', n: 1 })
-        )
-      )
-    } catch (err) {
-      res.writeHead(500, { 'Content-Type': 'application/json' })
-      return res.end(JSON.stringify({ error: `Failed to generate layer images: ${err.message}` }))
+    let currentBase64 = imageBase64
+    let currentType = imageMimeType
+
+    for (let i = 0; i < stagePrompts.length; i++) {
+      try {
+        const imgFile = await toFile(Buffer.from(currentBase64, 'base64'), `stage${i}.png`, { type: currentType })
+        const result = await client.images.edit({
+          model: 'gpt-image-1',
+          image: imgFile,
+          prompt: stagePrompts[i],
+          n: 1,
+        })
+        const b64 = result.data[0].b64_json
+        currentBase64 = b64
+        currentType = 'image/png'
+        sse({ type: 'layer', index: i, layer: { ...layerBreakdown.layers[i], imageUrl: `data:image/png;base64,${b64}` } })
+      } catch (err) {
+        sse({ type: 'layer', index: i, layer: { ...layerBreakdown.layers[i], imageUrl: null } })
+      }
     }
 
-    const layers = layerBreakdown.layers.map((layer, i) => ({
-      label: layer.label,
-      items: layer.items,
-      packingTip: layer.packingTip,
-      imageUrl: layerImages[i]?.data?.[0]?.url || null,
-    }))
-
-    res.writeHead(200, { 'Content-Type': 'application/json' })
-    return res.end(JSON.stringify({ suitcaseNote: layerBreakdown.suitcaseNote, layers }))
+    res.write('data: [DONE]\n\n')
+    res.end()
+    return
   }
 
   res.writeHead(404)
