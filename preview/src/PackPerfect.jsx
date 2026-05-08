@@ -172,7 +172,7 @@ const DESTINATIONS = [...new Set([
   'Jackson, MS','Gulfport, MS','Biloxi, MS',
   'New Orleans, LA','Baton Rouge, LA','Shreveport, LA','Lafayette, LA',
   // Midwest
-  'Chicago, IL','Springfield, IL','Rockford, IL',
+  'Chicago, IL','Springfield, IL','Rockford, IL','Winnetka, IL',
   'Indianapolis, IN','Fort Wayne, IN','South Bend, IN',
   'Columbus, OH','Cleveland, OH','Cincinnati, OH','Dayton, OH','Akron, OH','Toledo, OH',
   'Detroit, MI','Grand Rapids, MI','Ann Arbor, MI','Lansing, MI','Traverse City, MI',
@@ -1891,7 +1891,7 @@ export default function PackPerfect() {
     return () => clearInterval(iv)
   }, [iceAgePhase])
 
-  const homeAloneMode = /winnetka|671 lincoln|mccallister house|kevin.?s house/i.test(destination)
+  const homeAloneMode = /winnetka|671 lincoln|mccallister house|kevin.?s house/i.test(destination) || /winnetka|671 lincoln|mccallister house|kevin.?s house/i.test(destInput)
 
   useEffect(() => {
     if (!homeAloneMode) { setHaPhase(0); setHaQuoteIdx(0); setHaTrapIdx(-1); return }
