@@ -2,7 +2,8 @@
   "name": "packperfect",
   "scripts": {
     "build": "cd preview && npm install && npm run build",
-    "dev": "cd preview && npm run dev"
+    "dev": "node api/dev-server.mjs & cd preview && npm run dev",
+    "api": "node api/dev-server.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.92.0",
