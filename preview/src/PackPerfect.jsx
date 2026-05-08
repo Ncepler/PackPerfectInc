@@ -1905,7 +1905,10 @@ export default function PackPerfect() {
       return
     }
     // Start background music immediately
-    if (!haMemoryRef.current) { haMemoryRef.current = new Audio('/memory.mp3'); haMemoryRef.current.loop = true; haMemoryRef.current.volume = 0.35 }
+    haMemoryRef.current = new Audio('/Memory.mp3'); haMemoryRef.current.loop = true; haMemoryRef.current.volume = 0.35
+    haFilthyRef.current = new Audio('/Filthy.mp3'); haFilthyRef.current.volume = 0.9
+    haDinnerRef.current = new Audio('/Dinner.mp3'); haDinnerRef.current.volume = 0.9
+    haDoorknobRef.current = new Audio('/Doorknob.mp3'); haDoorknobRef.current.volume = 0.95
     haMemoryRef.current.play().catch(() => {})
     setHaPhase(1)
     const t1 = setTimeout(() => setHaPhase(2), 4500)
@@ -1932,18 +1935,14 @@ export default function PackPerfect() {
     if (haPhase !== 4) return
     // Start at MERRY CHRISTMAS quote, play filthy.mp3 immediately
     setHaQuoteIdx(2)
-    if (!haFilthyRef.current) { haFilthyRef.current = new Audio('/filthy.mp3'); haFilthyRef.current.volume = 0.9 }
-    haFilthyRef.current.currentTime = 0
-    haFilthyRef.current.play().catch(() => {})
+    if (haFilthyRef.current) { haFilthyRef.current.currentTime = 0; haFilthyRef.current.play().catch(() => {}) }
     // Doorknob sequence: doorknob out → hand reaches → grabs
     setHaDoorknobPhase(0)
     const d1 = setTimeout(() => setHaDoorknobPhase(1), 5500)
     const d2 = setTimeout(() => setHaDoorknobPhase(2), 7800)
     const d3 = setTimeout(() => {
       setHaDoorknobPhase(3)
-      if (!haDoorknobRef.current) { haDoorknobRef.current = new Audio('/doorknob.mp3'); haDoorknobRef.current.volume = 0.95 }
-      haDoorknobRef.current.currentTime = 0
-      haDoorknobRef.current.play().catch(() => {})
+      if (haDoorknobRef.current) { haDoorknobRef.current.currentTime = 0; haDoorknobRef.current.play().catch(() => {}) }
     }, 9800)
     // Quote cycle
     const iv = setInterval(() => setHaQuoteIdx(i => (i + 1) % HA_QUOTES.length), 5000)
@@ -1953,15 +1952,8 @@ export default function PackPerfect() {
   // Play dinner.mp3 when "Bless this..." quote shows; replay filthy.mp3 on repeat cycle
   useEffect(() => {
     if (!homeAloneMode || haPhase !== 4) return
-    if (haQuoteIdx === 7) {
-      if (!haDinnerRef.current) { haDinnerRef.current = new Audio('/dinner.mp3'); haDinnerRef.current.volume = 0.9 }
-      haDinnerRef.current.currentTime = 0
-      haDinnerRef.current.play().catch(() => {})
-    }
-    if (haQuoteIdx === 2 && haFilthyRef.current) {
-      haFilthyRef.current.currentTime = 0
-      haFilthyRef.current.play().catch(() => {})
-    }
+    if (haQuoteIdx === 7 && haDinnerRef.current) { haDinnerRef.current.currentTime = 0; haDinnerRef.current.play().catch(() => {}) }
+    if (haQuoteIdx === 2 && haFilthyRef.current) { haFilthyRef.current.currentTime = 0; haFilthyRef.current.play().catch(() => {}) }
   }, [haQuoteIdx])
 
   const toggleDark = () => { const v = !dark; setDark(v); try{ localStorage.setItem('pp_dark', v ? '1' : '0') }catch(e){} }
@@ -3241,17 +3233,6 @@ export default function PackPerfect() {
             <div style={{ fontSize:'9px', color:'rgba(255,160,160,0.5)', textAlign:'center', letterSpacing:'0.1em', fontWeight:600 }}>KEVIN</div>
           </div>
 
-          {/* Doorknob sequence */}
-          {haDoorknobPhase >= 1 && (
-            <div style={{ position:'fixed', right:0, top:'42%', zIndex:1004, pointerEvents:'none', display:'flex', flexDirection:'column', alignItems:'flex-end', gap:'4px' }}>
-              {/* Doorknob emoji */}
-              <div style={{ fontSize:'clamp(32px,5vw,52px)', animationName:'haDoorknobSlide', animationDuration:'0.7s', animationFillMode:'both', animationTimingFunction:'cubic-bezier(0.22,1,0.36,1)', lineHeight:1 }}>🔑</div>
-              {/* Hand reaching in */}
-              {haDoorknobPhase >= 2 && (
-                <div style={{ fontSize:'clamp(28px,4.5vw,46px)', animationName:'haHandSlide', animationDuration:'0.6s', animationFillMode:'both', animationTimingFunction:'cubic-bezier(0.22,1,0.36,1)', lineHeight:1, animationIterationCount: haDoorknobPhase === 3 ? 'infinite' : '1', ...(haDoorknobPhase === 3 ? { animationName:'haHandGrab', animationDuration:'0.4s' } : {}) }}>✋</div>
-              )}
-            </div>
-          )}
 
           {/* Wet Bandits peeking bottom-right */}
           <div style={{ position:'fixed', bottom:0, right:'2%', zIndex:70, pointerEvents:'none', animationName:'haMarvPeek', animationDuration:'2.1s', animationDelay:'0.6s', animationIterationCount:'infinite', animationTimingFunction:'ease-in-out' }}>
@@ -3708,7 +3689,17 @@ export default function PackPerfect() {
               </div>
             )}
 
-            {!premiumMode && <div style={{ ...card, borderColor: haDoorknobPhase === 3 ? '#c41e3a' : listGenerated ? t.border : t.borderStrong, ...(haDoorknobPhase === 3 ? { animationName:'haKnock, haKnockGlow', animationDuration:'0.18s, 0.9s', animationIterationCount:'infinite, infinite', animationTimingFunction:'ease-in-out, ease-in-out' } : {}) }}>
+            {!premiumMode && <div style={{ position:'relative', overflow:'visible' }}>
+            {/* Doorknob slides out of box right edge */}
+            {homeAloneMode && haDoorknobPhase >= 1 && (
+              <div style={{ position:'absolute', right: haDoorknobPhase >= 2 ? -70 : -44, top:'50%', transform:'translateY(-50%)', zIndex:1004, pointerEvents:'none', display:'flex', alignItems:'center', gap:'6px', animationName:'haDoorknobSlide', animationDuration:'0.65s', animationFillMode:'both', animationTimingFunction:'cubic-bezier(0.22,1,0.36,1)' }}>
+                <div style={{ fontSize:'clamp(28px,4vw,44px)', lineHeight:1 }}>🔑</div>
+                {haDoorknobPhase >= 2 && (
+                  <div style={{ fontSize:'clamp(26px,3.8vw,42px)', lineHeight:1, ...(haDoorknobPhase === 3 ? { animationName:'haHandGrab', animationDuration:'0.38s', animationIterationCount:'infinite', animationTimingFunction:'ease-in-out' } : { animationName:'haHandSlide', animationDuration:'0.5s', animationFillMode:'both' }) }}>✋</div>
+                )}
+              </div>
+            )}
+            <div style={{ ...card, borderColor: haDoorknobPhase === 3 ? '#c41e3a' : listGenerated ? t.border : t.borderStrong, ...(haDoorknobPhase === 3 ? { animationName:'haKnock, haKnockGlow', animationDuration:'0.18s, 0.9s', animationIterationCount:'infinite, infinite', animationTimingFunction:'ease-in-out, ease-in-out' } : {}) }}>
               <h2 style={{ fontSize:'18px', fontWeight:'600', color:t.text, marginBottom:'4px' }}>{listGenerated ? 'Edit Trip Details' : 'Plan Your Trip'}</h2>
               <p style={{ fontSize:'13px', color:t.textMuted, marginBottom:'18px' }}>Enter your destination and dates to generate a smart packing list</p>
               <div style={{ display:'grid', gap:'14px' }}>
@@ -3889,7 +3880,7 @@ export default function PackPerfect() {
                   {listLoading ? 'Perfecting...' : listGenerated ? 'Regenerate List' : 'Generate Packing List'}
                 </button>
               </div>
-            </div>}
+            </div></div>}
 
             {!premiumMode && listLoading && (
               <div style={{ ...card, textAlign:'center', padding:'36px 20px' }}>
