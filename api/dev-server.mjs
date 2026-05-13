@@ -127,28 +127,41 @@ ${packingListSummary ? `The user's current trip details and packing list:\n${pac
       })
       .join('\n')
 
-    let layerBreakdown
+    let analysis
     try {
       const visionResponse = await client.chat.completions.create({
         model: 'gpt-4o',
-        max_tokens: 1200,
+        max_tokens: 2000,
         messages: [{
           role: 'user',
           content: [
             { type: 'image_url', image_url: { url: `data:${imageMimeType};base64,${imageBase64}` } },
-            { type: 'text', text: `You are an expert packing consultant. Look at this suitcase image to gauge its approximate size and shape.\n\nDivide ALL items from the packing list into exactly 3 progressive packing stages for a clamshell suitcase. The suitcase has two sides — a deep main compartment and a shallower lid compartment — and you pack 2 layers into the main side before filling the lid side:\n\n- Stage 1 (Main side — Layer 1): The heaviest and bulkiest items placed flat against the back panel of the main compartment, near the wheels. Think shoes, jeans, heavy jackets, boots. This is the foundation.\n- Stage 2 (Main side — Layer 2): Medium-weight items packed directly on top of Stage 1, filling the rest of the main compartment. Think shirts, pants, folded clothes, toiletries bag.\n- Stage 3 (Lid side): Light, delicate, or frequently-needed items that go in the lid/flip side. Think electronics, documents, underwear, socks, accessories, chargers.\n\nEvery item must appear in exactly one stage. Main side (Stages 1+2) should hold ~65% of items; lid side (Stage 3) ~35%.\n\nPacking list:\n${packingText}\n\nRespond ONLY with valid JSON in this exact shape — no markdown, no extra text:\n{\n  "suitcaseNote": "one sentence about the suitcase size/type you see",\n  "layers": [\n    {\n      "label": "Main Side — Layer 1",\n      "items": ["item name x qty", ...],\n      "packingTip": "one practical tip for packing this base layer"\n    },\n    {\n      "label": "Main Side — Layer 2",\n      "items": ["item name x qty", ...],\n      "packingTip": "one practical tip for packing on top of Layer 1"\n    },\n    {\n      "label": "Lid Side",\n      "items": ["item name x qty", ...],\n      "packingTip": "one practical tip for packing the lid side"\n    }\n  ]\n}` },
+            { type: 'text', text: `You are doing two jobs at once. First, describe this suitcase in exhaustive photorealistic detail so that an AI image generator can recreate it identically. Second, plan a packing strategy for the provided list.\n\nJOB 1 — SUITCASE DESCRIPTION:\nExtract every visual detail. Be forensically precise. Your description will be copy-pasted directly into an AI image generation prompt, so it must be complete enough that the generator has zero ambiguity.\n\nJOB 2 — PACKING PLAN:\nDivide ALL items into exactly 3 stages for a clamshell suitcase:\n- Stage 1 (Main side — Layer 1): heaviest/bulkiest items flat against the back panel (shoes, jeans, heavy jackets, boots)\n- Stage 2 (Main side — Layer 2): medium items stacked on top of Layer 1 (shirts, pants, folded clothes, toiletries)\n- Stage 3 (Lid side): light/delicate/frequent-access items in the lid (electronics, docs, underwear, socks, chargers)\nMain side holds ~65% of items; lid side ~35%. Every item appears in exactly one stage.\n\nPacking list:\n${packingText}\n\nRespond ONLY with valid JSON, no markdown:\n{\n  "suitcase": {\n    "exterior": "One dense paragraph: exact color with precise shade, surface material and texture, finish type, any brand name/logo with color and placement, zipper color and style, wheel type and color, handle color and material, telescoping handle color, any corner guards/latches/pockets",\n    "interior": "Lining color exact shade, material texture, any mesh panels, elastic straps, compression pad, zipper pockets, divider panel",\n    "shape": "Apparent size (carry-on/medium/large checked), aspect ratio, main compartment depth, lid depth ratio",\n    "cameraAngle": "Exact viewing angle and perspective, lighting description, background surface and color"\n  },\n  "suitcaseNote": "One plain sentence summarizing the suitcase",\n  "layers": [\n    { "label": "Main Side — Layer 1", "items": ["item x qty"], "packingTip": "practical tip" },\n    { "label": "Main Side — Layer 2", "items": ["item x qty"], "packingTip": "practical tip" },\n    { "label": "Lid Side",            "items": ["item x qty"], "packingTip": "practical tip" }\n  ]\n}` },
           ],
         }],
       })
       const raw = visionResponse.choices[0]?.message?.content || ''
       const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
-      layerBreakdown = JSON.parse(cleaned)
+      analysis = JSON.parse(cleaned)
     } catch (err) {
       res.writeHead(500, { 'Content-Type': 'application/json' })
-      return res.end(JSON.stringify({ error: `Failed to analyze packing list: ${err.message}` }))
+      return res.end(JSON.stringify({ error: `Failed to analyze suitcase: ${err.message}` }))
     }
 
-    // Stream SSE — generate images sequentially, each editing the previous result
+    const { suitcase: sc, suitcaseNote, layers } = analysis
+    const suitcaseAnchor = `The suitcase: ${sc.exterior}. Interior lining: ${sc.interior}. Size/shape: ${sc.shape}. Camera: ${sc.cameraAngle}.`
+
+    const [s1, s2, s3] = layers
+    const s1Items = s1.items.slice(0, 12).join(', ')
+    const s2Items = s2.items.slice(0, 12).join(', ')
+    const s3Items = s3.items.slice(0, 12).join(', ')
+
+    const stagePrompts = [
+      `Hyper-realistic product photograph of an open suitcase. ${suitcaseAnchor} PACKING STATE — Layer 1 only: the main compartment has its first packing layer placed flat and neatly against the back panel: ${s1Items}. Each item clearly identifiable and neatly spaced. The lid compartment and the upper portion of the main compartment are completely empty, bare lining showing. Photorealistic, sharp detail, professional product photography.`,
+      `Hyper-realistic product photograph of an open suitcase. ${suitcaseAnchor} PACKING STATE — Two layers in main compartment: the base layer against the back panel has ${s1Items} (partially visible). On top, neatly stacked and folded: ${s2Items}. Main compartment is now full. Lid compartment is still completely empty, bare lining showing. Photorealistic, sharp detail, professional product photography.`,
+      `Hyper-realistic product photograph of an open fully packed suitcase. ${suitcaseAnchor} PACKING STATE — Fully packed: main compartment has two layers (base: ${s1Items}; top: ${s2Items}). Lid compartment is packed with ${s3Items} neatly arranged. The suitcase looks ready to zip closed. Photorealistic, sharp detail, professional product photography.`,
+    ]
+
     res.writeHead(200, {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
@@ -159,41 +172,25 @@ ${packingListSummary ? `The user's current trip details and packing list:\n${pac
 
     sse({
       type: 'breakdown',
-      suitcaseNote: layerBreakdown.suitcaseNote,
-      layers: layerBreakdown.layers.map(l => ({ label: l.label, items: l.items, packingTip: l.packingTip })),
+      suitcaseNote,
+      layers: layers.map(l => ({ label: l.label, items: l.items, packingTip: l.packingTip })),
     })
 
-    const [s1, s2, s3] = layerBreakdown.layers
-    const s1Items = s1.items.slice(0, 10).join(', ')
-    const s2Items = s2.items.slice(0, 10).join(', ')
-    const s3Items = s3.items.slice(0, 10).join(', ')
-
-    const stagePrompts = [
-      `Pack the bottom layer of this suitcase's main compartment with these items laid flat and neatly arranged: ${s1Items}. The lid side and the rest of the main compartment should remain empty. Keep the suitcase exterior identical.`,
-      `Add a second layer directly on top of the existing packed items in the main compartment: ${s2Items}, neatly folded and stacked. The lid side should still be empty. Keep the suitcase exterior identical.`,
-      `Pack the lid/flip side of the suitcase with these items neatly arranged: ${s3Items}. The main compartment already has two layers packed. The suitcase is now fully loaded. Keep the suitcase exterior identical.`,
-    ]
-
-    let currentBase64 = imageBase64
-    let currentType = imageMimeType
-
-    for (let i = 0; i < stagePrompts.length; i++) {
+    await Promise.all(stagePrompts.map(async (prompt, i) => {
       try {
-        const imgFile = await toFile(Buffer.from(currentBase64, 'base64'), `stage${i}.png`, { type: currentType })
-        const result = await client.images.edit({
+        const result = await client.images.generate({
           model: 'gpt-image-1',
-          image: imgFile,
-          prompt: stagePrompts[i],
+          prompt,
           n: 1,
+          size: '1024x1024',
+          quality: 'high',
         })
         const b64 = result.data[0].b64_json
-        currentBase64 = b64
-        currentType = 'image/png'
-        sse({ type: 'layer', index: i, layer: { ...layerBreakdown.layers[i], imageUrl: `data:image/png;base64,${b64}` } })
+        sse({ type: 'layer', index: i, layer: { ...layers[i], imageUrl: `data:image/png;base64,${b64}` } })
       } catch (err) {
-        sse({ type: 'layer', index: i, layer: { ...layerBreakdown.layers[i], imageUrl: null } })
+        sse({ type: 'layer', index: i, layer: { ...layers[i], imageUrl: null } })
       }
-    }
+    }))
 
     res.write('data: [DONE]\n\n')
     res.end()
