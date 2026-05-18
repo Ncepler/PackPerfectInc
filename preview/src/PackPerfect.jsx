@@ -167,6 +167,30 @@ const GRINCH_STOLEN = [
   { icon: '🍪', name: 'Christmas Cookies',             note: 'and the milk. obviously.'         },
   { icon: '🐕', name: "Max's Last Shred of Dignity",  note: 'reindeer antler: compulsory'      },
 ]
+const GRINCH_HEIST_COMMENTS = [
+  '"Child\'s play." — Grinch',
+  '"Still warm. EXCELLENT." — Grinch',
+  '"You won\'t be needing this." — Grinch',
+  '"Into the sack. Now." — Grinch',
+  '"MAX! PULL! HARDER!" — Grinch',
+  '"Every. Last. One." — Grinch',
+  '"Was this... sentimental? Even better." — Grinch',
+  '"The whole street. Swept clean." — Grinch',
+  '"...I left the crumbs. I have standards." — Grinch',
+  '"Merry Christmas to ME." — Grinch',
+]
+const GRINCH_LAUGHS = [
+  { text:'heh.', size:14, color:'rgba(80,220,80,0.5)' },
+  { text:'heh heh.', size:17, color:'rgba(80,220,80,0.6)' },
+  { text:'HEH HEH HEH...', size:21, color:'rgba(60,240,60,0.75)' },
+  { text:'MUAHAHAHA!', size:28, color:'rgba(34,255,34,0.9)' },
+  { text:'MUAHAHAHAHAHAHA!!!', size:36, color:'#33ff33' },
+  { text:'💚 A WONDERFUL, AWFUL PLAN. COMPLETE. 💚', size:17, color:'#aaffaa' },
+]
+const GRINCH_HEART_CONFETTI = Array.from({length:34}, (_, i) => ({
+  id:i, left:(i*3.1+2.3)%98, delay:(i*0.08)%2.5, dur:2.1+(i*0.21)%2.8,
+  size:12+(i*5)%26, rot:(i*53)%360, dx:-50+(i*11)%100,
+}))
 const GRINCH_SNOWFLAKES = Array.from({length:55}, (_, i) => ({
   id:i, left:(i*2.09+0.6)%100, delay:(i*0.37)%8, dur:5+(i*0.49)%7,
   size:8+(i*3)%18, opacity:0.35+(i%6)*0.1, drift:(i%2===0?1:-1)*(5+(i*2.4)%15),
@@ -340,7 +364,7 @@ const DESTINATIONS = [...new Set([
   // Additional Europe
   'Palma de Mallorca, Spain','Tenerife, Spain','Lanzarote, Spain','Gran Canaria, Spain',
   'Brest, France','Nantes, France','Montpellier, France','Toulouse, France','Perpignan, France',
-  'Turin, Italy','Bologna, Italy','Palermo, Italy','Catania, Italy','Bari, Italy','Pisa, Italy',
+  'Turin, Italy','Bologna, Italy','Palermo, Italy','Catania, Italy','Bari, Italy','Pisa, Italy','Sicily, Italy','Taormina, Sicily','Agrigento, Sicily','Syracuse, Sicily','Ragusa, Sicily',
   'Alicante, Spain','Malaga, Spain','Bilbao, Spain','Cordoba, Spain',
   'Porto Santo, Portugal','Madeira, Portugal','Azores, Portugal',
   'Nicosia, Cyprus','Paphos, Cyprus',
@@ -2772,6 +2796,17 @@ export default function PackPerfect() {
     @keyframes grQuoteIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
     @keyframes grGrinchPeek { 0%,100%{transform:translateY(0)} 45%{transform:translateY(-16px)} }
     @keyframes grMaxPeek { 0%,100%{transform:translateY(0) scaleX(-1)} 40%{transform:translateY(-13px) scaleX(-1)} }
+    @keyframes grStampIn { 0%{opacity:0;transform:rotate(-35deg) scale(3.5)} 50%{transform:rotate(8deg) scale(0.88)} 70%{transform:rotate(-5deg) scale(1.06)} 100%{opacity:1;transform:rotate(-10deg) scale(1)} }
+    @keyframes grHeistSlide { from{opacity:0;transform:translateX(-90px) rotate(-5deg) scale(0.92)} to{opacity:1;transform:translateX(0) rotate(0deg) scale(1)} }
+    @keyframes grLaughBuild { 0%{opacity:0;transform:scale(0.2) translateY(16px) rotate(-8deg)} 60%{transform:scale(1.08) translateY(-3px) rotate(2deg)} 100%{opacity:1;transform:scale(1) translateY(0) rotate(0)} }
+    @keyframes grSackBounce { 0%{transform:scale(1) rotate(0deg)} 25%{transform:scale(1.5) rotate(-12deg)} 55%{transform:scale(0.88) rotate(6deg)} 80%{transform:scale(1.12) rotate(-2deg)} 100%{transform:scale(1) rotate(0deg)} }
+    @keyframes grHeartBloom { 0%{transform:scale(1)} 15%{transform:scale(3.2) rotate(12deg)} 40%{transform:scale(0.75)} 65%{transform:scale(1.5) rotate(-8deg)} 85%{transform:scale(0.92)} 100%{transform:scale(1)} }
+    @keyframes grRedHeart { 0%{opacity:1;transform:translateY(0) rotate(var(--rot,0deg)) translateX(0)} 100%{opacity:0;transform:translateY(-320px) rotate(calc(var(--rot,0deg) + 200deg)) translateX(var(--dx,0px))} }
+    @keyframes grEvilMeter { from{width:0} to{width:100%} }
+    @keyframes grFlicker { 0%,95%,100%{opacity:1} 96%,99%{opacity:0.6} }
+    @keyframes grCommentIn { from{opacity:0;transform:translateX(8px)} to{opacity:1;transform:translateX(0)} }
+    @keyframes grThreeSizes { 0%{opacity:0;letter-spacing:-0.1em;transform:scale(0.4)} 50%{opacity:1;letter-spacing:0.04em;transform:scale(1.08)} 70%{transform:scale(0.96)} 100%{opacity:1;transform:scale(1);letter-spacing:0.05em} }
+    @keyframes grWhoJump { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-18px) rotate(10deg)} }
     @keyframes grLightSwing { 0%,100%{transform:rotate(-5deg)} 50%{transform:rotate(5deg)} }
     @keyframes grLightBlink { 0%,100%{opacity:1;filter:blur(0)} 45%{opacity:0.1;filter:blur(2px)} 55%{opacity:0.1;filter:blur(2px)} }
     @keyframes grBannerIn { from{transform:translateY(-110%)} to{transform:translateY(0)} }
@@ -3466,26 +3501,50 @@ export default function PackPerfect() {
 
         {/* PHASE 2: WONDERFUL AWFUL IDEA */}
         {grinchPhase === 2 && (
-          <div style={{ position:'fixed', inset:0, zIndex:300, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', overflow:'hidden', animationName:'grBgPulse', animationDuration:'1.8s', animationIterationCount:'infinite', animationTimingFunction:'ease-in-out' }}>
-            {/* Shock rings */}
-            {[0,1,2,3].map(i => (
-              <div key={i} style={{ position:'absolute', top:'38%', left:'50%', width:'200px', height:'200px', border:'4px solid rgba(34,200,34,0.65)', borderRadius:'50%', animationName:'grShockRing', animationDuration:'2s', animationDelay:`${i*0.5}s`, animationIterationCount:'infinite', animationTimingFunction:'ease-out' }} />
-            ))}
-            <div style={{ fontSize:'clamp(13px,2.2vw,20px)', fontWeight:800, letterSpacing:'0.28em', color:'rgba(80,240,80,0.65)', textTransform:'uppercase', marginBottom:'14px', animation:'grSubIn 0.5s 0.2s both' }}>THEN HE GOT AN IDEA...</div>
-            {/* Grinch face */}
-            <img src="/grinch_face.png" alt="The Grinch" style={{ width:'clamp(170px,32vw,310px)', objectFit:'contain', zIndex:2, borderRadius:'8px', animationName:'grFaceZoom grEvilGlow', animationDuration:'0.9s, 1.6s', animationFillMode:'both, none', animationIterationCount:'1, infinite', filter:'drop-shadow(0 0 40px rgba(0,200,0,0.9))' }} />
-            <div style={{ fontSize:'clamp(18px,4vw,48px)', fontWeight:900, color:'#33ff33', letterSpacing:'0.03em', marginTop:'12px', animation:'grTitleSlam 0.8s 0.6s both', textShadow:'0 0 30px rgba(0,255,0,0.9), 0 0 60px rgba(0,180,0,0.4)' }}>A WONDERFUL, AWFUL IDEA.</div>
-            <div style={{ marginTop:'10px', fontSize:'clamp(11px,1.5vw,14px)', color:'rgba(120,240,120,0.45)', letterSpacing:'0.12em', animation:'grSubIn 0.8s 1.3s both' }}>His schedule for the evening:</div>
-            {/* Grinch's schedule ticking in */}
-            <div style={{ marginTop:'12px', display:'flex', flexDirection:'column', gap:'5px', zIndex:2, width:'100%', maxWidth:420, padding:'0 22px' }}>
+          <div style={{ position:'fixed', inset:0, zIndex:300, display:'flex', flexDirection:'row', alignItems:'center', justifyContent:'center', gap:'clamp(16px,3vw,48px)', overflow:'hidden', animationName:'grBgPulse', animationDuration:'1.8s', animationIterationCount:'infinite', animationTimingFunction:'ease-in-out', padding:'0 24px' }}>
+            {/* Left: Grinch face + laugh buildup */}
+            <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:'12px', flexShrink:0 }}>
+              {/* Shock rings behind face */}
+              {[0,1,2].map(i => (
+                <div key={i} style={{ position:'absolute', width:'200px', height:'200px', border:`${4-i}px solid rgba(34,200,34,${0.7-i*0.2})`, borderRadius:'50%', animationName:'grShockRing', animationDuration:'2s', animationDelay:`${i*0.55}s`, animationIterationCount:'infinite', animationTimingFunction:'ease-out', pointerEvents:'none' }} />
+              ))}
+              <div style={{ fontSize:'clamp(11px,1.8vw,14px)', fontWeight:800, letterSpacing:'0.35em', color:'rgba(80,240,80,0.65)', textTransform:'uppercase', animation:'grSubIn 0.5s 0.2s both' }}>THEN HE GOT AN IDEA...</div>
+              <img src="/grinch_face.png" alt="The Grinch" style={{ width:'clamp(130px,22vw,220px)', objectFit:'contain', zIndex:2, borderRadius:'8px', animationName:'grFaceZoom grEvilGlow', animationDuration:'0.9s, 1.6s', animationFillMode:'both, none', animationIterationCount:'1, infinite', filter:`drop-shadow(0 0 ${20+grinchScheduleIdx*6}px rgba(0,200,0,0.9))` }} />
+              <div style={{ fontSize:'clamp(14px,2.8vw,32px)', fontWeight:900, color:'#33ff33', letterSpacing:'0.02em', animation:'grTitleSlam 0.8s 0.6s both', textShadow:'0 0 20px rgba(0,255,0,0.9)', textAlign:'center' }}>A WONDERFUL,<br/>AWFUL IDEA.</div>
+              {/* Evil laugh that builds up */}
+              {grinchScheduleIdx >= 0 && (() => {
+                const lvl = Math.min(Math.floor(grinchScheduleIdx / 1.3), GRINCH_LAUGHS.length - 1)
+                const laugh = GRINCH_LAUGHS[lvl]
+                return (
+                  <div key={lvl} style={{ fontSize:`${laugh.size}px`, fontWeight:900, color:laugh.color, textShadow:`0 0 ${lvl*8+8}px ${laugh.color}`, animationName:'grLaughBuild', animationDuration:'0.4s', animationFillMode:'both', letterSpacing:'0.02em', textAlign:'center', maxWidth:'clamp(160px,28vw,280px)', lineHeight:1.1 }}>
+                    {laugh.text}
+                  </div>
+                )
+              })()}
+              {/* Evil meter */}
+              {grinchScheduleIdx >= 0 && (
+                <div style={{ width:'clamp(120px,18vw,200px)', animation:'grSubIn 0.5s both' }}>
+                  <div style={{ fontSize:'9px', color:'rgba(80,200,80,0.5)', letterSpacing:'0.2em', textTransform:'uppercase', marginBottom:'4px' }}>Evil Level</div>
+                  <div style={{ height:'6px', background:'rgba(0,60,0,0.4)', borderRadius:3, overflow:'hidden', border:'1px solid rgba(34,150,34,0.3)' }}>
+                    <div style={{ height:'100%', background:`linear-gradient(90deg, #00aa00, #33ff33)`, borderRadius:3, width:`${Math.min(((grinchScheduleIdx+1)/GRINCH_SCHEDULE.length)*100, 100)}%`, transition:'width 0.5s ease', boxShadow:'0 0 8px rgba(0,255,0,0.6)' }} />
+                  </div>
+                  <div style={{ fontSize:'9px', color:'rgba(60,220,60,0.5)', marginTop:'3px', textAlign:'right', fontFamily:'monospace' }}>{Math.min(Math.round(((grinchScheduleIdx+1)/GRINCH_SCHEDULE.length)*100),100)}% EVIL</div>
+                </div>
+              )}
+            </div>
+            {/* Right: Schedule */}
+            <div style={{ display:'flex', flexDirection:'column', gap:'5px', zIndex:2, width:'100%', maxWidth:380, flexShrink:1 }}>
+              <div style={{ fontSize:'clamp(10px,1.3vw,12px)', color:'rgba(120,240,120,0.45)', letterSpacing:'0.16em', textTransform:'uppercase', marginBottom:'6px', animation:'grSubIn 0.8s 1.3s both' }}>📋 The Grinch's Official Schedule:</div>
               {GRINCH_SCHEDULE.map((item, i) => (
                 grinchScheduleIdx >= i && (
-                  <div key={i} style={{ display:'flex', alignItems:'center', gap:'10px', padding:'6px 12px', background:'rgba(0,60,0,0.14)', border:'1px solid rgba(34,160,34,0.22)', borderRadius:'8px', animationName:'grScheduleIn', animationDuration:'0.32s', animationFillMode:'both', animationTimingFunction:'cubic-bezier(0.22,1,0.36,1)' }}>
-                    <span style={{ fontSize:'11px', fontWeight:700, color:'rgba(80,210,80,0.65)', minWidth:36, letterSpacing:'0.05em', fontFamily:'monospace' }}>{item.time}</span>
-                    <span style={{ fontSize:'12px', flex:1, color: item.done ? 'rgba(180,255,180,0.75)' : 'rgba(100,160,100,0.45)', textDecoration: item.done ? 'none' : 'none' }}>{item.task}</span>
+                  <div key={i} style={{ display:'flex', alignItems:'center', gap:'10px', padding:'7px 12px', background:`rgba(0,${40+i*4},0,0.18)`, border:`1px solid rgba(34,${130+i*8},34,0.28)`, borderRadius:'8px', animationName:'grScheduleIn', animationDuration:'0.32s', animationFillMode:'both', animationTimingFunction:'cubic-bezier(0.22,1,0.36,1)', position:'relative', overflow:'hidden' }}>
+                    {/* Glow sweep effect */}
+                    <div style={{ position:'absolute', inset:0, background:'linear-gradient(90deg,transparent 0%,rgba(0,255,0,0.04) 50%,transparent 100%)', pointerEvents:'none' }} />
+                    <span style={{ fontSize:'11px', fontWeight:700, color:'rgba(80,220,80,0.7)', minWidth:36, letterSpacing:'0.05em', fontFamily:'monospace', flexShrink:0 }}>{item.time}</span>
+                    <span style={{ fontSize:'clamp(11px,1.4vw,13px)', flex:1, color: item.done ? 'rgba(200,255,200,0.85)' : 'rgba(120,180,120,0.5)' }}>{item.task}</span>
                     {item.done
-                      ? <span style={{ fontSize:'10px', color:'rgba(0,210,0,0.7)', fontWeight:700 }}>✓ DONE</span>
-                      : <span style={{ fontSize:'10px', color:'rgba(200,200,0,0.5)', fontWeight:700 }}>PENDING</span>
+                      ? <span style={{ fontSize:'10px', color:'rgba(0,230,0,0.8)', fontWeight:800, flexShrink:0, textShadow:'0 0 6px rgba(0,220,0,0.5)' }}>✓</span>
+                      : <span style={{ fontSize:'10px', color:'rgba(220,220,0,0.55)', fontWeight:700, flexShrink:0 }}>…</span>
                     }
                   </div>
                 )
@@ -3495,32 +3554,64 @@ export default function PackPerfect() {
           </div>
         )}
 
-        {/* PHASE 3: THE STOLEN LIST */}
+        {/* PHASE 3: THE HEIST */}
         {grinchPhase === 3 && (
-          <div style={{ position:'fixed', inset:0, zIndex:300, background:'linear-gradient(180deg,#040e04 0%,#020a02 100%)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', overflow:'hidden', animationName:'grBgPulse', animationDuration:'2.4s', animationIterationCount:'infinite' }}>
-            {GRINCH_SNOWFLAKES.filter((_,i)=>i%4===0).map(s => (
-              <div key={s.id} style={{ position:'absolute', top:0, left:`${s.left}%`, fontSize:`${s.size*0.65}px`, pointerEvents:'none', opacity:s.opacity*0.45, animationName:'grSnowfall', animationDuration:`${s.dur*1.4}s`, animationDelay:`${s.delay}s`, animationIterationCount:'infinite', animationTimingFunction:'linear', '--gr-drift':`${s.drift}px` }}>❄</div>
+          <div style={{ position:'fixed', inset:0, zIndex:300, background:'linear-gradient(180deg,#020804 0%,#010602 60%,#000300 100%)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', overflow:'hidden', animationName:'grFlicker', animationDuration:'8s', animationIterationCount:'infinite' }}>
+            {GRINCH_SNOWFLAKES.filter((_,i)=>i%5===0).map(s => (
+              <div key={s.id} style={{ position:'absolute', top:0, left:`${s.left}%`, fontSize:`${s.size*0.6}px`, pointerEvents:'none', opacity:s.opacity*0.35, animationName:'grSnowfall', animationDuration:`${s.dur*1.5}s`, animationDelay:`${s.delay}s`, animationIterationCount:'infinite', animationTimingFunction:'linear', '--gr-drift':`${s.drift}px` }}>❄</div>
             ))}
-            <div style={{ position:'relative', zIndex:2, width:'100%', maxWidth:540, padding:'0 22px' }}>
-              <div style={{ textAlign:'center', marginBottom:'22px' }}>
-                <div style={{ fontSize:'clamp(10px,1.4vw,12px)', fontWeight:700, letterSpacing:'0.45em', color:'rgba(80,200,80,0.4)', textTransform:'uppercase', marginBottom:'8px', animation:'grSubIn 0.6s both' }}>Christmas, systematically removed</div>
-                <div style={{ fontSize:'clamp(24px,5vw,46px)', fontWeight:900, color:'#22dd22', textShadow:'0 0 30px rgba(0,200,0,0.65)', animation:'grTitleSlam 0.8s 0.3s both' }}>The Grinch's Haul 🎄</div>
-                <div style={{ fontSize:'11px', color:'rgba(80,160,80,0.38)', marginTop:'6px', animation:'grSubIn 0.7s 0.8s both', letterSpacing:'0.1em' }}>Every last item, accounted for</div>
+
+            {/* Spotlight sweep */}
+            <div style={{ position:'absolute', inset:0, background:'radial-gradient(ellipse 60% 50% at 50% 40%, rgba(0,60,0,0.08) 0%, transparent 70%)', pointerEvents:'none', zIndex:1 }} />
+
+            <div style={{ position:'relative', zIndex:2, width:'100%', maxWidth:580, padding:'0 18px', display:'flex', flexDirection:'column', alignItems:'center' }}>
+              {/* Header */}
+              <div style={{ textAlign:'center', marginBottom:'16px', width:'100%' }}>
+                <div style={{ fontSize:'clamp(9px,1.2vw,11px)', fontWeight:700, letterSpacing:'0.5em', color:'rgba(80,200,80,0.38)', textTransform:'uppercase', marginBottom:'6px', animation:'grSubIn 0.6s both' }}>🎅 Operation Christmas Removal · CLASSIFIED 🎅</div>
+                <div style={{ fontSize:'clamp(22px,4.5vw,42px)', fontWeight:900, color:'#22dd22', textShadow:'0 0 25px rgba(0,200,0,0.7), 0 0 50px rgba(0,120,0,0.3)', animation:'grTitleSlam 0.8s 0.3s both', letterSpacing:'-0.01em' }}>THE GRINCH'S HAUL 🎄</div>
               </div>
-              <div style={{ display:'flex', flexDirection:'column', gap:'7px' }}>
+
+              {/* Sack counter — top right */}
+              {grinchStolenIdx >= 0 && (
+                <div key={grinchStolenIdx} style={{ position:'fixed', top:18, right:18, zIndex:10, display:'flex', flexDirection:'column', alignItems:'center', animationName:'grSackBounce', animationDuration:'0.55s', animationFillMode:'both' }}>
+                  <div style={{ fontSize:'clamp(28px,5vw,48px)' }}>🎅</div>
+                  <div style={{ fontSize:'clamp(16px,2.5vw,24px)', fontWeight:900, color:'#22ff22', textShadow:'0 0 12px rgba(0,255,0,0.7)', marginTop:'-4px' }}>{grinchStolenIdx + 1}</div>
+                  <div style={{ fontSize:'9px', color:'rgba(80,200,80,0.5)', letterSpacing:'0.15em', textTransform:'uppercase' }}>items stolen</div>
+                </div>
+              )}
+
+              {/* Items list */}
+              <div style={{ display:'flex', flexDirection:'column', gap:'6px', width:'100%' }}>
                 {GRINCH_STOLEN.map((item, i) => (
                   grinchStolenIdx >= i && (
-                    <div key={i} style={{ display:'flex', alignItems:'center', gap:'12px', padding:'9px 14px', background:'rgba(0,70,0,0.12)', border:'1px solid rgba(34,150,34,0.22)', borderRadius:'9px', animationName:'grItemSlide', animationDuration:'0.36s', animationFillMode:'both', animationTimingFunction:'cubic-bezier(0.22,1,0.36,1)' }}>
-                      <span style={{ fontSize:'20px' }}>{item.icon}</span>
-                      <div style={{ flex:1 }}>
-                        <div style={{ fontSize:'13px', fontWeight:600, color:'rgba(190,255,190,0.85)' }}>{item.name}</div>
-                        <div style={{ fontSize:'11px', color:'rgba(90,170,90,0.42)', marginTop:'1px' }}>{item.note}</div>
+                    <div key={i} style={{ display:'flex', alignItems:'center', gap:'12px', padding:'9px 14px', background:'rgba(0,50,0,0.22)', border:'1px solid rgba(34,140,34,0.25)', borderRadius:'9px', animationName:'grHeistSlide', animationDuration:'0.38s', animationFillMode:'both', animationTimingFunction:'cubic-bezier(0.22,1,0.36,1)', position:'relative', overflow:'visible' }}>
+                      <span style={{ fontSize:'22px', flexShrink:0 }}>{item.icon}</span>
+                      <div style={{ flex:1, minWidth:0 }}>
+                        <div style={{ fontSize:'clamp(11px,1.6vw,13px)', fontWeight:700, color:'rgba(200,255,200,0.9)' }}>{item.name}</div>
+                        <div style={{ fontSize:'10px', color:'rgba(90,170,90,0.5)', marginTop:'1px', fontStyle:'italic' }}>{item.note}</div>
+                        {/* Per-item Grinch comment — appears only on newest item */}
+                        {grinchStolenIdx === i && (
+                          <div style={{ fontSize:'10px', color:'rgba(100,230,100,0.7)', marginTop:'3px', animationName:'grCommentIn', animationDuration:'0.3s', animationFillMode:'both', animationDelay:'0.25s' }}>
+                            {GRINCH_HEIST_COMMENTS[i]}
+                          </div>
+                        )}
                       </div>
-                      <div style={{ fontSize:'10px', color:'rgba(0,190,0,0.7)', fontWeight:700, letterSpacing:'0.05em' }}>✓ STOLEN</div>
+                      {/* STOLEN stamp */}
+                      <div style={{ position:'relative', flexShrink:0 }}>
+                        <div style={{ fontSize:'clamp(8px,1.1vw,10px)', fontWeight:900, color:'#ff3333', border:'2px solid #ff3333', borderRadius:'4px', padding:'2px 6px', letterSpacing:'0.1em', transform:'rotate(-10deg)', display:'inline-block', boxShadow:'0 0 8px rgba(255,0,0,0.4)', animationName:'grStampIn', animationDuration:'0.45s', animationFillMode:'both', animationDelay:'0.2s', background:'rgba(60,0,0,0.3)', textShadow:'0 0 4px rgba(255,0,0,0.6)' }}>STOLEN</div>
+                      </div>
                     </div>
                   )
                 ))}
               </div>
+
+              {/* All done message */}
+              {grinchStolenIdx >= GRINCH_STOLEN.length - 1 && (
+                <div style={{ marginTop:'16px', textAlign:'center', animation:'grSubIn 0.6s 0.5s both' }}>
+                  <div style={{ fontSize:'clamp(12px,2vw,16px)', fontWeight:800, color:'rgba(34,255,34,0.8)', letterSpacing:'0.1em', textShadow:'0 0 12px rgba(0,220,0,0.6)' }}>💚 CHRISTMAS: SUCCESSFULLY RUINED 💚</div>
+                  <div style={{ fontSize:'11px', color:'rgba(80,160,80,0.45)', marginTop:'4px', fontStyle:'italic' }}>"And he did it before the Whos woke up. Naturally." — Narrator</div>
+                </div>
+              )}
             </div>
             <button onClick={() => setGrinchPhase(4)} style={{ position:'absolute', bottom:22, right:22, background:'transparent', border:'1px solid rgba(34,200,34,0.18)', borderRadius:6, color:'rgba(34,200,34,0.32)', fontSize:11, padding:'5px 13px', cursor:'pointer', letterSpacing:'0.1em', zIndex:10 }}>skip →</button>
           </div>
@@ -3528,67 +3619,95 @@ export default function PackPerfect() {
 
         {/* PHASE 4: STEADY STATE — HEART GROWS 3 SIZES */}
         {grinchPhase === 4 && (<>
-          {/* Subtle green radial glow */}
-          <div style={{ position:'fixed', inset:0, background:'radial-gradient(ellipse at 50% 20%, rgba(0,80,0,0.1) 0%, transparent 65%)', zIndex:6, pointerEvents:'none' }} />
+          {/* Ambient glow shifts from green to red as heart grows */}
+          <div style={{ position:'fixed', inset:0, background:`radial-gradient(ellipse at 50% 20%, rgba(${grinchHeartSize >= 1 ? '120,20,20' : '0,80,0'},${grinchHeartSize >= 0 ? 0.14 : 0.07}) 0%, transparent 65%)`, zIndex:6, pointerEvents:'none', transition:'background 1.2s ease' }} />
+
+          {/* Red heart confetti explosion when heart reaches max */}
+          {grinchHeartSize >= 1 && GRINCH_HEART_CONFETTI.map(c => (
+            <div key={c.id} style={{ position:'fixed', left:`${c.left}%`, bottom:'45%', fontSize:`${c.size}px`, zIndex:1002, pointerEvents:'none', animationName:'grRedHeart', animationDuration:`${c.dur}s`, animationDelay:`${c.delay}s`, animationFillMode:'both', animationTimingFunction:'ease-out', '--rot':`${c.rot}deg`, '--dx':`${c.dx}px` }}>
+              {c.id % 4 === 0 ? '🎄' : c.id % 4 === 1 ? '⭐' : '❤️'}
+            </div>
+          ))}
+
+          {/* THREE SIZES moment — big dramatic text */}
+          {grinchHeartSize >= 1 && (
+            <div style={{ position:'fixed', top:'18%', left:'50%', transform:'translateX(-50%)', zIndex:1008, pointerEvents:'none', textAlign:'center', width:'min(600px,90vw)', animation:'grSubIn 0.5s 0.1s both' }}>
+              <div style={{ fontSize:'clamp(9px,1.3vw,11px)', fontWeight:700, letterSpacing:'0.55em', color:'rgba(255,200,100,0.8)', textTransform:'uppercase', marginBottom:'8px', animation:'grSubIn 0.5s 0.3s both' }}>And then a wonderful thing happened...</div>
+              <div style={{ fontSize:'clamp(28px,6vw,64px)', fontWeight:900, color:'#ffeeaa', letterSpacing:'0.05em', textShadow:'0 0 40px rgba(255,200,80,0.7), 0 0 80px rgba(255,150,50,0.3)', animationName:'grThreeSizes', animationDuration:'0.8s', animationDelay:'0.4s', animationFillMode:'both', lineHeight:1.1 }}>
+                HIS HEART GREW<br/><span style={{ color:'#ff6666', textShadow:'0 0 50px rgba(255,80,80,0.8)' }}>THREE SIZES.</span>
+              </div>
+              <div style={{ marginTop:'10px', fontSize:'clamp(11px,1.8vw,15px)', color:'rgba(255,220,150,0.65)', fontStyle:'italic', animation:'grSubIn 0.6s 1.2s both' }}>
+                "And what happened then? Well, in Whoville they say<br/>that the Grinch's small heart grew three sizes that day."
+              </div>
+              <div style={{ marginTop:'14px', fontSize:'clamp(20px,3.5vw,36px)', animation:'grWhoJump 1s 1.8s infinite ease-in-out' }}>
+                🎄👑🎅🦌🎁⭐🎊
+              </div>
+            </div>
+          )}
 
           {/* Whoville Ornament Lights Banner */}
           <div style={{ position:'fixed', top:0, left:0, right:0, zIndex:1003, pointerEvents:'none', animationName:'grBannerIn', animationDuration:'0.8s', animationFillMode:'both' }}>
-            <div style={{ background:'linear-gradient(90deg,#040e04,#071407,#040e04)', borderBottom:'1.5px solid rgba(34,180,34,0.3)', padding:'6px 0 5px' }}>
+            <div style={{ background: grinchHeartSize >= 1 ? 'linear-gradient(90deg,#1a0000,#0e0800,#1a0000)' : 'linear-gradient(90deg,#040e04,#071407,#040e04)', borderBottom:`1.5px solid ${grinchHeartSize >= 1 ? 'rgba(200,60,60,0.4)' : 'rgba(34,180,34,0.3)'}`, padding:'6px 0 5px', transition:'background 1.2s ease, border-color 1.2s ease' }}>
               <div style={{ position:'absolute', top:'50%', left:0, right:0, height:'2px', background:'rgba(30,18,10,0.8)', transform:'translateY(-50%)' }} />
               <div style={{ display:'flex', justifyContent:'space-around', alignItems:'center' }}>
                 {GRINCH_ORNAMENTS.map(o => (
                   <div key={o.id} style={{ display:'flex', flexDirection:'column', alignItems:'center', animationName:'grLightSwing', animationDuration:`${2+o.dur*0.4}s`, animationIterationCount:'infinite', animationTimingFunction:'ease-in-out', animationDelay:`${o.delay}s` }}>
                     <div style={{ width:'2px', height:'7px', background:'rgba(30,16,8,0.9)' }} />
-                    <div style={{ width:'13px', height:'16px', background:o.color, borderRadius:'50% 50% 40% 40%', boxShadow:`0 0 10px 4px ${o.color}88`, animationName:'grLightBlink grOrnamentGlow', animationDuration:`${1.2+o.id*0.19}s, ${1.8+o.id*0.13}s`, animationDelay:`${o.delay}s, ${o.delay*0.5}s`, animationIterationCount:'infinite', animationTimingFunction:'ease-in-out' }} />
+                    <div style={{ width:'13px', height:'16px', background:o.color, borderRadius:'50% 50% 40% 40%', boxShadow:`0 0 ${grinchHeartSize >= 1 ? 16 : 10}px 4px ${o.color}${grinchHeartSize >= 1 ? 'cc' : '88'}`, animationName:'grLightBlink grOrnamentGlow', animationDuration:`${1.2+o.id*0.19}s, ${1.8+o.id*0.13}s`, animationDelay:`${o.delay}s, ${o.delay*0.5}s`, animationIterationCount:'infinite', animationTimingFunction:'ease-in-out' }} />
                   </div>
                 ))}
               </div>
-              <div style={{ textAlign:'center', marginTop:'5px', fontSize:'10px', fontWeight:700, color:'rgba(180,255,180,0.6)', letterSpacing:'0.22em', textTransform:'uppercase' }}>
-                🎄 WELCOME TO WHOVILLE — MERRY CHRISTMAS TO ALL WHOS 🎄
+              <div style={{ textAlign:'center', marginTop:'5px', fontSize:'10px', fontWeight:700, color: grinchHeartSize >= 1 ? 'rgba(255,180,100,0.8)' : 'rgba(180,255,180,0.6)', letterSpacing:'0.22em', textTransform:'uppercase', transition:'color 1.2s ease' }}>
+                {grinchHeartSize >= 1 ? '❤️ MERRY CHRISTMAS FROM WHOVILLE — THE GRINCH IS REFORMED ❤️' : '🎄 WELCOME TO WHOVILLE — MERRY CHRISTMAS TO ALL WHOS 🎄'}
               </div>
             </div>
           </div>
 
           {/* Grinch peeking bottom-left */}
           <div style={{ position:'fixed', bottom:0, left:'2%', zIndex:70, pointerEvents:'none', animationName:'grGrinchPeek', animationDuration:'2.5s', animationIterationCount:'infinite', animationTimingFunction:'ease-in-out' }}>
-            <img src="/grinch.png" alt="The Grinch" style={{ width:'clamp(50px,9vw,90px)', objectFit:'contain', display:'block', borderRadius:'6px 6px 0 0', filter:'drop-shadow(0 0 10px rgba(0,180,0,0.65))' }} />
-            <div style={{ fontSize:'9px', color:'rgba(100,220,100,0.5)', textAlign:'center', letterSpacing:'0.1em', fontWeight:600 }}>THE GRINCH</div>
+            <img src="/grinch.png" alt="The Grinch" style={{ width:'clamp(50px,9vw,90px)', objectFit:'contain', display:'block', borderRadius:'6px 6px 0 0', filter:`drop-shadow(0 0 ${grinchHeartSize >= 1 ? 16 : 10}px ${grinchHeartSize >= 1 ? 'rgba(255,80,80,0.7)' : 'rgba(0,180,0,0.65)'})` }} />
+            <div style={{ fontSize:'9px', color: grinchHeartSize >= 1 ? 'rgba(255,160,100,0.7)' : 'rgba(100,220,100,0.5)', textAlign:'center', letterSpacing:'0.1em', fontWeight:600 }}>
+              {grinchHeartSize >= 1 ? 'Reformed 💚' : 'THE GRINCH'}
+            </div>
           </div>
 
           {/* Max peeking bottom-right */}
           <div style={{ position:'fixed', bottom:0, right:'2%', zIndex:70, pointerEvents:'none', animationName:'grMaxPeek', animationDuration:'2.1s', animationDelay:'0.8s', animationIterationCount:'infinite', animationTimingFunction:'ease-in-out' }}>
-            <img src="/max.png" alt="Max" style={{ width:'clamp(45px,8vw,78px)', objectFit:'contain', display:'block', borderRadius:'6px 6px 0 0', filter:'drop-shadow(0 0 8px rgba(180,120,0,0.5))' }} />
-            <div style={{ fontSize:'9px', color:'rgba(200,160,80,0.5)', textAlign:'center', letterSpacing:'0.1em', fontWeight:600 }}>MAX 🦌</div>
+            <img src="/max.png" alt="Max" style={{ width:'clamp(45px,8vw,78px)', objectFit:'contain', display:'block', borderRadius:'6px 6px 0 0', filter:`drop-shadow(0 0 8px ${grinchHeartSize >= 1 ? 'rgba(255,180,80,0.7)' : 'rgba(180,120,0,0.5)'})` }} />
+            <div style={{ fontSize:'9px', color: grinchHeartSize >= 1 ? 'rgba(255,200,100,0.7)' : 'rgba(200,160,80,0.5)', textAlign:'center', letterSpacing:'0.1em', fontWeight:600 }}>
+              {grinchHeartSize >= 1 ? 'Head Reindeer 🏅' : 'MAX 🦌'}
+            </div>
           </div>
 
           {/* Heart grows 3 sizes — top right */}
           <div style={{ position:'fixed', top:72, right:20, zIndex:1005, pointerEvents:'none', display:'flex', flexDirection:'column', alignItems:'center', gap:'3px' }}>
             <div style={{ fontSize:'9px', fontWeight:700, color:'rgba(100,210,100,0.4)', letterSpacing:'0.2em', textTransform:'uppercase' }}>Heart Size</div>
-            <div key={grinchHeartSize} style={{ fontSize:'clamp(22px,3.2vw,32px)', animationName:'grHeartGrow', animationDuration:'0.65s', animationFillMode:'both' }}>
-              {grinchHeartSize >= 1 ? '❤️' : '💚'}
+            <div key={grinchHeartSize} style={{ fontSize:'clamp(22px,3.2vw,32px)', animationName: grinchHeartSize >= 1 ? 'grHeartBloom' : 'grHeartGrow', animationDuration: grinchHeartSize >= 1 ? '0.9s' : '0.65s', animationFillMode:'both' }}>
+              {grinchHeartSize >= 1 ? '❤️' : grinchHeartSize === 0 ? '💛' : '💚'}
             </div>
-            <div style={{ fontSize:'11px', fontWeight:700, letterSpacing:'0.08em', color: grinchHeartSize >= 1 ? '#44ee44' : 'rgba(100,200,100,0.55)' }}>
-              {grinchHeartSize < 0 ? `${grinchHeartSize} sizes` : grinchHeartSize === 0 ? 'normal' : `+${grinchHeartSize} sizes!`}
+            <div style={{ fontSize:'11px', fontWeight:700, letterSpacing:'0.08em', color: grinchHeartSize >= 1 ? '#ff8888' : grinchHeartSize === 0 ? '#ffdd44' : 'rgba(100,200,100,0.55)', transition:'color 0.8s' }}>
+              {grinchHeartSize < 0 ? `${grinchHeartSize} sizes` : grinchHeartSize === 0 ? 'warming up...' : `+${grinchHeartSize} sizes!!!`}
             </div>
             {grinchHeartSize >= 1 && (
-              <div style={{ fontSize:'8px', color:'rgba(255,220,80,0.75)', letterSpacing:'0.1em', animation:'grSubIn 0.5s both', fontWeight:700 }}>GREW 3 SIZES</div>
+              <div style={{ fontSize:'8px', color:'rgba(255,180,80,0.9)', letterSpacing:'0.1em', animation:'grSubIn 0.5s both', fontWeight:700, textShadow:'0 0 6px rgba(255,150,50,0.6)' }}>GREW 3 SIZES ❤️</div>
             )}
           </div>
 
           {/* Rotating quotes */}
           <div key={grinchQuoteIdx} style={{ position:'fixed', bottom:62, left:'50%', transform:'translateX(-50%)', zIndex:1003, pointerEvents:'none', animationName:'grQuoteIn', animationDuration:'0.7s', animationFillMode:'both', maxWidth:'min(520px,88vw)', textAlign:'center' }}>
-            <div style={{ background:'rgba(3,10,3,0.94)', border:'1px solid rgba(34,150,34,0.3)', borderRadius:'12px', padding:'10px 18px', fontSize:'13px', fontWeight:500, color:'rgba(200,255,200,0.88)', letterSpacing:'0.02em', boxShadow:'0 4px 20px rgba(0,0,0,0.6), 0 0 20px rgba(0,100,0,0.08)' }}>
+            <div style={{ background: grinchHeartSize >= 1 ? 'rgba(20,5,5,0.95)' : 'rgba(3,10,3,0.94)', border:`1px solid ${grinchHeartSize >= 1 ? 'rgba(200,80,80,0.35)' : 'rgba(34,150,34,0.3)'}`, borderRadius:'12px', padding:'10px 18px', fontSize:'13px', fontWeight:500, color: grinchHeartSize >= 1 ? 'rgba(255,220,200,0.9)' : 'rgba(200,255,200,0.88)', letterSpacing:'0.02em', boxShadow:'0 4px 20px rgba(0,0,0,0.6)', transition:'all 1.2s ease' }}>
               {GRINCH_QUOTES[grinchQuoteIdx]}
             </div>
           </div>
 
-          {/* Bottom-right status board */}
-          <div style={{ position:'fixed', bottom:18, right:18, zIndex:1010, pointerEvents:'none' }}>
-            <div style={{ fontFamily:'monospace', fontSize:9, color:'rgba(0,160,0,0.3)', letterSpacing:'0.12em', textAlign:'right', lineHeight:2 }}>
-              CHRISTMAS: STOLEN & RETURNED<br/>
-              ROAST BEAST: CARVED<br/>
-              MAX: REINDEER (PROMOTED)<br/>
-              GRINCH: REFORMED ✓
+          {/* Bottom-left status board */}
+          <div style={{ position:'fixed', bottom:18, left:18, zIndex:1010, pointerEvents:'none' }}>
+            <div style={{ fontFamily:'monospace', fontSize:9, color:'rgba(0,160,0,0.3)', letterSpacing:'0.1em', lineHeight:2 }}>
+              CHRISTMAS: STOLEN → RETURNED<br/>
+              ROAST BEAST: CARVED & SERVED<br/>
+              MAX: PROMOTED TO HEAD REINDEER<br/>
+              GRINCH: REFORMED ✓<br/>
+              HEART: +3 SIZES (VERIFIED)
             </div>
           </div>
         </>)}
