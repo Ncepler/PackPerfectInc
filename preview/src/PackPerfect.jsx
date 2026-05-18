@@ -3509,7 +3509,7 @@ export default function PackPerfect() {
                 <div key={i} style={{ position:'absolute', width:'200px', height:'200px', border:`${4-i}px solid rgba(34,200,34,${0.7-i*0.2})`, borderRadius:'50%', animationName:'grShockRing', animationDuration:'2s', animationDelay:`${i*0.55}s`, animationIterationCount:'infinite', animationTimingFunction:'ease-out', pointerEvents:'none' }} />
               ))}
               <div style={{ fontSize:'clamp(11px,1.8vw,14px)', fontWeight:800, letterSpacing:'0.35em', color:'rgba(80,240,80,0.65)', textTransform:'uppercase', animation:'grSubIn 0.5s 0.2s both' }}>THEN HE GOT AN IDEA...</div>
-              <img src="/grinch_face.png" alt="The Grinch" style={{ width:'clamp(130px,22vw,220px)', objectFit:'contain', zIndex:2, borderRadius:'8px', animationName:'grFaceZoom grEvilGlow', animationDuration:'0.9s, 1.6s', animationFillMode:'both, none', animationIterationCount:'1, infinite', filter:`drop-shadow(0 0 ${20+grinchScheduleIdx*6}px rgba(0,200,0,0.9))` }} />
+              <img src="/grinch.png" alt="The Grinch" style={{ width:'clamp(130px,22vw,220px)', objectFit:'contain', zIndex:2, borderRadius:'8px', animationName:'grFaceZoom grEvilGlow', animationDuration:'0.9s, 1.6s', animationFillMode:'both, none', animationIterationCount:'1, infinite', filter:`drop-shadow(0 0 ${20+grinchScheduleIdx*6}px rgba(0,200,0,0.9))` }} />
               <div style={{ fontSize:'clamp(14px,2.8vw,32px)', fontWeight:900, color:'#33ff33', letterSpacing:'0.02em', animation:'grTitleSlam 0.8s 0.6s both', textShadow:'0 0 20px rgba(0,255,0,0.9)', textAlign:'center' }}>A WONDERFUL,<br/>AWFUL IDEA.</div>
               {/* Evil laugh that builds up */}
               {grinchScheduleIdx >= 0 && (() => {
