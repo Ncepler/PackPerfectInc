@@ -5470,6 +5470,16 @@ export default function PackPerfect() {
           </div>
         </div>
       )}
+
+      {/* FOOTER */}
+      <div style={{ padding:'14px 20px', textAlign:'center' }}>
+        <span style={{ fontSize:'12px', color:t.textDim }}>
+          site by{' '}
+          <a href="https://vilas.studio" target="_blank" rel="noopener noreferrer" style={{ color:t.textDim, textDecoration:'underline' }}>
+            vilas.studio
+          </a>
+        </span>
+      </div>
     </div>
   )
 }
